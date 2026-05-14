@@ -32,6 +32,7 @@
         document.addEventListener('DOMContentLoaded', loadGlobalAvatar);
     </script>
     <script src="{{ asset('js/js_component/logout.js') }}"></script>
+    <script src="{{ asset('js/js_component/mobile_menu.js') }}" defer></script>
 </head>
 <body>
     <div class="adm-layout">

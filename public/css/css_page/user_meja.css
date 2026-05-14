@@ -1456,3 +1456,66 @@
         font-size: 0.75rem;
     }
 }
+
+/* Responsive hardening for user table booking */
+.meja-wrapper,
+.meja-selection-area {
+    min-width: 0;
+}
+
+.meja-legend {
+    flex-wrap: wrap;
+}
+
+.order-summary-area {
+    flex-shrink: 0;
+}
+
+.summary-card,
+.booking-section {
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+    .meja-grid {
+        justify-items: center;
+    }
+}
+
+@media (max-width: 640px) {
+    .meja-grid {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 210px;
+    }
+
+    .billiard-table {
+        width: min(110px, 38vw);
+    }
+
+    .billiard-table.vertical {
+        height: min(110px, 38vw);
+    }
+}
+
+@media (max-width: 480px) {
+    .meja-grid {
+        min-height: 190px;
+    }
+
+    .billiard-table {
+        width: min(100px, 36vw);
+    }
+
+    .billiard-table.vertical {
+        height: min(100px, 36vw);
+    }
+
+    .date-cards-container {
+        flex: 1;
+    }
+
+    .tm-header h2 {
+        overflow-wrap: anywhere;
+    }
+}

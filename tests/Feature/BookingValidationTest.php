@@ -95,6 +95,7 @@ class BookingValidationTest extends TestCase
             'email' => 'raka@example.com',
             'phone' => '08123456789',
             'password' => Hash::make('password'),
+            'role' => 'user',
         ]);
     }
 

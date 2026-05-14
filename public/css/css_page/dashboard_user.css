@@ -488,3 +488,80 @@
         font-size: 0.85rem;
     }
 }
+
+/* Extra mobile safeguards for user dashboard */
+.user-dashboard-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.hero-content h1,
+.user-card-title,
+.promo-content h4,
+.act-name,
+.act-date {
+    overflow-wrap: anywhere;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .user-dashboard-container {
+        padding: 1rem;
+    }
+
+    .hero-content h1 {
+        justify-content: center;
+        line-height: 1.15;
+    }
+
+    .activity-item {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .act-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .act-status {
+        margin-left: 25px;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-hero {
+        padding: 1.5rem;
+    }
+
+    .hero-content h1 {
+        font-size: 1.9rem;
+    }
+
+    .user-card {
+        align-items: flex-start;
+    }
+
+    .card-info {
+        min-width: 0;
+    }
+
+    .user-card-title {
+        font-size: 1.15rem;
+    }
+
+    .recent-activity-card {
+        padding: 1.25rem;
+    }
+
+    .promo-banner-card {
+        padding: 1.4rem;
+    }
+}
