@@ -692,7 +692,7 @@ body {
 }
 
 .mobile-menu-btn {
-    display: none;
+    display: none !important;
 }
 
 .adm-topbar-title,
@@ -701,8 +701,8 @@ body {
 }
 
 @media (max-width: 768px) {
-    .mobile-menu-btn {
-        display: flex;
+    .mobile-menu-btn:not([hidden]) {
+        display: flex !important;
     }
 
     .adm-sidebar,
