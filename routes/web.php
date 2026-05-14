@@ -75,6 +75,7 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::get('/dashboard/fnb', [DashboardController::class, 'fnb'])->name('user.fnb');
     Route::get('/dashboard/fnb/konfirmasi', [DashboardController::class, 'fnbKonfirmasi'])->name('user.fnb.konfirmasi');
     Route::post('/dashboard/fnb/checkout', [DashboardController::class, 'fnbCheckout'])->name('user.fnb.checkout');
+    Route::get('/dashboard/fnb/payment-status/{orderId}', [DashboardController::class, 'fnbPaymentStatus'])->name('user.fnb.payment-status');
 
     // Booking
     Route::get('/booking', [BookingController::class , 'create'])->name('booking.create');

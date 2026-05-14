@@ -4,44 +4,164 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Booking;
+use App\Models\FnbOrder;
 use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
 {
     public function midtransHandler(Request $request)
     {
-        // Setup Midtrans config
-        \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
-        \Midtrans\Config::$isProduction = (bool) config('services.midtrans.is_production');
+        $payload = $request->all();
 
-        try {
-            $notification = new \Midtrans\Notification();
-        } catch (\Exception $e) {
-            Log::error('Midtrans Webhook Error: ' . $e->getMessage());
-            return response()->json(['message' => 'Error processing webhook'], 500);
+        if (empty($payload)) {
+            $payload = json_decode($request->getContent(), true) ?: [];
         }
 
-        $transactionStatus = $notification->transaction_status;
-        $orderId = $notification->order_id;
-        $customField1 = $notification->custom_field1 ?? '';
+        if (empty($payload['order_id']) || empty($payload['transaction_status'])) {
+            Log::warning('Midtrans Webhook: payload tidak lengkap', ['payload' => $payload]);
 
-        Log::info("Midtrans Webhook: Order ID {$orderId} status is {$transactionStatus}");
+            return response()->json(['message' => 'Invalid webhook payload'], 422);
+        }
 
-        // Only handle table bookings (which have custom_field1 as booking IDs)
+        if (!$this->signatureIsValid($payload)) {
+            Log::warning('Midtrans Webhook: signature tidak valid', [
+                'order_id' => $payload['order_id'] ?? null,
+            ]);
+
+            return response()->json(['message' => 'Invalid signature'], 403);
+        }
+
+        $transactionStatus = (string) $payload['transaction_status'];
+        $orderId = (string) $payload['order_id'];
+        $customField1 = (string) ($payload['custom_field1'] ?? '');
+        $fraudStatus = (string) ($payload['fraud_status'] ?? '');
+
+        Log::info('Midtrans Webhook diterima', [
+            'order_id' => $orderId,
+            'transaction_status' => $transactionStatus,
+            'payment_type' => $payload['payment_type'] ?? null,
+        ]);
+
         if (strpos($orderId, 'ORDER-') === 0 && !empty($customField1)) {
-            $bookingIds = explode(',', $customField1);
-            
-            if (in_array($transactionStatus, ['capture', 'settlement'])) {
-                Booking::whereIn('id', $bookingIds)->update(['status' => 'confirmed']);
-            } elseif (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
-                Booking::whereIn('id', $bookingIds)->update(['status' => 'cancelled']);
-            } elseif ($transactionStatus == 'pending') {
-                Booking::whereIn('id', $bookingIds)->update(['status' => 'pending']);
-            }
+            $this->updateBookings($customField1, $transactionStatus, $fraudStatus);
+        } elseif (strpos($orderId, 'FNB-') === 0) {
+            $this->updateFnbOrder($orderId, $payload, $transactionStatus, $fraudStatus);
+        } else {
+            Log::warning('Midtrans Webhook: order_id tidak dikenali', ['order_id' => $orderId]);
         }
-        
-        // For FnB (FNB-) we don't have DB tracking currently, so we just return success
 
         return response()->json(['message' => 'Webhook processed successfully'], 200);
+    }
+
+    private function updateBookings(string $bookingIdsValue, string $transactionStatus, string $fraudStatus): void
+    {
+        $bookingIds = collect(explode(',', $bookingIdsValue))
+            ->map(fn ($id) => trim($id))
+            ->filter(fn ($id) => ctype_digit($id))
+            ->values()
+            ->all();
+
+        if (empty($bookingIds)) {
+            Log::warning('Midtrans Webhook: custom_field1 booking kosong', [
+                'custom_field1' => $bookingIdsValue,
+            ]);
+
+            return;
+        }
+
+        $paymentStatus = $this->paymentStatusFromMidtrans($transactionStatus, $fraudStatus);
+
+        if ($paymentStatus === 'paid') {
+            Booking::whereIn('id', $bookingIds)->update(['status' => 'confirmed']);
+        } elseif (in_array($paymentStatus, ['cancelled', 'failed', 'expired'], true)) {
+            Booking::whereIn('id', $bookingIds)->update(['status' => 'cancelled']);
+        } elseif ($paymentStatus === 'pending') {
+            Booking::whereIn('id', $bookingIds)
+                ->where('status', '!=', 'confirmed')
+                ->update(['status' => 'pending']);
+        }
+    }
+
+    private function updateFnbOrder(string $orderId, array $payload, string $transactionStatus, string $fraudStatus): void
+    {
+        $order = FnbOrder::where('midtrans_order_id', $orderId)->first();
+
+        if (!$order) {
+            Log::warning('Midtrans Webhook: F&B order tidak ditemukan', ['order_id' => $orderId]);
+
+            return;
+        }
+
+        $paymentStatus = $this->paymentStatusFromMidtrans($transactionStatus, $fraudStatus);
+
+        if ($order->status === 'paid' && $paymentStatus === 'pending') {
+            $paymentStatus = 'paid';
+        }
+
+        $updates = [
+            'status' => $paymentStatus,
+            'payment_method' => $payload['payment_type'] ?? $order->payment_method,
+            'midtrans_transaction_id' => $payload['transaction_id'] ?? $order->midtrans_transaction_id,
+            'midtrans_payload' => $payload,
+        ];
+
+        if ($paymentStatus === 'paid' && !$order->paid_at) {
+            $updates['paid_at'] = now();
+        }
+
+        $order->update($updates);
+    }
+
+    private function paymentStatusFromMidtrans(string $transactionStatus, string $fraudStatus): string
+    {
+        if ($transactionStatus === 'capture') {
+            return $fraudStatus === 'challenge' ? 'pending' : 'paid';
+        }
+
+        if ($transactionStatus === 'settlement') {
+            return 'paid';
+        }
+
+        if ($transactionStatus === 'pending') {
+            return 'pending';
+        }
+
+        if ($transactionStatus === 'expire') {
+            return 'expired';
+        }
+
+        if (in_array($transactionStatus, ['cancel', 'deny'], true)) {
+            return 'cancelled';
+        }
+
+        if ($transactionStatus === 'failure') {
+            return 'failed';
+        }
+
+        if (in_array($transactionStatus, ['refund', 'partial_refund'], true)) {
+            return 'refunded';
+        }
+
+        return 'pending';
+    }
+
+    private function signatureIsValid(array $payload): bool
+    {
+        $requiredFields = ['order_id', 'status_code', 'gross_amount', 'signature_key'];
+
+        foreach ($requiredFields as $field) {
+            if (!array_key_exists($field, $payload) || $payload[$field] === null || $payload[$field] === '') {
+                Log::warning('Midtrans Webhook: signature field kosong', ['field' => $field]);
+
+                return app()->environment('local', 'testing');
+            }
+        }
+
+        $expectedSignature = hash(
+            'sha512',
+            $payload['order_id'] . $payload['status_code'] . $payload['gross_amount'] . config('services.midtrans.server_key')
+        );
+
+        return hash_equals($expectedSignature, (string) $payload['signature_key']);
     }
 }

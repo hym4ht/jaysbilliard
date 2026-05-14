@@ -312,7 +312,10 @@
         const itemsList = document.getElementById('konfirmasi-items-list');
 
         const orderDataRaw = localStorage.getItem('fnb_order');
+        const paymentStatusUrlTemplate = '{{ route("user.fnb.payment-status", ["orderId" => "__ORDER_ID__"]) }}';
         let orderData = null;
+        let statusPollInterval = null;
+        let statusPollTimeout = null;
 
         function formatRupiah(value) {
             return 'Rp ' + Number(value || 0).toLocaleString('id-ID');
@@ -386,6 +389,12 @@
             document.getElementById('modal-total-value').innerText = formatRupiah(orderData.total);
         }
 
+        const pendingOrderId = localStorage.getItem('fnb_pending_order_id');
+        if (pendingOrderId && orderData && Array.isArray(orderData.items) && orderData.items.length > 0) {
+            snapStatus.innerText = 'Memeriksa status pembayaran';
+            pollFnbPaymentStatus(pendingOrderId, orderData, 'Midtrans');
+        }
+
         mainPayBtn.addEventListener('click', function() {
             if (!orderData) {
                 showAlert('warning', 'Data Pesanan Kosong', 'Silakan pilih menu terlebih dahulu.');
@@ -426,22 +435,35 @@
                     document.getElementById('modal-total-value').innerText = formatRupiah(data.total);
                 }
 
+                if (data.order_id) {
+                    orderData.midtransOrderId = data.order_id;
+                    localStorage.setItem('fnb_order', JSON.stringify(orderData));
+                    localStorage.setItem('fnb_pending_order_id', data.order_id);
+                }
+
                 window.snap.pay(data.snap_token, {
                     onSuccess: function(result) {
                         const paymentMethod = result.payment_type || 'Midtrans';
+                        const midtransOrderId = data.order_id || result.order_id || orderData.midtransOrderId;
                         document.getElementById('final-method-name').innerText = paymentMethod;
-                        saveFnbHistory(orderData, paymentMethod, 'paid');
+                        saveFnbHistory(orderData, paymentMethod, 'paid', midtransOrderId);
+                        localStorage.removeItem('fnb_pending_order_id');
+                        clearPaymentPolling();
                         showFnbSuccessModal();
                     },
                     onPending: function(result) {
                         const paymentMethod = result.payment_type || 'Midtrans';
+                        const midtransOrderId = data.order_id || result.order_id || orderData.midtransOrderId;
                         document.getElementById('final-method-name').innerText = paymentMethod;
-                        saveFnbHistory(orderData, paymentMethod, 'pending');
+                        saveFnbHistory(orderData, paymentMethod, 'pending', midtransOrderId);
                         snapStatus.innerText = 'Menunggu pembayaran';
+                        pollFnbPaymentStatus(midtransOrderId, orderData, paymentMethod);
                         showAlert('info', 'Menunggu Pembayaran', 'Ikuti instruksi pembayaran dari Midtrans.');
                     },
                     onError: function() {
                         snapStatus.innerText = 'Pembayaran gagal';
+                        localStorage.removeItem('fnb_pending_order_id');
+                        clearPaymentPolling();
                         showAlert('error', 'Pembayaran Gagal', 'Silakan coba lagi atau pilih metode lain di Midtrans.');
                     },
                     onClose: function() {
@@ -459,27 +481,97 @@
             });
         });
 
-        function saveFnbHistory(orderData, paymentMethod, status) {
+        function saveFnbHistory(orderData, paymentMethod, status, orderId = null) {
             const historyData = JSON.parse(localStorage.getItem('billiard_history') || '[]');
+            const entryId = orderId || orderData.midtransOrderId || 'FNB-' + Math.floor(Math.random() * 1000);
+            const existingIndex = historyData.findIndex(item => item.id === entryId);
+            const existingEntry = existingIndex >= 0 ? historyData[existingIndex] : {};
             const newEntry = {
-                id: 'FNB-' + Math.floor(Math.random() * 1000),
+                id: entryId,
                 customer_name: '{{ Auth::user()->name }}',
                 tables: orderData.tableName || 'Takeaway',
-                date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-                time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                date: existingEntry.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                time: existingEntry.time || new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
                 duration: '-',
                 total: formatRupiah(orderData.total),
                 status,
                 payment_method: paymentMethod,
                 fnb: orderData.items || [],
-                timestamp: new Date().getTime()
+                timestamp: existingEntry.timestamp || new Date().getTime()
             };
 
-            historyData.unshift(newEntry);
+            if (existingIndex >= 0) {
+                historyData[existingIndex] = newEntry;
+            } else {
+                historyData.unshift(newEntry);
+            }
+
             localStorage.setItem('billiard_history', JSON.stringify(historyData));
         }
 
+        function clearPaymentPolling() {
+            if (statusPollInterval) {
+                clearInterval(statusPollInterval);
+                statusPollInterval = null;
+            }
+
+            if (statusPollTimeout) {
+                clearTimeout(statusPollTimeout);
+                statusPollTimeout = null;
+            }
+        }
+
+        function pollFnbPaymentStatus(orderId, latestOrderData, fallbackMethod = 'Midtrans') {
+            if (!orderId) return;
+
+            localStorage.setItem('fnb_pending_order_id', orderId);
+            clearPaymentPolling();
+
+            const checkStatus = function () {
+                const statusUrl = paymentStatusUrlTemplate.replace('__ORDER_ID__', encodeURIComponent(orderId));
+
+                fetch(statusUrl, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('Gagal memeriksa status pembayaran.');
+                    }
+
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.status === 'paid') {
+                        const paymentMethod = data.payment_method || fallbackMethod || 'Midtrans';
+                        document.getElementById('final-method-name').innerText = paymentMethod;
+                        saveFnbHistory(latestOrderData, paymentMethod, 'paid', orderId);
+                        localStorage.removeItem('fnb_pending_order_id');
+                        clearPaymentPolling();
+                        showFnbSuccessModal();
+                    } else if (['cancelled', 'failed', 'expired'].includes(data.status)) {
+                        localStorage.removeItem('fnb_pending_order_id');
+                        clearPaymentPolling();
+                        snapStatus.innerText = 'Pembayaran gagal';
+                        showAlert('error', 'Pembayaran Tidak Berhasil', 'Status pembayaran dari Midtrans sudah berakhir atau dibatalkan.');
+                    } else {
+                        snapStatus.innerText = 'Menunggu pembayaran';
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+            };
+
+            checkStatus();
+            statusPollInterval = setInterval(checkStatus, 3000);
+            statusPollTimeout = setTimeout(clearPaymentPolling, 25 * 60 * 1000);
+        }
+
         function showFnbSuccessModal() {
+            clearPaymentPolling();
             mainPayBtn.innerText = 'Pembayaran Selesai';
             mainPayBtn.disabled = true;
             mainPayBtn.style.background = '#00f2ff';
@@ -495,6 +587,7 @@
             updateTimerBoxes();
 
             localStorage.removeItem('fnb_order');
+            localStorage.removeItem('fnb_pending_order_id');
 
             setTimeout(() => {
                 document.getElementById('success-overlay').classList.add('active');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\FnbOrder;
 use App\Models\Table;
 use App\Models\Menu;
 use Illuminate\Http\Request;
@@ -164,12 +165,14 @@ class DashboardController extends Controller
         $menus = Menu::whereIn('id', $menuIds)->get()->keyBy('id');
         $subtotal = 0;
         $itemDetails = [];
+        $orderedItems = [];
 
         foreach ($validated['items'] as $item) {
             $menu = $menus->get($item['id']);
             $quantity = (int) $item['quantity'];
             $price = (int) $menu->price;
-            $subtotal += $price * $quantity;
+            $lineSubtotal = $price * $quantity;
+            $subtotal += $lineSubtotal;
 
             $itemDetails[] = [
                 'id' => (string) $menu->id,
@@ -177,10 +180,30 @@ class DashboardController extends Controller
                 'quantity' => $quantity,
                 'name' => substr($menu->name, 0, 50),
             ];
+
+            $orderedItems[] = [
+                'menu_id' => $menu->id,
+                'name' => $menu->name,
+                'category' => $menu->category,
+                'price' => $price,
+                'quantity' => $quantity,
+                'subtotal' => $lineSubtotal,
+            ];
         }
 
         $tax = (int) round($subtotal * 0.1);
         $total = $subtotal + $tax;
+
+        $fnbOrder = FnbOrder::create([
+            'user_id' => $user->id,
+            'table_id' => $validated['table_id'] ?? null,
+            'midtrans_order_id' => $orderId,
+            'subtotal' => $subtotal,
+            'tax' => $tax,
+            'total' => $total,
+            'status' => 'pending',
+            'items' => $orderedItems,
+        ]);
 
         if ($tax > 0) {
             $itemDetails[] = [
@@ -201,9 +224,21 @@ class DashboardController extends Controller
                 'first_name' => $user->name,
                 'phone' => $user->phone ?? '-',
             ),
+            'custom_field1' => 'fnb',
+            'custom_field2' => (string) $fnbOrder->id,
         );
 
-        $snapToken = \Midtrans\Snap::getSnapToken($params);
+        try {
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
+        } catch (\Throwable $e) {
+            $fnbOrder->update(['status' => 'failed']);
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membuat transaksi Midtrans. Coba lagi beberapa saat.',
+            ], 500);
+        }
 
         return response()->json([
             'success' => true,
@@ -212,6 +247,21 @@ class DashboardController extends Controller
             'subtotal' => $subtotal,
             'tax' => $tax,
             'total' => $total,
+        ]);
+    }
+
+    public function fnbPaymentStatus(string $orderId)
+    {
+        $order = FnbOrder::where('midtrans_order_id', $orderId)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        return response()->json([
+            'success' => true,
+            'order_id' => $order->midtrans_order_id,
+            'status' => $order->status,
+            'payment_method' => $order->payment_method,
+            'paid_at' => $order->paid_at?->toIso8601String(),
         ]);
     }
 }
