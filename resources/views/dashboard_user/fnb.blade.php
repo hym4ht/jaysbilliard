@@ -3,7 +3,7 @@
 @section('title', 'Pesan Makanan & Minuman')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/css_page/user_fnb.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/css_page/user_fnb.css') }}?v={{ filemtime(public_path('css/css_page/user_fnb.css')) }}">
 @endpush
 
 @section('content')
