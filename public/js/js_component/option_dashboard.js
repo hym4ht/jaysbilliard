@@ -24,6 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const items = chartFilterDropdown.querySelectorAll('.adm-chart-dropdown-item');
         items.forEach(item => {
             item.addEventListener('click', () => {
+                const targetUrl = item.dataset.url;
+                if (targetUrl) {
+                    window.location.href = targetUrl;
+                    return;
+                }
+
                 items.forEach(i => i.classList.remove('active'));
                 item.classList.add('active');
                 

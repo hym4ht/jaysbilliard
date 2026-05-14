@@ -55,7 +55,7 @@
                                                             </div>
 
                         </div>
-                        <span class="adm-stat-label">PENDAPATAN HARI INI</span>
+                        <span class="adm-stat-label">PENDAPATAN {{ $activePeriodLabel ?? 'HARI INI' }}</span>
                         <span class="adm-stat-value">IDR {{ number_format($pendapatanHariIni, 0, ',', '.') }}</span>
                     </div>
 
@@ -103,7 +103,7 @@
                     <div class="adm-chart-header">
                          <div class="adm-chart-titles">
                             <h2 class="adm-chart-title">Tren Pendapatan</h2>
-                            <p class="adm-chart-sub">Metrik pendapatan per jam</p>
+                            <p class="adm-chart-sub">{{ $chartSubtitle ?? 'Metrik pendapatan per jam' }}</p>
                         </div>
                         @include('component.c_dashboard.dropdown.option_dashboard')
                     </div>
@@ -122,8 +122,8 @@
                                 @endphp
                                 <div class="adm-bar-group" title="Rp {{ number_format($data['revenue'], 0, ',', '.') }}">
                                     <div class="adm-bar-v {{ $colorClass }}" style="height: {{ $data['percentage'] }}%;"></div>
-                                    @if($hour % 2 == 0)
-                                        <span class="adm-bar-label">{{ sprintf('%02d:00', $hour) }}</span>
+                                @if($loop->iteration % 2 === 0 || ($period ?? 'today') === 'year')
+                                        <span class="adm-bar-label">{{ $data['label'] }}</span>
                                     @endif
                                 </div>
                             @endforeach

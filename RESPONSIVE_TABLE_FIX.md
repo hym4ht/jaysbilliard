@@ -28,7 +28,7 @@ Pada tampilan responsive/mobile di halaman `/dashboard/meja`, meja-meja billiard
 #### Mobile (max-width: 480px)
 - Padding container: `20px 12px`
 - Grid max-width: `350px`
-- Grid max-height: `250px`
+- Grid max-heigh t: `250px`
 - Grid berubah menjadi 2 kolom (`grid-template-columns: 1fr 1fr`)
 - Gap dikurangi menjadi `12px`
 - Ukuran table diperkecil:
