@@ -87,6 +87,32 @@ class BookingValidationTest extends TestCase
             ->assertJsonValidationErrors(['table_ids']);
     }
 
+    public function test_table_availability_is_scoped_to_selected_date(): void
+    {
+        $user = $this->user();
+        $table = $this->table();
+        Booking::create([
+            'table_id' => $table->id,
+            'customer_name' => 'Existing Customer',
+            'phone' => '08123456789',
+            'booking_date' => '2026-05-15',
+            'start_time' => '18:00:00',
+            'end_time' => '20:00:00',
+            'total_price' => 100000,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($user)
+            ->getJson(route('user.meja.availability', ['date' => '2026-05-15']))
+            ->assertOk()
+            ->assertJsonPath("statuses.{$table->id}.status", 'booked');
+
+        $this->actingAs($user)
+            ->getJson(route('user.meja.availability', ['date' => '2026-05-16']))
+            ->assertOk()
+            ->assertJsonPath("statuses.{$table->id}.status", 'available');
+    }
+
     private function user(): User
     {
         return User::create([

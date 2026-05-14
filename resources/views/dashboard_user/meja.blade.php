@@ -344,9 +344,10 @@
             const mpMonthsGrid = document.getElementById('mp-months-grid');
 
             let startDate = new Date(); // Start view from today
-            let selectedDate = null; // No date selected by default
+            let selectedDate = new Date(); // Match initial table statuses to today's bookings
             let durationSelected = false; // Flag for duration selection
             let pickerYear = startDate.getFullYear();
+            const availabilityUrl = @json(route('user.meja.availability'));
 
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
             const today = new Date();
@@ -397,6 +398,97 @@
                 });
 
                 updateTimeSummary();
+            }
+
+            function updateTableVisualStatus(table, status, statusText) {
+                const statuses = ['available', 'booked', 'occupied', 'maintenance'];
+                statuses.forEach(item => {
+                    table.classList.remove(`status-${item}`);
+                });
+                table.classList.add(`status-${status}`);
+                table.dataset.status = status;
+
+                const label = table.querySelector('.table-number, .table-side-label');
+                if (label) {
+                    statuses.forEach(item => label.classList.remove(`color-${item}`));
+                    label.classList.add(`color-${status}`);
+                }
+
+                const dot = table.querySelector('.tm-status-dot');
+                if (dot) {
+                    statuses.forEach(item => dot.classList.remove(`dot-${item}`));
+                    dot.classList.add(`dot-${status}`);
+                }
+
+                const text = table.querySelector('.tm-status-text');
+                if (text) {
+                    statuses.forEach(item => text.classList.remove(`text-${item}`));
+                    text.classList.add(`text-${status}`);
+                    text.innerText = statusText;
+                }
+
+                const addButton = table.querySelector('.tm-btn-add');
+                if (addButton) {
+                    const isAvailable = status === 'available';
+                    addButton.disabled = !isAvailable;
+                    addButton.innerText = isAvailable ? 'TAMBAH' : 'PENUH';
+                    addButton.style.opacity = isAvailable ? '' : '0.5';
+                    addButton.style.cursor = isAvailable ? '' : 'not-allowed';
+                    addButton.style.background = isAvailable ? '' : '#333';
+                }
+            }
+
+            async function refreshTableAvailability() {
+                if (!selectedDate) return;
+
+                try {
+                    const response = await fetch(`${availabilityUrl}?date=${formatLocalDate(selectedDate)}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!response.ok) throw new Error('Gagal memuat status meja');
+
+                    const data = await response.json();
+                    const removedTableNames = [];
+
+                    tables.forEach(table => {
+                        const availability = data.statuses?.[table.dataset.id];
+                        if (!availability) return;
+
+                        updateTableVisualStatus(table, availability.status, availability.text);
+
+                        if (availability.status !== 'available' && table.classList.contains('selected')) {
+                            table.classList.remove('selected');
+                            const selectedTable = selectedTables.find(item => item.id === table.dataset.id);
+                            if (selectedTable) removedTableNames.push(selectedTable.name);
+                            selectedTables = selectedTables.filter(item => item.id !== table.dataset.id);
+                        }
+                    });
+
+                    if (removedTableNames.length > 0) {
+                        updateSelectedTablesList();
+                        Swal.fire({
+                            title: 'Pilihan Meja Diperbarui',
+                            text: `${removedTableNames.join(', ')} tidak tersedia pada tanggal ini.`,
+                            icon: 'info',
+                            confirmButtonColor: '#00e5ff',
+                            background: '#0f1115',
+                            color: '#fff'
+                        });
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        title: 'Status Meja Gagal Dimuat',
+                        text: 'Coba pilih tanggal lagi beberapa saat lagi.',
+                        icon: 'error',
+                        confirmButtonColor: '#ff3b3b',
+                        background: '#0f1115',
+                        color: '#fff'
+                    });
+                }
             }
 
             function renderMonthPicker() {
@@ -480,6 +572,7 @@
                         renderDates();
                         updateSummaryDate();
                         updateTimeSlotAvailability();
+                        refreshTableAvailability();
                     });
 
                     dateCardsContainer.appendChild(card);
@@ -588,6 +681,7 @@
             renderDates();
             updateSummaryDate();
             updateTimeSlotAvailability();
+            refreshTableAvailability();
 
             // Hover Tooltip Fallback JS
             tables.forEach(table => {

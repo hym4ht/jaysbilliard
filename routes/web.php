@@ -70,6 +70,7 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     // Dashboard User
     Route::get('/dashboard', [DashboardController::class , 'index'])->name('dashboard');
     Route::get('/dashboard/meja', [DashboardController::class, 'meja'])->name('user.meja');
+    Route::get('/dashboard/meja/availability', [DashboardController::class, 'mejaAvailability'])->name('user.meja.availability');
     Route::get('/dashboard/meja/konfirmasi', [DashboardController::class, 'konfirmasi'])->name('user.meja.konfirmasi');
     Route::get('/dashboard/fnb', [DashboardController::class, 'fnb'])->name('user.fnb');
     Route::get('/dashboard/fnb/konfirmasi', [DashboardController::class, 'fnbKonfirmasi'])->name('user.fnb.konfirmasi');

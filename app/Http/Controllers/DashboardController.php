@@ -62,6 +62,50 @@ class DashboardController extends Controller
         return view('dashboard_user.meja', compact('user', 'tables', 'topbar_title', 'topbar_sub'));
     }
 
+    public function mejaAvailability(Request $request)
+    {
+        $validated = $request->validate([
+            'date' => 'required|date_format:Y-m-d',
+        ]);
+
+        $bookingsByTable = Booking::where('booking_date', $validated['date'])
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->get()
+            ->sortBy(fn ($booking) => $booking->status === 'confirmed' ? 0 : 1)
+            ->groupBy('table_id');
+
+        $statuses = Table::all()->mapWithKeys(function ($table) use ($bookingsByTable) {
+            $statusClass = 'available';
+            $statusText = 'TERSEDIA';
+
+            if ($table->status === 'maintenance') {
+                $statusClass = 'maintenance';
+                $statusText = 'MAINTENANCE';
+            } else {
+                $booking = $bookingsByTable->get($table->id)?->first();
+
+                if ($booking?->status === 'confirmed') {
+                    $statusClass = 'occupied';
+                    $statusText = 'TERISI';
+                } elseif ($booking?->status === 'pending') {
+                    $statusClass = 'booked';
+                    $statusText = 'DIPESAN';
+                }
+            }
+
+            return [
+                $table->id => [
+                    'status' => $statusClass,
+                    'text' => $statusText,
+                ],
+            ];
+        });
+
+        return response()->json([
+            'statuses' => $statuses,
+        ]);
+    }
+
     public function konfirmasi()
     {
         $user = Auth::user();
