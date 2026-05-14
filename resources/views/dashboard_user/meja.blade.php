@@ -349,6 +349,55 @@
             let pickerYear = startDate.getFullYear();
 
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            function formatLocalDate(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            function isPastDate(date) {
+                const compareDate = new Date(date);
+                compareDate.setHours(0, 0, 0, 0);
+                return compareDate < today;
+            }
+
+            function isPastStartTime(timeText) {
+                if (!selectedDate) return false;
+
+                const selectedDay = new Date(selectedDate);
+                selectedDay.setHours(0, 0, 0, 0);
+                const now = new Date();
+                const currentDay = new Date(now);
+                currentDay.setHours(0, 0, 0, 0);
+
+                if (selectedDay.getTime() !== currentDay.getTime()) return false;
+
+                const [hour, minute] = timeText.split(':').map(Number);
+                const slotDate = new Date(now);
+                slotDate.setHours(hour, minute, 0, 0);
+
+                return slotDate <= now;
+            }
+
+            function updateTimeSlotAvailability() {
+                timeSlots.forEach(slot => {
+                    const disabled = isPastStartTime(slot.innerText.trim());
+                    slot.classList.toggle('disabled', disabled);
+                    slot.style.opacity = disabled ? '0.35' : '';
+                    slot.style.cursor = disabled ? 'not-allowed' : '';
+                    slot.style.pointerEvents = disabled ? 'none' : '';
+
+                    if (disabled && slot.classList.contains('active')) {
+                        slot.classList.remove('active');
+                    }
+                });
+
+                updateTimeSummary();
+            }
 
             function renderMonthPicker() {
                 mpYearDisplay.innerText = pickerYear;
@@ -412,20 +461,25 @@
                     const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
                     const dayName = date.toLocaleDateString('id-ID', { weekday: 'short' }).toUpperCase();
                     const dayNum = date.getDate();
-                    const fullDate = date.toISOString().split('T')[0];
+                    const fullDate = formatLocalDate(date);
+                    const disabled = isPastDate(date);
 
                     const card = document.createElement('div');
-                    card.className = `date-card ${isSelected ? 'active' : ''}`;
+                    card.className = `date-card ${isSelected ? 'active' : ''} ${disabled ? 'disabled' : ''}`;
                     card.dataset.date = fullDate;
+                    card.style.opacity = disabled ? '0.35' : '';
+                    card.style.cursor = disabled ? 'not-allowed' : '';
                     card.innerHTML = `
                                                                                                                     <span class="day-name">${dayName}</span>
                                                                                                                     <span class="day-num">${dayNum}</span>
                                                                                                                 `;
 
                     card.addEventListener('click', () => {
+                        if (disabled) return;
                         selectedDate = new Date(date);
                         renderDates();
                         updateSummaryDate();
+                        updateTimeSlotAvailability();
                     });
 
                     dateCardsContainer.appendChild(card);
@@ -533,6 +587,7 @@
             // Initial render
             renderDates();
             updateSummaryDate();
+            updateTimeSlotAvailability();
 
             // Hover Tooltip Fallback JS
             tables.forEach(table => {
@@ -797,6 +852,12 @@
             // Time Selection
             timeSlots.forEach(slot => {
                 slot.addEventListener('click', () => {
+                    if (slot.classList.contains('disabled') || isPastStartTime(slot.innerText.trim())) {
+                        Swal.fire({ icon: 'warning', title: 'Jam Sudah Lewat', text: 'Silakan pilih jam mulai yang masih tersedia.', background: '#0f1115', color: '#fff' });
+                        updateTimeSlotAvailability();
+                        return;
+                    }
+
                     timeSlots.forEach(s => s.classList.remove('active'));
                     slot.classList.add('active');
                     updateTimeSummary();
@@ -856,6 +917,7 @@
                     const orderData = {
                         tables: selectedTables,
                         date: document.getElementById('summary-date').innerText,
+                        date_iso: selectedDate ? formatLocalDate(selectedDate) : null,
                         time: document.getElementById('summary-time').innerText,
                         duration: document.getElementById('summary-duration').innerText,
                         subtotal: document.getElementById('summary-subtotal').innerText,
@@ -876,6 +938,12 @@
                     const activeTimeSlot = document.querySelector('.time-slot.active');
                     if (!activeTimeSlot) {
                         Swal.fire({ icon: 'warning', title: 'Jam Belum Dipilih', text: 'Silakan pilih jam mulai main dulu.', background: '#0f1115', color: '#fff' });
+                        return;
+                    }
+
+                    if (isPastDate(selectedDate) || isPastStartTime(activeTimeSlot.innerText.trim())) {
+                        Swal.fire({ icon: 'warning', title: 'Waktu Tidak Valid', text: 'Tidak bisa reservasi untuk tanggal atau jam yang sudah lewat.', background: '#0f1115', color: '#fff' });
+                        updateTimeSlotAvailability();
                         return;
                     }
 

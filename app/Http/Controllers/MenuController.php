@@ -21,7 +21,7 @@ class MenuController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
+            'price' => 'required|numeric|min:0',
             'category' => 'required|string',
             'description' => 'nullable|string',
             'status' => 'required|in:available,unavailable',
@@ -49,7 +49,7 @@ class MenuController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
+            'price' => 'required|numeric|min:0',
             'category' => 'required|string',
             'description' => 'nullable|string',
             'status' => 'required|in:available,unavailable',

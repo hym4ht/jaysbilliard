@@ -138,7 +138,7 @@
                 btn.addEventListener('click', () => {
                     const id = btn.dataset.id;
                     const name = btn.dataset.name;
-                    const price = parseInt(btn.dataset.price);
+                    const price = Math.max(0, parseInt(btn.dataset.price) || 0);
                     const image = btn.dataset.image;
                     const category = btn.dataset.category;
 
@@ -177,6 +177,8 @@
                 let subtotal = 0;
 
                 cart.forEach((item, index) => {
+                    item.price = Math.max(0, parseInt(item.price) || 0);
+                    item.quantity = Math.max(1, parseInt(item.quantity) || 1);
                     subtotal += item.price * item.quantity;
                     const itemHtml = `
                                 <div class="cart-item">
@@ -202,7 +204,9 @@
             }
 
             window.updateQty = function (index, delta) {
+                if (!cart[index]) return;
                 cart[index].quantity += delta;
+                cart[index].quantity = Math.min(99, cart[index].quantity);
                 if (cart[index].quantity <= 0) {
                     cart.splice(index, 1);
                 }
@@ -210,6 +214,7 @@
             }
 
             function updateTotals(subtotal) {
+                subtotal = Math.max(0, Number(subtotal) || 0);
                 const tax = subtotal * 0.1;
                 const total = subtotal + tax;
 
@@ -243,7 +248,7 @@
                 }
 
                 let finalSubtotal = 0;
-                cart.forEach(item => finalSubtotal += item.price * item.quantity);
+                cart.forEach(item => finalSubtotal += Math.max(0, Number(item.price) || 0) * Math.max(1, Number(item.quantity) || 1));
                 const finalTax = finalSubtotal * 0.1;
 
                 const orderSummary = {

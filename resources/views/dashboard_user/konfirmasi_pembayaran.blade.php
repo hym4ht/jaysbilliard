@@ -290,14 +290,22 @@
                 if (orderDataRaw) {
                     const orderData = JSON.parse(orderDataRaw);
                     
-                    // Parse date from "Month Day, Year" to "YYYY-MM-DD"
-                    const dateObj = new Date(orderData.date);
-                    const formattedDate = dateObj.toISOString().split('T')[0];
+                    const formattedDate = orderData.date_iso;
+                    if (!formattedDate) {
+                        alert("Data tanggal tidak valid. Silakan pilih ulang tanggal reservasi.");
+                        window.location.href = "{{ route('user.meja') }}";
+                        return;
+                    }
 
                     // Parse times
                     const timeParts = orderData.time.split(' - ');
                     const startTime = timeParts[0];
                     const endTime = timeParts[1];
+                    if (!startTime || !endTime || orderData.time === '-') {
+                        alert("Data jam tidak valid. Silakan pilih ulang jam reservasi.");
+                        window.location.href = "{{ route('user.meja') }}";
+                        return;
+                    }
 
                     // Clean total price (remove Rp and dots)
                     const cleanTotal = parseInt(orderData.total.replace(/[^0-9]/g, ''));
@@ -325,8 +333,13 @@
                         },
                         body: JSON.stringify(payload)
                     })
-                    .then(response => response.json())
-                    .then(data => {
+                    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+                    .then(({ ok, data }) => {
+                        if (!ok) {
+                            const errors = data.errors ? Object.values(data.errors).flat().join('\n') : null;
+                            throw new Error(errors || data.message || 'Reservasi tidak valid.');
+                        }
+
                         if (!data.snap_token) {
                             throw new Error(data.message || 'Snap token Midtrans tidak tersedia.');
                         }
@@ -373,7 +386,7 @@
                         console.error('Error:', error);
                         mainPayBtn.innerText = 'Bayar dengan Midtrans';
                         mainPayBtn.style.pointerEvents = 'auto';
-                        alert("Terjadi kesalahan sistem saat memproses pesanan.");
+                        alert(error.message || "Terjadi kesalahan sistem saat memproses pesanan.");
                     });
                 }
                 
@@ -453,23 +466,34 @@
             let seconds = 30;
 
             const timeBoxes = document.querySelectorAll('.time-box');
+            let timerInterval = null;
 
             function updateTimer() {
-                if (seconds > 0) {
-                    seconds--;
-                } else {
-                    if (minutes > 0) {
-                        minutes--;
-                        seconds = 59;
-                    } else {
-                        if (hours > 0) {
-                            hours--;
-                            minutes = 59;
-                            seconds = 59;
-                        }
-                    }
+                hours = Math.max(0, hours);
+                minutes = Math.max(0, minutes);
+                seconds = Math.max(0, seconds);
+
+                if (hours === 0 && minutes === 0 && seconds === 0) {
+                    if (timerInterval) clearInterval(timerInterval);
+                    renderTimerBoxes();
+                    return;
                 }
 
+                if (seconds > 0) {
+                    seconds--;
+                } else if (minutes > 0) {
+                    minutes--;
+                    seconds = 59;
+                } else if (hours > 0) {
+                    hours--;
+                    minutes = 59;
+                    seconds = 59;
+                }
+
+                renderTimerBoxes();
+            }
+
+            function renderTimerBoxes() {
                 if (timeBoxes.length >= 3) {
                     timeBoxes[0].innerText = hours;
                     timeBoxes[1].innerText = minutes;
@@ -477,7 +501,7 @@
                 }
             }
 
-            setInterval(updateTimer, 1000);
+            timerInterval = setInterval(updateTimer, 1000);
         });
     </script>
 @endpush

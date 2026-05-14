@@ -139,7 +139,7 @@
                                         <label class="adm-label">Harga</label>
                                         <div class="adm-input-wrap">
                                             <span class="adm-input-prefix">Rp</span>
-                                            <input type="number" name="price" id="inputPrice" class="adm-input adm-input--prefixed" value="{{ $menu->price }}" required oninput="updatePreview()">
+                                            <input type="number" name="price" id="inputPrice" class="adm-input adm-input--prefixed" value="{{ $menu->price }}" min="0" step="1000" required oninput="updatePreview()">
                                             <div class="adm-input-arrows">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 15 12 10 17 15"></polyline></svg>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 9 12 14 17 9"></polyline></svg>
@@ -195,11 +195,13 @@
 
                     function updatePreview() {
                         const name = document.getElementById('inputName').value;
-                        const price = document.getElementById('inputPrice').value;
+                        const priceInput = document.getElementById('inputPrice');
+                        if (Number(priceInput.value) < 0) priceInput.value = 0;
+                        const price = priceInput.value;
                         const desc = document.getElementById('inputDesc').value;
                         
                         document.getElementById('previewNameText').innerText = name || 'Lorem';
-                        document.getElementById('previewPriceText').innerText = 'Rp ' + (price ? new Intl.NumberFormat('id-ID').format(price) : 'Lorem');
+                        document.getElementById('previewPriceText').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(price || 0));
                         document.getElementById('previewDescText').innerText = (desc || '.Lorem ipsum dolor sit amet');
                     }
 

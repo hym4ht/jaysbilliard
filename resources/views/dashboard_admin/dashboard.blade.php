@@ -166,10 +166,14 @@
                                 $statusLabel = 'TERSEDIA';
 
                                 if ($activeBooking) {
-                                    if ($activeBooking->status === 'confirmed') {
+                                    $bookingStartAt = \Carbon\Carbon::parse($activeBooking->booking_date . ' ' . $activeBooking->start_time);
+                                    $bookingEndAt = \Carbon\Carbon::parse($activeBooking->booking_date . ' ' . $activeBooking->end_time);
+                                    $nowAt = \Carbon\Carbon::now();
+
+                                    if ($activeBooking->status === 'confirmed' && $nowAt->betweenIncluded($bookingStartAt, $bookingEndAt)) {
                                         $statusClass = 'terisi';
                                         $statusLabel = 'TERISI';
-                                    } elseif ($activeBooking->status === 'pending' || $activeBooking->status === 'booked' || $activeBooking->status === 'dipesan') {
+                                    } elseif (in_array($activeBooking->status, ['pending', 'confirmed', 'booked', 'dipesan'])) {
                                         $statusClass = 'dipesan';
                                         $statusLabel = 'DIPESAN';
                                     }
@@ -180,11 +184,11 @@
                                 $remainingTime = '00:00:00';
                                 if ($activeBooking && $activeBooking->status === 'confirmed') {
                                     try {
-                                        $start = \Carbon\Carbon::parse($activeBooking->start_time);
-                                        $end = \Carbon\Carbon::parse($activeBooking->end_time);
+                                        $start = \Carbon\Carbon::parse($activeBooking->booking_date . ' ' . $activeBooking->start_time);
+                                        $end = \Carbon\Carbon::parse($activeBooking->booking_date . ' ' . $activeBooking->end_time);
                                         $now = \Carbon\Carbon::now();
                                         
-                                        if ($now->greaterThan($start)) {
+                                        if ($now->greaterThan($start) && $now->lessThanOrEqualTo($end)) {
                                             $diff = $start->diff($now);
                                             $elapsedTime = sprintf('%02d:%02d:%02d', ($diff->days * 24) + $diff->h, $diff->i, $diff->s);
                                         }

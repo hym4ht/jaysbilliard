@@ -361,14 +361,16 @@
             itemsList.innerHTML = '';
 
             orderData.items.forEach(item => {
-                const priceFormatted = formatRupiah(Number(item.price || 0) * Number(item.quantity || 0));
+                const safePrice = Math.max(0, Number(item.price || 0));
+                const safeQuantity = Math.max(1, Number(item.quantity || 1));
+                const priceFormatted = formatRupiah(safePrice * safeQuantity);
                 const html = `
                     <div class="fnb-item-preview">
                         <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="fnb-item-img" onerror="this.src='/images/hero-bg.png'">
                         <div class="fnb-item-info">
                             <div class="fnb-item-name-wrap">
                                 <span class="fnb-item-name">${escapeHtml(item.name)}</span>
-                                <span class="fnb-item-qty">${Number(item.quantity || 0)}x</span>
+                                <span class="fnb-item-qty">${safeQuantity}x</span>
                             </div>
                             <div class="fnb-item-meta">${escapeHtml(item.category)}</div>
                         </div>
@@ -503,8 +505,19 @@
         let minutes = 22;
         let seconds = 30;
         const timeBoxes = document.querySelectorAll('.time-box');
+        let timerInterval = null;
 
         function updateTimer() {
+            hours = Math.max(0, hours);
+            minutes = Math.max(0, minutes);
+            seconds = Math.max(0, seconds);
+
+            if (hours === 0 && minutes === 0 && seconds === 0) {
+                if (timerInterval) clearInterval(timerInterval);
+                updateTimerBoxes();
+                return;
+            }
+
             if (seconds > 0) {
                 seconds--;
             } else if (minutes > 0) {
@@ -527,7 +540,7 @@
             }
         }
 
-        setInterval(updateTimer, 1000);
+        timerInterval = setInterval(updateTimer, 1000);
     });
 </script>
 @endpush

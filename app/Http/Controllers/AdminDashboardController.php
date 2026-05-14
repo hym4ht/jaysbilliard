@@ -13,10 +13,14 @@ class AdminDashboardController extends Controller
     public function index()
     {
         $today = now()->toDateString();
+        $nowTime = now()->format('H:i:s');
         
-        // Eager load only confirmed bookings for today to determine table status
-        $tables = Table::with(['bookings' => function($query) use ($today) {
-            $query->where('booking_date', $today);
+        // Eager load only active/relevant bookings for today to determine table status.
+        $tables = Table::with(['bookings' => function($query) use ($today, $nowTime) {
+            $query->where('booking_date', $today)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->where('end_time', '>', $nowTime)
+                ->orderBy('start_time');
         }])->get();
 
         $menus = Menu::latest()->get();

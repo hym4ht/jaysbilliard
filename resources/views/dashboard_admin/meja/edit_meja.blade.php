@@ -365,11 +365,11 @@
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label class="form-label">Tarif Per Jam (Rp)</label>
-                                        <input type="number" name="price_per_hour" id="inpPrice" class="form-input" value="{{ (int)$table->price_per_hour }}">
+                                        <input type="number" name="price_per_hour" id="inpPrice" class="form-input" value="{{ (int)$table->price_per_hour }}" min="0" step="1000">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">Kapasitas Maksimal</label>
-                                        <input type="number" name="capacity" id="inpCap" class="form-input" value="{{ $table->capacity }}">
+                                        <input type="number" name="capacity" id="inpCap" class="form-input" value="{{ $table->capacity }}" min="1" step="1">
                                     </div>
                                 </div>
 
@@ -419,9 +419,15 @@
         const viewDesc = document.getElementById('viewDesc');
 
         inpName.addEventListener('input', (e) => viewName.innerText = e.target.value.toUpperCase() || 'NAMA MEJA');
-        inpPrice.addEventListener('input', (e) => viewPrice.innerText = Number(e.target.value).toLocaleString('id-ID'));
+        inpPrice.addEventListener('input', (e) => {
+            if (Number(e.target.value) < 0) e.target.value = 0;
+            viewPrice.innerText = Number(e.target.value || 0).toLocaleString('id-ID');
+        });
         inpType.addEventListener('change', (e) => viewType.innerText = e.target.value.toUpperCase());
-        inpCap.addEventListener('input', (e) => viewCap.innerText = (e.target.value || 0) + ' ORANG');
+        inpCap.addEventListener('input', (e) => {
+            if (Number(e.target.value) < 1) e.target.value = 1;
+            viewCap.innerText = e.target.value + ' ORANG';
+        });
         inpDesc.addEventListener('input', (e) => viewDesc.innerText = e.target.value || 'Deskripsi...');
 
         function updateStatusPreview(status) {
