@@ -84,10 +84,17 @@
                 {{-- ═══════ MENU GRID ═══════ --}}
                 <div class="adm-menu-grid">
                     @forelse($menus ?? [] as $menu)
+                        @php
+                            $menuImage = $menu->image
+                                ? (\Illuminate\Support\Str::startsWith($menu->image, ['images/', 'http://', 'https://'])
+                                    ? asset($menu->image)
+                                    : asset('storage/' . $menu->image))
+                                : asset('images/hero-bg.png');
+                        @endphp
                         <div class="adm-menu-card {{ $menu->status }}">
                             <div class="card-image-wrap">
                                 <span class="price-badge">Rp {{ number_format($menu->price ?? 0, 0, ',', '.') }}</span>
-                                <img src="{{ $menu->image ? asset('storage/' . $menu->image) : 'https://images.unsplash.com/photo-1544145945-f904253db0ad?auto=format&fit=crop&q=80&w=400' }}" alt="{{ $menu->name }}" class="card-image">
+                                <img src="{{ $menuImage }}" alt="{{ $menu->name }}" class="card-image" onerror="this.src='{{ asset('images/hero-bg.png') }}'">
                             </div>
                             <div class="card-body">
                                 <div class="card-header-row">
@@ -197,5 +204,4 @@
     <script src="{{ asset('js/js_component/logout.js') }}"></script>
 </body>
 </html>
-
 

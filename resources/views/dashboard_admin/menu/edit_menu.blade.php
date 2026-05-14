@@ -47,6 +47,13 @@
                     @endif
 
                     {{-- Main Interaction Grid --}}
+                    @php
+                        $menuImage = $menu->image
+                            ? (\Illuminate\Support\Str::startsWith($menu->image, ['images/', 'http://', 'https://'])
+                                ? asset($menu->image)
+                                : asset('storage/' . $menu->image))
+                            : asset('images/hero-bg.png');
+                    @endphp
                     <div class="adm-interaksi-grid">
                         
                         {{-- Left Column (Preview & Upload) --}}
@@ -58,7 +65,7 @@
                                 <div class="preview-card-wrap">
                                     <div class="adm-menu-card-preview">
                                         <div class="preview-img-box">
-                                            <img src="{{ $menu->image ? asset('storage/' . $menu->image) : 'https://images.unsplash.com/photo-1544145945-f904253db0ad?auto=format&fit=crop&q=80&w=400' }}" id="previewImg" alt="{{ $menu->name }}">
+                                            <img src="{{ $menuImage }}" id="previewImg" alt="{{ $menu->name }}" onerror="this.src='{{ asset('images/hero-bg.png') }}'">
                                             <span class="preview-price" id="previewPriceText">Rp {{ number_format($menu->price, 0, ',', '.') }}</span>
                                         </div>
                                         <div class="preview-body">
