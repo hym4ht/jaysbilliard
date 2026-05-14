@@ -59,13 +59,16 @@
             </div>
 
             <div class="payment-details-section">
-                <div class="detail-section-title" id="payment-method-title">Pembayaran QRIS</div>
+                <div class="detail-section-title" id="payment-method-title">Pembayaran Midtrans</div>
                 <div class="detail-section-content" id="payment-method-content">
                     <div class="qr-container">
                         <div class="qr-code">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=JaysBilliardPayment" alt="QRIS" class="qr-image">
+                            <img src="{{ asset('images/logo-jb.png') }}" alt="Jay's Billiard" class="qr-image">
                         </div>
                     </div>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 15px; line-height: 1.5;">
+                        Pilihan QRIS, virtual account, kartu, dan e-wallet akan tampil di popup resmi Midtrans.
+                    </p>
                 </div>
                 <div id="no-method-selected" style="display: none; padding: 40px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
                     Tidak ada metode pembayaran yang dipilih
@@ -82,7 +85,7 @@
                 </div>
                 <div class="timer-info" id="timer-status-wrapper">
                     <div class="timer-label" id="payment-status-text">Batas Waktu Pembayaran</div>
-                    <div class="timer-sub" id="payment-status-sub">Selesaikan pembayaran sebelum waktu habis</div>
+                    <div class="timer-sub" id="payment-status-sub">Selesaikan pembayaran melalui Midtrans Snap</div>
                 </div>
                 <div class="countdown-display">
                     <div class="time-unit">
@@ -102,85 +105,22 @@
                 </div>
             </div>
 
-            {{-- Methods Selection --}}
+            {{-- Midtrans Payment --}}
             <div class="methods-card">
-                <h3 class="methods-title">Metode Pembayaran</h3>
-
-                {{-- QRIS Category --}}
                 <div class="method-category">
                     <div class="category-header">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="3"></rect><rect x="14" y="7" width="3" height="3"></rect><rect x="7" y="14" width="3" height="3"></rect><rect x="14" y="14" width="3" height="3"></rect></svg>
-                        Pembayaran Instan (QRIS)
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                        Gateway Pembayaran
                     </div>
                     <div class="method-grid">
-                        <div class="method-option selected qris-option" data-type="qris" data-name="QRIS">
+                        <div class="method-option selected qris-option" data-name="Midtrans">
                             <div class="option-left">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" class="bank-logo" style="height: 25px; filter: brightness(0) invert(1);">
-                                <span class="option-name">QRIS</span>
+                                <span class="option-name">Midtrans Snap</span>
                             </div>
                             <div class="radio-circle"></div>
                         </div>
-                    </div>
-                </div>
-
-                {{-- Virtual Account Category --}}
-                <div class="method-category">
-                    <div class="category-header">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                        Rekening Virtual
-                    </div>
-                    <div class="method-grid">
-                        <div class="method-option" data-type="va" data-name="BCA" data-number="88301{{ rand(1000000,9999999) }}">
-                            <div class="option-left">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" alt="BCA" class="bank-logo">
-                                <span class="option-name">BCA (Bank Central Asia)</span>
-                            </div>
-                            <div class="radio-circle"></div>
-                        </div>
-                        <div class="method-option" data-type="va" data-name="Mandiri" data-number="90123{{ rand(1000000,9999999) }}">
-                            <div class="option-left">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/Bank_Mandiri_logo_2016.svg" alt="Mandiri" class="bank-logo">
-                                <span class="option-name">VA Mandiri</span>
-                            </div>
-                            <div class="radio-circle"></div>
-                        </div>
-                        <div class="method-option" data-type="va" data-name="BRI" data-number="10293{{ rand(1000000,9999999) }}">
-                            <div class="option-left">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2e/BRI_2020.svg" alt="BRI" class="bank-logo">
-                                <span class="option-name">BRI (Bank Rakyat Indonesia)</span>
-                            </div>
-                            <div class="radio-circle"></div>
-                        </div>
-                        <div class="method-option" data-type="va" data-name="BNI" data-number="00987{{ rand(1000000,9999999) }}">
-                            <div class="option-left">
-                                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 55 30' width='55' height='30'><text x='2' y='22' font-family='Arial Black, sans-serif' font-weight='900' font-size='24' fill='%23006e62'>BNI</text></svg>" alt="BNI" class="bank-logo">
-                                <span class="option-name">BNI (Bank Negara Indonesia)</span>
-                            </div>
-                            <div class="radio-circle"></div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Digital Wallet Category --}}
-                <div class="method-category">
-                    <div class="category-header">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                        Dompet Digital
-                    </div>
-                    <div class="method-grid">
-                        <div class="method-option" data-type="wallet" data-name="Dana" data-number="08{{ rand(10,99) }} {{ rand(1000,9999) }} {{ rand(1000,9999) }}">
-                            <div class="option-left">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_dana_blue.svg" alt="Dana" class="bank-logo">
-                                <span class="option-name">Dana</span>
-                            </div>
-                            <div class="radio-circle"></div>
-                        </div>
-                        <div class="method-option" data-type="wallet" data-name="OVO" data-number="08{{ rand(10,99) }} {{ rand(1000,9999) }} {{ rand(1000,9999) }}">
-                            <div class="option-left">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/eb/Logo_ovo_purple.svg" alt="OVO" class="bank-logo">
-                                <span class="option-name">OVO</span>
-                            </div>
-                            <div class="radio-circle"></div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
+                            Metode pembayaran dipilih di popup Midtrans setelah tombol bayar ditekan.
                         </div>
                     </div>
                 </div>
@@ -188,7 +128,7 @@
                 {{-- Footer Actions --}}
                 <div class="konfirmasi-footer">
                     <a href="{{ route('user.meja') }}" class="cancel-link" id="cancel-btn">Cancel</a>
-                    <button class="pay-btn" id="main-pay-btn">Konfirmasi Pembayaran</button>
+                    <button class="pay-btn" id="main-pay-btn">Bayar dengan Midtrans</button>
                 </div>
             </div>
         </div>
@@ -204,7 +144,7 @@
             </div>
 
             <h2 class="success-title">Pembayaran Berhasil!</h2>
-            <p class="success-sub">Transaksi Anda telah berhasil diproses</p>
+            <p class="success-sub">Transaksi Anda telah berhasil diproses oleh Midtrans</p>
 
             <div class="receipt-card">
                 <div class="receipt-row">
@@ -230,7 +170,7 @@
 @endsection
 
 @push('scripts')
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
+    <script src="{{ config('services.midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -287,71 +227,17 @@
             });
 
             function updatePaymentView(type, name, number) {
-                if (type === 'qris') {
-                    methodTitle.innerText = 'PEMBAYARAN QRIS';
-                    methodContent.innerHTML = `
-                        <div class="qr-container">
-                            <div class="qr-code">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=JaysBilliardPayment" alt="QRIS" class="qr-image">
-                            </div>
+                methodTitle.innerText = 'Pembayaran Midtrans';
+                methodContent.innerHTML = `
+                    <div class="qr-container">
+                        <div class="qr-code">
+                            <img src="{{ asset('images/logo-jb.png') }}" alt="Jay's Billiard" class="qr-image">
                         </div>
-                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 15px; line-height: 1.5;">
-                            Scan kode QR di atas menggunakan aplikasi m-banking atau e-wallet pilihan Anda.
-                        </p>
-                    `;
-                } else if (type === 'va') {
-                    methodTitle.innerText = `VIRTUAL ACCOUNT ${name.toUpperCase()}`;
-                    methodContent.innerHTML = `
-                        <div class="va-details" style="text-align: left; background: #1a1a20; padding: 25px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
-                            <div style="font-size: 0.95rem; color: #8a8a98; margin-bottom: 8px;">Nomor Virtual Account</div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <div style="font-size: 1.8rem; font-weight: 800; color: #00f2ff; letter-spacing: 1px;">${number}</div>
-                                <button onclick="copyToClipboard('${number}')" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.2)';" onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(255,255,255,0.1)';">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                </button>
-                            </div>
-                            <div>
-                                <div style="font-size: 0.95rem; color: #8a8a98; margin-bottom: 15px;">Petunjuk Transfer:</div>
-                                <ul style="font-size: 0.95rem; font-weight: 500; color: #eaeaef; padding-left: 20px; margin: 0; line-height: 2.2;">
-                                    <li>Pilih Transfer > Virtual Account</li>
-                                    <li>Masukkan nomor di atas</li>
-                                    <li>Konfirmasi detail pembayaran</li>
-                                    <li>Selesaikan transaksi</li>
-                                </ul>
-                            </div>
-                        </div>
-                    `;
-                } else if (type === 'wallet') {
-                    methodTitle.innerText = `DOMPET DIGITAL ${name.toUpperCase()}`;
-                    methodContent.innerHTML = `
-                        <div class="wallet-details" style="text-align: left; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 15px; border: 1px solid var(--card-border);">
-                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">Nomor Telepon Terdaftar</div>
-                            <div style="font-size: 1.2rem; font-weight: 800; color: var(--primary-cyan);">${number}</div>
-                            <div style="margin-top: 20px; background: rgba(0, 242, 255, 0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(0, 242, 255, 0.1);">
-                                <div style="font-size: 0.75rem; color: #fff; line-height: 1.5;">
-                                    Buka aplikasi <strong>${name}</strong> Anda dan cek notifikasi pembayaran, atau masukkan nomor di atas pada menu pembayaran ${name}.
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-
-            window.copyToClipboard = function(text) {
-                navigator.clipboard.writeText(text).then(() => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Tersalin!',
-                        text: 'Nomor VA berhasil disalin ke clipboard.',
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        timerProgressBar: true,
-                        background: '#141418',
-                        color: '#fff'
-                    });
-                });
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 15px; line-height: 1.5;">
+                        Pilihan QRIS, virtual account, kartu, dan e-wallet akan tampil di popup resmi Midtrans.
+                    </p>
+                `;
             }
 
             const mainPayBtn = document.getElementById('main-pay-btn');
@@ -391,9 +277,13 @@
             });
 
             mainPayBtn.addEventListener('click', function() {
-                // Success State Trigger
-                const selectedMethod = document.querySelector('.method-option.selected')?.dataset.name || 'QRIS';
+                const selectedMethod = 'Midtrans';
                 document.getElementById('final-method-name').innerText = selectedMethod;
+
+                if (!window.snap) {
+                    alert("Midtrans Snap belum berhasil dimuat. Cek koneksi internet atau client key Midtrans.");
+                    return;
+                }
 
                 // Save to server via AJAX
                 const orderDataRaw = localStorage.getItem('meja_order');
@@ -423,6 +313,9 @@
                         _token: '{{ csrf_token() }}'
                     };
 
+                    mainPayBtn.innerText = 'Memproses...';
+                    mainPayBtn.style.pointerEvents = 'none';
+
                     fetch('{{ route("booking.store") }}', {
                         method: 'POST',
                         headers: {
@@ -434,45 +327,52 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        console.log('Success:', data);
-                        if (data.snap_token) {
-                            window.snap.pay(data.snap_token, {
-                                onSuccess: function(result){
-                                    // Also save to history for local view consistency
-                                    const historyData = JSON.parse(localStorage.getItem('billiard_history') || '[]');
-                                    const newEntry = {
-                                        id: result.order_id || 'NEW-' + Math.floor(Math.random() * 1000),
-                                        customer_name: '{{ Auth::user()->name }}',
-                                        tables: orderData.tables.map(t => t.name).join(', '),
-                                        date: orderData.date,
-                                        time: orderData.time.split(' - ')[0],
-                                        duration: orderData.duration,
-                                        total: orderData.total,
-                                        status: 'paid',
-                                        payment_method: result.payment_type || selectedMethod,
-                                        timestamp: new Date().getTime()
-                                    };
-                                    historyData.unshift(newEntry);
-                                    localStorage.setItem('billiard_history', JSON.stringify(historyData));
-
-                                    showSuccessModal();
-                                },
-                                onPending: function(result){
-                                    alert("Menunggu pembayaran Anda!"); console.log(result);
-                                },
-                                onError: function(result){
-                                    alert("Pembayaran gagal!"); console.log(result);
-                                },
-                                onClose: function(){
-                                    alert("Anda menutup popup pembayaran sebelum menyelesaikan pembayaran");
-                                }
-                            });
-                        } else {
-                            showSuccessModal(); // Fallback if no snap token
+                        if (!data.snap_token) {
+                            throw new Error(data.message || 'Snap token Midtrans tidak tersedia.');
                         }
+
+                        window.snap.pay(data.snap_token, {
+                            onSuccess: function(result){
+                                // Also save to history for local view consistency
+                                const historyData = JSON.parse(localStorage.getItem('billiard_history') || '[]');
+                                const newEntry = {
+                                    id: result.order_id || 'NEW-' + Math.floor(Math.random() * 1000),
+                                    customer_name: '{{ Auth::user()->name }}',
+                                    tables: orderData.tables.map(t => t.name).join(', '),
+                                    date: orderData.date,
+                                    time: orderData.time.split(' - ')[0],
+                                    duration: orderData.duration,
+                                    total: orderData.total,
+                                    status: 'paid',
+                                    payment_method: result.payment_type || selectedMethod,
+                                    timestamp: new Date().getTime()
+                                };
+                                historyData.unshift(newEntry);
+                                localStorage.setItem('billiard_history', JSON.stringify(historyData));
+
+                                showSuccessModal();
+                            },
+                            onPending: function(result){
+                                mainPayBtn.innerText = 'Bayar dengan Midtrans';
+                                mainPayBtn.style.pointerEvents = 'auto';
+                                alert("Menunggu pembayaran Anda!"); console.log(result);
+                            },
+                            onError: function(result){
+                                mainPayBtn.innerText = 'Bayar dengan Midtrans';
+                                mainPayBtn.style.pointerEvents = 'auto';
+                                alert("Pembayaran gagal!"); console.log(result);
+                            },
+                            onClose: function(){
+                                mainPayBtn.innerText = 'Bayar dengan Midtrans';
+                                mainPayBtn.style.pointerEvents = 'auto';
+                                alert("Anda menutup popup pembayaran sebelum menyelesaikan pembayaran");
+                            }
+                        });
                     })
                     .catch((error) => {
                         console.error('Error:', error);
+                        mainPayBtn.innerText = 'Bayar dengan Midtrans';
+                        mainPayBtn.style.pointerEvents = 'auto';
                         alert("Terjadi kesalahan sistem saat memproses pesanan.");
                     });
                 }

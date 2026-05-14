@@ -11,8 +11,8 @@ class WebhookController extends Controller
     public function midtransHandler(Request $request)
     {
         // Setup Midtrans config
-        \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        \Midtrans\Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+        \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
+        \Midtrans\Config::$isProduction = (bool) config('services.midtrans.is_production');
 
         try {
             $notification = new \Midtrans\Notification();
