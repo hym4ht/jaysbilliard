@@ -74,13 +74,20 @@ class DashboardController extends Controller
     public function fnb()
     {
         $user = Auth::user();
-        $menus = Menu::all();
+        $menus = Menu::where('status', 'available')
+            ->orderBy('category')
+            ->orderBy('name')
+            ->get();
+        $categories = $menus->pluck('category')
+            ->filter()
+            ->unique()
+            ->values();
         $tables = Table::all();
         
         $topbar_title = "Makanan dan Minuman";
         $topbar_sub = "Pilih menu favorit Anda dan nikmati saat bermain";
 
-        return view('dashboard_user.fnb', compact('user', 'menus', 'tables', 'topbar_title', 'topbar_sub'));
+        return view('dashboard_user.fnb', compact('user', 'menus', 'categories', 'tables', 'topbar_title', 'topbar_sub'));
     }
 
     public function fnbKonfirmasi()

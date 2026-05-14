@@ -14,16 +14,24 @@
             {{-- Category Filter --}}
             <div class="category-filter">
                 <button class="category-btn active" data-category="all">All Items</button>
-                <button class="category-btn" data-category="Camilan">Camilan</button>
-                <button class="category-btn" data-category="Minuman">Minuman</button>
+                @foreach($categories as $category)
+                    <button class="category-btn" data-category="{{ $category }}">{{ $category }}</button>
+                @endforeach
             </div>
 
             {{-- Menu Grid --}}
             <div class="menu-grid">
                 @forelse($menus as $menu)
+                    @php
+                        $menuImage = $menu->image
+                            ? (\Illuminate\Support\Str::startsWith($menu->image, 'images/')
+                                ? asset($menu->image)
+                                : asset('storage/' . $menu->image))
+                            : asset('images/hero-bg.png');
+                    @endphp
                     <div class="menu-card" data-category="{{ $menu->category }}">
                         <div class="item-img-container">
-                            <img src="{{ asset('storage/' . $menu->image) }}" alt="{{ $menu->name }}" class="item-img"
+                            <img src="{{ $menuImage }}" alt="{{ $menu->name }}" class="item-img"
                                 onerror="this.src='{{ asset('images/hero-bg.png') }}'">
                             <div class="item-price-tag">Rp {{ number_format($menu->price, 0, ',', '.') }}</div>
                         </div>
@@ -32,7 +40,7 @@
                             <div class="item-category">{{ $menu->category }}</div>
                             <p class="item-desc">{{ $menu->description }}</p>
                             <button class="add-btn" data-id="{{ $menu->id }}" data-name="{{ $menu->name }}"
-                                data-price="{{ $menu->price }}" data-image="{{ asset('storage/' . $menu->image) }}"
+                                data-price="{{ $menu->price }}" data-image="{{ $menuImage }}"
                                 data-category="{{ $menu->category }}">
                                 TAMBAH
                             </button>
@@ -122,9 +130,10 @@
                     categoryBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
 
-                    const category = btn.dataset.category;
+                    const category = (btn.dataset.category || '').trim().toLowerCase();
                     menuCards.forEach(card => {
-                        if (category === 'all' || card.dataset.category === category) {
+                        const cardCategory = (card.dataset.category || '').trim().toLowerCase();
+                        if (category === 'all' || cardCategory === category) {
                             card.style.display = 'flex';
                         } else {
                             card.style.display = 'none';
