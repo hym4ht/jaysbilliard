@@ -12,8 +12,6 @@
                 class="{{ request()->routeIs('home') ? 'text-[#00e5ff]' : 'hover:text-white' }} transition">Beranda</a>
             <a href="{{ route('rates') }}"
                 class="{{ request()->routeIs('rates') ? 'text-[#00e5ff]' : 'hover:text-white' }} transition">Meja</a>
-            <a href="{{ route('fnb') }}"
-                class="{{ request()->routeIs('fnb') ? 'text-[#00e5ff]' : 'hover:text-white' }} transition">F&B</a>
             <a href="{{ route('location') }}"
                 class="{{ request()->routeIs('location') ? 'text-[#00e5ff]' : 'hover:text-white' }} transition">Lokasi</a>
         </div>

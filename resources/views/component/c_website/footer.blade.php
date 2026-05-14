@@ -27,7 +27,6 @@
                 <p class="text-white font-semibold mb-4">Layanan</p>
                 <ul class="space-y-2 text-sm text-gray-400">
                     <li><a href="{{ route('rates') }}" class="hover:text-white transition">Tarif Meja</a></li>
-                    <li><a href="{{ route('fnb') }}" class="hover:text-white transition">Menu Makanan</a></li>
                     <li><a href="{{ route('location') }}" class="hover:text-white transition">Lokasi Store</a></li>
                 </ul>
             </div>

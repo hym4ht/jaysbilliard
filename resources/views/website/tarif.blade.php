@@ -88,7 +88,7 @@
                 </div>
                 <div>
                     <h4 class="text-white font-bold text-sm mb-1.5">Makanan dari Luar</h4>
-                    <p class="text-white/45 text-xs leading-relaxed">Makanan dan minuman dari luar sangat dilarang. Periksa menu F&B kami untuk pilihan premium.</p>
+                    <p class="text-white/45 text-xs leading-relaxed">Makanan dan minuman dari luar sangat dilarang. Silakan tanyakan pilihan menu yang tersedia kepada staff kami.</p>
                 </div>
             </div>
         </div>
