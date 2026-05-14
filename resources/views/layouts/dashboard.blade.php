@@ -7,8 +7,8 @@
     <title>@yield('title', "Dashboard — Jay's Billiard")</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-    <link rel="stylesheet" href="{{ asset('css/css_layout/app_admin.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/css_page/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/css_layout/app_admin.css') }}?v={{ filemtime(public_path('css/css_layout/app_admin.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/css_page/dashboard.css') }}?v={{ filemtime(public_path('css/css_page/dashboard.css')) }}">
     @stack('styles')
 
     {{-- SweetAlert2 for premium feedback --}}
@@ -32,7 +32,7 @@
         document.addEventListener('DOMContentLoaded', loadGlobalAvatar);
     </script>
     <script src="{{ asset('js/js_component/logout.js') }}"></script>
-    <script src="{{ asset('js/js_component/mobile_menu.js') }}" defer></script>
+    <script src="{{ asset('js/js_component/mobile_menu.js') }}?v={{ filemtime(public_path('js/js_component/mobile_menu.js')) }}" defer></script>
 </head>
 <body>
     <div class="adm-layout">
