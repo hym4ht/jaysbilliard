@@ -24,7 +24,7 @@
                     <div class="menu-card" data-category="{{ $menu->category }}">
                         <div class="item-img-container">
                             <img src="{{ asset('storage/' . $menu->image) }}" alt="{{ $menu->name }}" class="item-img"
-                                onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=300'">
+                                onerror="this.src='{{ asset('images/hero-bg.png') }}'">
                             <div class="item-price-tag">Rp {{ number_format($menu->price, 0, ',', '.') }}</div>
                         </div>
                         <div class="item-details">
@@ -102,6 +102,19 @@
             const checkoutBtn = document.getElementById('confirm-order-btn');
 
             let cart = [];
+            const fallbackImage = "{{ asset('images/hero-bg.png') }}";
+
+            function escapeHtml(value) {
+                return String(value || '').replace(/[&<>"']/g, function (char) {
+                    return {
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        '"': '&quot;',
+                        "'": '&#039;'
+                    }[char];
+                });
+            }
 
             // Category Filtering
             categoryBtns.forEach(btn => {
@@ -167,10 +180,10 @@
                     subtotal += item.price * item.quantity;
                     const itemHtml = `
                                 <div class="cart-item">
-                                    <img src="${item.image}" class="cart-item-img" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=100'">
+                                    <img src="${escapeHtml(item.image)}" class="cart-item-img" onerror="this.src='${fallbackImage}'">
                                     <div class="cart-item-info">
-                                        <div class="cart-item-name">${item.name}</div>
-                                        <div class="cart-item-meta">${item.category}</div>
+                                        <div class="cart-item-name">${escapeHtml(item.name)}</div>
+                                        <div class="cart-item-meta">${escapeHtml(item.category)}</div>
                                     </div>
                                     <div class="cart-item-right">
                                         <div class="cart-item-price">Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</div>

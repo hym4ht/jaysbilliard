@@ -95,24 +95,57 @@ class DashboardController extends Controller
     public function fnbCheckout(Request $request)
     {
         $validated = $request->validate([
-            'total_price' => 'required|numeric',
-            'items' => 'required|array'
+            'table_id' => 'nullable|integer|exists:tables,id',
+            'items' => 'required|array|min:1',
+            'items.*.id' => 'required|integer|exists:menus,id',
+            'items.*.quantity' => 'required|integer|min:1|max:99',
         ]);
 
         // Setup Midtrans
-        \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        \Midtrans\Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+        \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
+        \Midtrans\Config::$isProduction = (bool) config('services.midtrans.is_production');
         \Midtrans\Config::$isSanitized = true;
         \Midtrans\Config::$is3ds = true;
 
         $orderId = 'FNB-' . uniqid() . '-' . time();
         $user = Auth::user();
+        $menuIds = collect($validated['items'])->pluck('id')->all();
+        $menus = Menu::whereIn('id', $menuIds)->get()->keyBy('id');
+        $subtotal = 0;
+        $itemDetails = [];
+
+        foreach ($validated['items'] as $item) {
+            $menu = $menus->get($item['id']);
+            $quantity = (int) $item['quantity'];
+            $price = (int) $menu->price;
+            $subtotal += $price * $quantity;
+
+            $itemDetails[] = [
+                'id' => (string) $menu->id,
+                'price' => $price,
+                'quantity' => $quantity,
+                'name' => substr($menu->name, 0, 50),
+            ];
+        }
+
+        $tax = (int) round($subtotal * 0.1);
+        $total = $subtotal + $tax;
+
+        if ($tax > 0) {
+            $itemDetails[] = [
+                'id' => 'SERVICE-TAX',
+                'price' => $tax,
+                'quantity' => 1,
+                'name' => 'Service & Tax',
+            ];
+        }
 
         $params = array(
             'transaction_details' => array(
                 'order_id' => $orderId,
-                'gross_amount' => $validated['total_price'],
+                'gross_amount' => $total,
             ),
+            'item_details' => $itemDetails,
             'customer_details' => array(
                 'first_name' => $user->name,
                 'phone' => $user->phone ?? '-',
@@ -123,7 +156,11 @@ class DashboardController extends Controller
 
         return response()->json([
             'success' => true,
-            'snap_token' => $snapToken
+            'snap_token' => $snapToken,
+            'order_id' => $orderId,
+            'subtotal' => $subtotal,
+            'tax' => $tax,
+            'total' => $total,
         ]);
     }
 }
