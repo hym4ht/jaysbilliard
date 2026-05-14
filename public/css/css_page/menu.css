@@ -1,0 +1,565 @@
+/* menu.css — Manajemen Menu Page Styling Refined for Neon Design */
+.adm-menu-content {
+    padding: 1.5rem 2.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.25rem;
+}
+
+/* ═══════════════════════════════ TOP STATS ═══════════════════════════════ */
+.adm-menu-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+
+.adm-mstat-card {
+    background: #111418;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.adm-mstat-icon {
+    width: 42px;
+    height: 42px;
+    background: rgba(0, 229, 255, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00e5ff;
+}
+
+.adm-mstat-icon svg {
+    opacity: 1; /* Bright and clear like other pages */
+    filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.3));
+}
+
+.adm-mstat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.adm-mstat-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.25);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.adm-mstat-value {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+/* ═══════════════════════════════ SEARCH & LEGEND ═══════════════════════════════ */
+.adm-menu-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.adm-search-wrap {
+    flex: 1;
+    max-width: 420px;
+    position: relative;
+}
+
+.adm-search-icon {
+    position: absolute;
+    left: 1.15rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.2);
+    pointer-events: none;
+}
+
+.adm-search-input {
+    width: 100%;
+    background: #0d0f13;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    padding: 1.15rem 1.5rem 1.15rem 3.25rem;
+    color: #fff;
+    font-size: 0.92rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.adm-search-input:focus {
+    border-color: rgba(0, 229, 255, 0.2);
+    background: #111418;
+}
+
+/* Kategori Dropdown inside Actions */
+.adm-kategori-dropdown-wrap {
+    position: relative;
+    width: 280px;
+}
+
+.adm-kategori-select-box {
+    background: #0d0f13;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    padding: 1.1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.adm-kategori-select-box .selected-text {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.adm-kategori-dropdown-list {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    width: 100%;
+    background: #0d0f13;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.35s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.adm-kategori-dropdown-wrap.open .adm-kategori-dropdown-list {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.adm-kategori-item {
+    width: 100%;
+    padding: 0.85rem 1.25rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #ffffff;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    letter-spacing: -0.01em;
+}
+
+.adm-kategori-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.adm-kategori-item.active {
+    background: #1a1e24;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.adm-menu-legend {
+    display: flex;
+    gap: 1.85rem;
+    margin-left: auto;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.legend-dot.tersedia { background: #00e5ff; box-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
+.legend-dot.kosong { background: #444b52; }
+
+
+/* ═══════════════════════════════ MENU GRID ═══════════════════════════════ */
+.adm-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.25rem;
+    align-items: stretch; /* Cards will stretch to match the tallest one in the row */
+}
+
+.adm-menu-card {
+    background: #111418;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Fill the grid cell height */
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.adm-menu-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(0, 229, 255, 0.1);
+}
+
+.card-image-wrap {
+    height: 160px; /* Fixed uniform height for images */
+    position: relative;
+    overflow: hidden;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures images are cropped uniformly */
+}
+
+.price-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #00e5ff;
+    color: #080a0f;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 950;
+    box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
+    z-index: 5;
+}
+
+.card-body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-grow: 1; /* Push the footer to the bottom */
+}
+
+.card-header-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.35;
+    height: 2.7em; /* Fixed height for 2 lines of title */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.card-status {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.65rem;
+    font-weight: 900;
+    color: #00e5ff;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Gray Out if Unavailable */
+.adm-menu-card.unavailable .card-status {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.status-dot-sm {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 10px currentColor;
+}
+
+.adm-menu-card.unavailable .status-dot-sm {
+    box-shadow: none;
+}
+
+.card-details {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.card-desc {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.3);
+    line-height: 1.6;
+    height: 3.2em; /* Fixed height for 2 lines of description */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.card-footer {
+    padding: 0 1.25rem 1.25rem;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-edit-menu {
+    flex: 1;
+    background: rgba(0, 229, 255, 0.04);
+    border: 1.5px solid rgba(0, 229, 255, 0.15);
+    color: #00e5ff;
+    padding: 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 850;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-edit-menu:hover {
+    background: rgba(0, 229, 255, 0.08);
+}
+
+/* Gray Out Button if Unavailable */
+.adm-menu-card.unavailable .btn-edit-menu {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.adm-menu-card.unavailable .btn-edit-menu:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.btn-edit-menu {
+    flex: 1;
+    background: rgba(0, 229, 255, 0.04);
+    border: 1.5px solid rgba(0, 229, 255, 0.12);
+    color: #00e5ff;
+    padding: 0.65rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-edit-menu:hover {
+    background: rgba(0, 229, 255, 0.08);
+}
+
+.btn-delete-menu {
+    width: 38px;
+    height: 38px;
+    background: rgba(255, 82, 82, 0.08);
+    border: 1.5px solid rgba(255, 82, 82, 0.25);
+    color: #ff5252;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-delete-menu:hover {
+    background: rgba(255, 82, 82, 0.15);
+}
+
+/* ═══════════════════════════════ TAMBAH MENU CARD ═══════════════════════════════ */
+.adm-menu-add-card {
+    background: transparent;
+    border: 2px dashed rgba(255, 255, 255, 0.06);
+    border-radius: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.75rem;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    text-decoration: none;
+    min-height: 500px; /* Taller as per design */
+}
+
+.adm-menu-add-card:hover {
+    background: rgba(255, 255, 255, 0.01);
+    border-color: rgba(0, 229, 255, 0.15);
+}
+
+.add-icon-wrap {
+    width: 60px;
+    height: 60px;
+    background: #111418;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.add-text {
+    font-size: 1rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+}
+
+.adm-menu-add-card:hover .add-icon-wrap {
+    background: #1a1e24;
+    color: #00e5ff;
+}
+
+.adm-menu-add-card:hover .add-text {
+    color: #00e5ff;
+}
+
+/* ═══════════════════════════════ DELETE MODAL ═══════════════════════════════ */
+.adm-delete-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.adm-delete-modal-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.adm-delete-modal-content {
+    background: #111418;
+    width: 100%;
+    max-width: 440px;
+    border-radius: 24px;
+    padding: 2.25rem;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 2px rgba(255, 255, 255, 0.05);
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.adm-delete-modal-overlay.open .adm-delete-modal-content {
+    transform: translateY(0) scale(1);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+}
+
+.modal-icon-wrap {
+    width: 48px;
+    height: 48px;
+    background: #2a1414;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff5252;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 850;
+    color: #fff;
+    letter-spacing: -0.01em;
+}
+
+.modal-msg {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.3);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+}
+
+.modal-msg strong {
+    color: #fff;
+    font-weight: 850;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 2.5rem;
+}
+
+.btn-modal-cancel {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.9rem;
+    font-weight: 850;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color 0.2s ease;
+}
+
+.btn-modal-cancel:hover {
+    color: #fff;
+}
+
+.btn-modal-confirm {
+    background: #ff5252;
+    color: #fff;
+    border: none;
+    padding: 0.9rem 2.25rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 900;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 8px 25px rgba(255, 82, 82, 0.35);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-modal-confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(255, 82, 82, 0.5);
+}
+

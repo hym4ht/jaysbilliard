@@ -1,0 +1,154 @@
+/* akhiri.css — Modal Konfirmasi Akhiri Sesi Styling */
+
+/* ═══════════════════════════════ MODALS & OVERLAYS ═══════════════════════════════ */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8); /* Darker backdrop */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.confirm-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    width: 480px;
+    max-width: 90vw;
+    background: #0d1117; /* Matches image exactly */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px; /* More rounded as per image */
+    padding: 2.25rem;
+    z-index: 10001;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 40px 120px rgba(0, 0, 0, 1);
+}
+
+.confirm-modal.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.confirm-header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+}
+
+.confirm-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(0, 229, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00e5ff;
+}
+
+.confirm-title {
+    font-size: 1.45rem;
+    font-weight: 850;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+.confirm-text {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.4);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.confirm-info-box {
+    background: #05070a; /* Darker near-black for the box */
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.confirm-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.confirm-label {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.25);
+    letter-spacing: 0.12em;
+}
+
+.confirm-value {
+    font-size: 1.25rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.confirm-value--cyan { color: #00e5ff; }
+.confirm-value--gray { color: rgba(255, 255, 255, 0.2); font-size: 0.9rem; font-weight: 700; }
+
+.confirm-footer { display: flex; align-items: center; gap: 1.25rem; }
+
+.confirm-btn-cancel {
+    flex: 1;
+    border-radius: 16px;
+    padding: 1.25rem;
+    cursor: pointer;
+    background: #111418;
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.9rem;
+    font-weight: 850;
+    letter-spacing: 0.05em;
+    transition: all 0.25s ease;
+}
+
+.confirm-btn-cancel:hover {
+    background: #161a20;
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+.confirm-btn-submit {
+    flex: 1.5;
+    background: #00e5ff;
+    border: none;
+    color: #06080b;
+    font-size: 0.9rem;
+    font-weight: 900;
+    padding: 1.25rem;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 20px rgba(0, 229, 255, 0.2);
+}
+
+.confirm-btn-submit:hover {
+    background: #33ebff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 229, 255, 0.4);
+}

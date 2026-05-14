@@ -1,0 +1,469 @@
+/* meja.css — Manajemen Meja Page Styling */
+
+.adm-meja-content {
+    padding: 1.5rem 2.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.25rem;
+}
+
+/* ═══════════════════════════════ TOP STATS ═══════════════════════════════ */
+.adm-meja-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+
+.adm-mstat-card {
+    background: #111418;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.adm-mstat-icon {
+    width: 42px;
+    height: 42px;
+    background: rgba(0, 229, 255, 0.08);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00e5ff;
+}
+
+.adm-mstat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.adm-mstat-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.adm-mstat-value {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+/* ═══════════════════════════════ SEARCH & LEGEND ═══════════════════════════════ */
+.adm-meja-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.adm-search-wrap {
+    flex: 1;
+    max-width: 480px;
+    position: relative;
+}
+
+.adm-search-icon {
+    position: absolute;
+    left: 1.15rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.adm-search-input {
+    width: 100%;
+    background: #111418;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0.9rem 1.25rem 0.9rem 3.25rem;
+    color: #fff;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.adm-search-input:focus {
+    border-color: rgba(0, 229, 255, 0.3);
+    background: #15181e;
+}
+
+.adm-meja-legend {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.45);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.legend-dot.terisi { background: #00e5ff; box-shadow: 0 0 10px rgba(0, 229, 255, 0.6); }
+.legend-dot.dipesan { background: #ffab00; box-shadow: 0 0 10px rgba(255, 171, 0, 0.6); }
+.legend-dot.tersedia { background: rgba(255, 255, 255, 0.3); }
+
+/* ═══════════════════════════════ MEJA GRID ═══════════════════════════════ */
+.adm-meja-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    width: 100%;
+}
+
+.adm-meja-card {
+    background: #111418;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.adm-meja-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(0, 229, 255, 0.15);
+}
+
+.card-image-wrap {
+    height: 180px;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.price-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #00e5ff;
+    color: #080a0f;
+    padding: 0.45rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 900;
+    box-shadow: 0 4px 15px rgba(0, 229, 255, 0.35);
+}
+
+.card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #fff;
+}
+
+.card-status {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #00e5ff;
+    letter-spacing: 0.06em;
+}
+
+.card-status.tersedia { color: #00e5ff; }
+.card-status.dipesan { color: #ffab00; }
+.card-status.maintenance { color: #ff5252; }
+
+.status-dot-sm {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 8px currentColor;
+}
+
+.card-details {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.type-text { color: rgba(255, 255, 255, 0.35); text-transform: uppercase; }
+.cap-text { color: #00e5ff; }
+
+.card-desc {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.3);
+    line-height: 1.6;
+    height: 3.2em; /* 2 lines */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.card-footer {
+    padding: 0 1.5rem 1.5rem;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-edit-meja {
+    flex: 1;
+    background: rgba(0, 229, 255, 0.04);
+    border: 1.5px solid rgba(0, 229, 255, 0.15);
+    color: #00e5ff;
+    padding: 0.75rem;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-edit-meja:hover {
+    background: rgba(0, 229, 255, 0.08);
+}
+
+.btn-delete-meja {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 82, 82, 0.08);
+    border: 1.5px solid rgba(255, 82, 82, 0.25);
+    color: #ff5252;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-delete-meja:hover {
+    background: rgba(255, 82, 82, 0.15);
+}
+
+/* ═══════════════════════════════ TAMBAH MEJA CARD ═══════════════════════════════ */
+.adm-meja-add-card {
+    background: transparent;
+    border: 2px dashed rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.adm-meja-add-card:hover {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(0, 229, 255, 0.3);
+}
+
+.add-icon-wrap {
+    width: 52px;
+    height: 52px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.add-text {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.adm-meja-add-card:hover .add-icon-wrap,
+.adm-meja-add-card:hover .add-text {
+    color: #00e5ff;
+}
+
+/* ═══════════════════════════════ RESPONSIVE ═══════════════════════════════ */
+@media (max-width: 1400px) {
+    .adm-meja-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1100px) {
+    .adm-meja-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .adm-meja-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .adm-meja-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .adm-meja-content {
+        padding: 1rem 1.5rem 2rem;
+    }
+    
+    .adm-meja-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .adm-search-wrap {
+        max-width: 100%;
+    }
+    
+    .adm-meja-legend {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .adm-meja-content {
+        padding: 1rem;
+        gap: 1.5rem;
+    }
+    
+    .adm-meja-stats {
+        gap: 0.875rem;
+    }
+    
+    .adm-mstat-card {
+        padding: 1.25rem;
+        gap: 1.25rem;
+    }
+    
+    .adm-meja-grid {
+        gap: 0.875rem;
+    }
+    
+    .card-image-wrap {
+        height: 160px;
+    }
+    
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
+    
+    .card-footer {
+        padding: 0 1.25rem 1.25rem;
+    }
+}
+/* ═══════════════════════════════ ALERTS ═══════════════════════════════ */
+.adm-alert {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    border-radius: 16px;
+    padding: 1.25rem 1.75rem;
+    margin-bottom: 2.5rem;
+    animation: alertSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+@keyframes alertSlideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.adm-alert--success {
+    background: rgba(0, 229, 255, 0.05);
+    border: 1px solid rgba(0, 229, 255, 0.15);
+}
+
+.adm-alert--success .adm-alert-icon {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00e5ff;
+}
+
+.adm-alert--error {
+    background: rgba(255, 82, 82, 0.05);
+    border: 1px solid rgba(255, 82, 82, 0.15);
+}
+
+.adm-alert--error .adm-alert-icon {
+    background: rgba(255, 82, 82, 0.1);
+    color: #ff5252;
+}
+
+.adm-alert-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.adm-alert-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.adm-alert-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.adm-alert-msg, .adm-alert-list {
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    list-style: none;
+    padding: 0;
+}
+
+.adm-alert-close {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.is-invalid {
+    border-color: #ff5252 !important;
+}

@@ -1,0 +1,453 @@
+/* public/css/css_page/location.css */
+
+/* Header */
+.loc-header {
+    padding: 8rem 1.5rem 2rem;
+    max-width: 72rem;
+    margin: 0 auto;
+}
+
+.loc-main-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #ffffff;
+    letter-spacing: 0.03em;
+}
+
+@media (min-width: 768px) {
+    .loc-main-title {
+        font-size: 3rem;
+    }
+}
+
+/* Content Section */
+.loc-content {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+}
+
+.loc-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .loc-grid {
+        grid-template-columns: 1fr 1.5fr;
+    }
+}
+
+/* Info Card */
+.loc-info-card {
+    background: linear-gradient(180deg, #0f1923 0%, #111118 100%);
+    border: 1px solid rgba(0, 229, 255, 0.12);
+    border-radius: 1rem;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.loc-badge {
+    display: inline-flex;
+    align-self: flex-start;
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #00e5ff;
+    background-color: rgba(0, 229, 255, 0.1);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    border-radius: 9999px;
+    padding: 0.35rem 0.85rem;
+}
+
+/* Info Items */
+.loc-info-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+.loc-info-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    background-color: rgba(0, 229, 255, 0.08);
+    border-radius: 9999px;
+    margin-top: 0.1rem;
+}
+
+.loc-info-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.25rem;
+}
+
+.loc-info-desc {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.5;
+}
+
+/* Hours */
+.loc-hours {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.loc-hours-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.78rem;
+}
+
+.loc-hours-label {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.loc-hours-value {
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.loc-hours-highlight {
+    color: #00e5ff;
+}
+
+/* WhatsApp Section */
+.loc-wa-section {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.loc-wa-text {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 1rem;
+}
+
+.loc-wa-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background-color: #00e5ff;
+    color: #0a0a0a;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.9rem;
+    border-radius: 0.5rem;
+    border: none;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.loc-wa-btn:hover {
+    background-color: #00bcd4;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Map */
+.loc-map-wrapper {
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid rgba(0, 229, 255, 0.12);
+    min-height: 25rem;
+}
+
+.loc-map-iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 25rem;
+}
+
+/* Gallery Section */
+.loc-gallery-section {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 5rem;
+}
+
+.loc-gallery-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.loc-gallery-title {
+    font-size: 1.25rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #ffffff;
+    margin-bottom: 0.25rem;
+}
+
+.loc-gallery-subtitle {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.loc-gallery-link {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #00e5ff;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+
+.loc-gallery-link:hover {
+    opacity: 0.8;
+}
+
+/* Gallery Grid */
+.loc-gallery-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .loc-gallery-grid {
+        grid-template-columns: 1fr 1.5fr 1fr;
+    }
+}
+
+.loc-gallery-item {
+    border-radius: 0.75rem;
+    overflow: hidden;
+    border: 1px solid rgba(0, 229, 255, 0.1);
+    transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+.loc-gallery-item:hover {
+    border-color: rgba(0, 229, 255, 0.3);
+    transform: translateY(-3px);
+}
+
+.loc-gallery-item img {
+    width: 100%;
+    height: 14rem;
+    object-fit: cover;
+}
+
+@media (min-width: 640px) {
+    .loc-gallery-item-wide img {
+        height: 14rem;
+    }
+}
+
+/* ═══════════════════════════════ MOBILE RESPONSIVE ═══════════════════════════════ */
+@media (max-width: 768px) {
+    .loc-header {
+        padding: 6rem 1.25rem 1.5rem;
+    }
+    
+    .loc-main-title {
+        font-size: 2.25rem;
+    }
+    
+    .loc-content {
+        padding: 0 1.25rem 3rem;
+    }
+    
+    .loc-grid {
+        gap: 1.25rem;
+    }
+    
+    .loc-info-card {
+        padding: 1.75rem;
+        gap: 1.25rem;
+    }
+    
+    .loc-info-icon {
+        width: 2rem;
+        height: 2rem;
+        min-width: 2rem;
+    }
+    
+    .loc-info-title {
+        font-size: 0.8rem;
+    }
+    
+    .loc-info-desc {
+        font-size: 0.75rem;
+    }
+    
+    .loc-hours-row {
+        font-size: 0.75rem;
+    }
+    
+    .loc-wa-text {
+        font-size: 0.75rem;
+    }
+    
+    .loc-wa-btn {
+        font-size: 0.75rem;
+        padding: 0.85rem;
+    }
+    
+    .loc-map-wrapper {
+        min-height: 20rem;
+    }
+    
+    .loc-map-iframe {
+        min-height: 20rem;
+    }
+    
+    .loc-gallery-section {
+        padding: 0 1.25rem 4rem;
+    }
+    
+    .loc-gallery-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+    
+    .loc-gallery-title {
+        font-size: 1.15rem;
+    }
+    
+    .loc-gallery-subtitle {
+        font-size: 0.75rem;
+    }
+    
+    .loc-gallery-link {
+        font-size: 0.75rem;
+    }
+    
+    .loc-gallery-grid {
+        gap: 0.875rem;
+    }
+    
+    .loc-gallery-item img {
+        height: 12rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .loc-header {
+        padding: 5rem 1rem 1.25rem;
+    }
+    
+    .loc-main-title {
+        font-size: 1.85rem;
+    }
+    
+    .loc-content {
+        padding: 0 1rem 2.5rem;
+    }
+    
+    .loc-grid {
+        gap: 1rem;
+    }
+    
+    .loc-info-card {
+        padding: 1.5rem;
+        gap: 1.15rem;
+        border-radius: 0.875rem;
+    }
+    
+    .loc-badge {
+        font-size: 0.55rem;
+        padding: 0.3rem 0.75rem;
+    }
+    
+    .loc-info-item {
+        gap: 0.65rem;
+    }
+    
+    .loc-info-icon {
+        width: 1.85rem;
+        height: 1.85rem;
+        min-width: 1.85rem;
+    }
+    
+    .loc-info-title {
+        font-size: 0.78rem;
+    }
+    
+    .loc-info-desc {
+        font-size: 0.72rem;
+    }
+    
+    .loc-hours {
+        gap: 0.25rem;
+    }
+    
+    .loc-hours-row {
+        font-size: 0.72rem;
+        gap: 0.65rem;
+    }
+    
+    .loc-wa-section {
+        padding-top: 0.875rem;
+    }
+    
+    .loc-wa-text {
+        font-size: 0.72rem;
+        margin-bottom: 0.875rem;
+    }
+    
+    .loc-wa-btn {
+        font-size: 0.72rem;
+        padding: 0.8rem;
+    }
+    
+    .loc-map-wrapper {
+        min-height: 18rem;
+        border-radius: 0.875rem;
+    }
+    
+    .loc-map-iframe {
+        min-height: 18rem;
+    }
+    
+    .loc-gallery-section {
+        padding: 0 1rem 3rem;
+    }
+    
+    .loc-gallery-header {
+        margin-bottom: 1rem;
+    }
+    
+    .loc-gallery-title {
+        font-size: 1rem;
+    }
+    
+    .loc-gallery-subtitle {
+        font-size: 0.72rem;
+    }
+    
+    .loc-gallery-link {
+        font-size: 0.72rem;
+    }
+    
+    .loc-gallery-grid {
+        gap: 0.75rem;
+    }
+    
+    .loc-gallery-item {
+        border-radius: 0.625rem;
+    }
+    
+    .loc-gallery-item img {
+        height: 10rem;
+    }
+}

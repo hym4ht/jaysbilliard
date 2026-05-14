@@ -1,0 +1,608 @@
+/* dashboard.css — Refined Admin Dashboard Styling to match design EXACTLY */
+
+/* ═══════════════════════════════ MAIN CONTENT OVERRIDES ═══════════════════════════════ */
+.adm-main {
+    background: #080a0f;
+    background-image: radial-gradient(circle at 70% 80%, rgba(0, 229, 255, 0.05) 0%, transparent 50%);
+}
+
+.adm-content {
+    padding: 1.5rem 2.5rem 3rem;
+}
+
+/* ═══════════════════════════════ STAT CARDS ═══════════════════════════════ */
+.adm-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.adm-stat-card {
+    background: #111418;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.75rem;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.adm-stat-card:hover {
+    border-color: rgba(0, 229, 255, 0.12);
+    background: #15181e;
+}
+
+.adm-stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+}
+
+.adm-stat-icon {
+    width: 42px;
+    height: 42px;
+    background: rgba(0, 229, 255, 0.08);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00e5ff;
+}
+
+.adm-stat-trend {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.adm-stat-trend--up {
+    background: rgba(0, 229, 255, 0.15);
+    color: #00e5ff;
+    border: 1px solid rgba(0, 229, 255, 0.15);
+}
+
+.adm-stat-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.adm-stat-value {
+    display: block;
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+/* ═══════════════════════════════ CHART SECTION ═══════════════════════════════ */
+.adm-chart-section {
+    background: #111418;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+}
+
+.adm-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 3.5rem;
+}
+
+.adm-chart-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+.adm-chart-sub {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.25);
+    margin-top: 0.4rem;
+}
+
+.adm-chart-area {
+    height: 300px;
+    position: relative;
+    padding-bottom: 3rem;
+}
+
+.adm-chart-bars {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+}
+
+.adm-bar-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    position: relative;
+    height: 100%;
+}
+
+.adm-bar-v {
+    width: 100%;
+    transition: height 0.4s ease;
+}
+
+.adm-bar--gray { background: #202329; }
+.adm-bar--teal { background: #0c6068; }
+.adm-bar--cyan {
+    background: #00e5ff;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+    z-index: 2;
+}
+.adm-bar--cyan-alt { background: #01b4cc; }
+
+.adm-bar-label {
+    position: absolute;
+    bottom: -2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.4);
+    white-space: nowrap;
+}
+
+/* ═══════════════════════════════ STATUS MEJA (PREMIUM MOCKUP) ═══════════════════════════════ */
+.adm-meja-section {
+    margin-top: 3.5rem;
+}
+
+.adm-meja-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding: 0 0.5rem;
+}
+
+.adm-meja-title-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.adm-meja-title {
+    font-size: 1.5rem;
+    font-weight: 850;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+.adm-meja-legend {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.adm-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.08em;
+}
+
+.adm-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.adm-legend-dot--terisi { background: #00d1ff; box-shadow: 0 0 10px rgba(0, 209, 255, 0.6); }
+.adm-legend-dot--dipesan { background: #ffab00; box-shadow: 0 0 10px rgba(255, 171, 0, 0.6); }
+.adm-legend-dot--tersedia { background: #4a5568; }
+
+.adm-meja-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 1.25rem;
+}
+
+.adm-meja-card {
+    background: #111418;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.adm-meja-card:hover { transform: translateY(-6px); border-color: rgba(255, 255, 255, 0.1); }
+
+/* Status Logic Bar Left */
+.adm-meja-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 6px;
+    z-index: 5;
+}
+
+.adm-meja--terisi::before { background: #00d1ff; }
+.adm-meja--dipesan::before { background: #ffab00; }
+.adm-meja--tersedia::before { background: #4a5568; opacity: 0.3; }
+
+.adm-meja-card-top {
+    padding: 1.75rem 1.5rem 0.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.adm-meja-name-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.adm-meja-name {
+    font-size: 1.35rem;
+    font-weight: 950;
+    color: #ffffff;
+}
+
+.adm-meja-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.65rem;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+}
+
+.status-dot-sm { width: 6px; height: 6px; border-radius: 50%; }
+
+.adm-meja--terisi .adm-meja-status { color: #00d1ff; }
+.adm-meja--terisi .status-dot-sm { background: #00d1ff; box-shadow: 0 0 6px #00d1ff; }
+.adm-meja--dipesan .adm-meja-status { color: #ffab00; }
+.adm-meja--dipesan .status-dot-sm { background: #ffab00; box-shadow: 0 0 6px #ffab00; }
+.adm-meja--tersedia .adm-meja-status { color: rgba(255,255,255,0.3); }
+
+.adm-ball-icon {
+    width: 44px;
+    height: 44px;
+    background: #080a0f;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.15);
+}
+
+.adm-meja--terisi .adm-ball-icon { color: #00d1ff; }
+.adm-meja--dipesan .adm-ball-icon { color: #ffab00; }
+
+.adm-meja-card-body {
+    padding: 1rem 1.5rem 1.5rem 2rem;
+    flex: 1;
+}
+
+.adm-info-box {
+    background: #080a0f;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    padding: 1.5rem;
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    position: relative;
+}
+
+.adm-meja--tersedia .adm-info-box {
+    border: 1px dashed rgba(255, 255, 255, 0.08); /* Dashed border for empty state */
+    background: transparent; /* Makes it look integrated */
+}
+
+.adm-info-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.adm-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.75rem;
+}
+
+.adm-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.adm-value {
+    font-size: 0.85rem;
+    font-weight: 850;
+    color: #fff;
+}
+
+/* Specific for Highlighted Rows */
+.adm-info-row--highlight {
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 1rem;
+}
+
+/* Specific for bottom border on top items */
+.adm-info-row--border-bottom {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.adm-meja--dipesan .adm-info-row--highlight .adm-value { color: #ffab00; }
+
+/* Timer Display Style */
+.adm-timer-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-top: 0.5rem;
+    align-items: flex-start;
+}
+
+.adm-timer-group {
+    text-align: left;
+    width: 100%;
+}
+
+.adm-timer-label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.adm-timer-display {
+    font-size: 2.25rem;
+    font-weight: 950;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    line-height: 1;
+}
+
+.adm-meja-card-footer {
+    padding: 0 1.5rem 2rem 2rem;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-akhiri {
+    flex: 1;
+    background: #1a1010;
+    border: 1px solid rgba(255, 82, 82, 0.15);
+    color: #ff5252;
+    padding: 0.9rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 950;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease;
+}
+
+.btn-akhiri:hover { background: #ff5252; color: #fff; }
+
+.btn-waktu {
+    flex: 1;
+    background: #1a1810;
+    border: 1px solid rgba(255, 171, 0, 0.15);
+    color: #ffab00;
+    padding: 0.9rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 950;
+    text-align: center;
+}
+
+.btn-chat-icon {
+    width: 50px;
+    height: 50px;
+    background: #080a0f;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-chat-icon:hover { color: #00d1ff; border-color: #00d1ff; }
+
+.notif-badge {
+    position: absolute;
+    top: -6px; right: -6px;
+    background: #ff5252;
+    color: #fff;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    font-weight: 950;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #111418;
+}
+
+/* ═══════════════════════════════ RESPONSIVE ═══════════════════════════════ */
+@media (max-width: 1200px) {
+    .adm-meja-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+    .adm-meja-grid { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════ RESPONSIVE ═══════════════════════════════ */
+@media (max-width: 1600px) {
+    .adm-meja-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 1200px) {
+    .adm-meja-grid { grid-template-columns: repeat(2, 1fr); }
+    .adm-stats { grid-template-columns: repeat(2, 1fr); }
+    .adm-chart-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .adm-meja-grid { grid-template-columns: 1fr; }
+    .adm-stats { grid-template-columns: 1fr; }
+    .adm-content { padding: 1rem; }
+    .adm-stat-card { padding: 1.25rem; }
+    
+    .adm-stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .adm-chart-section {
+        padding: 1.5rem;
+    }
+    
+    .adm-chart-title {
+        font-size: 1.2rem;
+    }
+    
+    .adm-chart-area {
+        height: 250px;
+        min-height: 250px;
+    }
+    
+    .adm-meja-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .adm-meja-legend {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .adm-meja-card {
+        border-radius: 20px;
+    }
+    
+    .adm-meja-card-top {
+        padding: 1.5rem 1.25rem 0.5rem 1.5rem;
+    }
+    
+    .adm-meja-card-body {
+        padding: 1rem 1.25rem 1.25rem 1.5rem;
+    }
+    
+    .adm-meja-card-footer {
+        padding: 0 1.25rem 1.5rem 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-akhiri,
+    .btn-waktu {
+        flex: 1 1 100%;
+    }
+    
+    .btn-chat-icon {
+        width: 100%;
+        height: 50px;
+    }
+    
+    .adm-info-box {
+        min-height: 200px;
+        padding: 1.25rem;
+    }
+    
+    .adm-timer-display {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .adm-content {
+        padding: 0.75rem;
+    }
+    
+    .adm-stats {
+        gap: 0.75rem;
+    }
+    
+    .adm-stat-card {
+        padding: 1rem;
+    }
+    
+    .adm-stat-header {
+        margin-bottom: 1.25rem;
+    }
+    
+    .adm-stat-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .adm-stat-value {
+        font-size: 1.35rem;
+    }
+    
+    .adm-chart-section {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .adm-chart-header {
+        margin-bottom: 2rem;
+    }
+    
+    .adm-chart-title {
+        font-size: 1.1rem;
+    }
+    
+    .adm-meja-title {
+        font-size: 1.25rem;
+    }
+    
+    .adm-meja-name {
+        font-size: 1.15rem;
+    }
+    
+    .adm-ball-icon {
+        width: 38px;
+        height: 38px;
+    }
+}

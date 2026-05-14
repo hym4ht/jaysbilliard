@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════ BASE STYLES ═══════════════════════════════ */
+@layer base {
+    * {
+        @apply m-0 p-0 box-border;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+        @apply font-sans bg-dark text-white min-h-screen overflow-x-hidden;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        @apply w-1.5 h-1.5;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-white/5;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-primary/30 rounded;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-primary/50;
+    }
+}
+
+/* ═══════════════════════════════ COMPONENTS ═══════════════════════════════ */
+@layer components {
+    /* Text Utilities */
+    .text-neon {
+        @apply text-primary;
+        text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+    }
+
+    /* Background Utilities */
+    .bg-neon {
+        @apply bg-primary shadow-neon;
+    }
+
+    /* Glow Effects */
+    .glow-neon {
+        @apply shadow-neon;
+    }
+
+    .glow-neon-strong {
+        @apply shadow-neon-strong;
+    }
+
+    /* Card Glow Effect */
+    .card-glow {
+        @apply relative;
+    }
+
+    .card-glow::before {
+        content: '';
+        @apply absolute top-0 left-1/2 -translate-x-1/2 w-3/5 h-0.5 rounded-sm;
+        background: linear-gradient(90deg, transparent, #00e5ff, transparent);
+    }
+
+    .card-glow::after {
+        content: '';
+        @apply absolute top-0 left-1/2 -translate-x-1/2 w-4/5 h-8;
+        background: radial-gradient(ellipse at top, rgba(0, 229, 255, 0.15), transparent);
+    }
+
+    /* Backdrop Blur */
+    .backdrop-blur-custom {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+
+    /* Buttons */
+    .btn-primary {
+        @apply inline-flex items-center gap-2 bg-primary text-black font-bold text-sm uppercase tracking-wider px-8 py-3.5 rounded-lg border-2 border-primary transition-all hover:bg-primary-dark hover:border-primary-dark hover:shadow-neon hover:-translate-y-0.5;
+    }
+
+    .btn-secondary {
+        @apply inline-flex items-center gap-2 bg-transparent text-white font-semibold text-sm uppercase tracking-wider px-8 py-3.5 rounded-lg border-2 border-white/30 transition-all hover:border-white/60 hover:bg-white/5 hover:-translate-y-0.5;
+    }
+
+    .btn-ghost {
+        @apply inline-flex items-center gap-2 bg-white/5 text-white font-semibold text-sm uppercase tracking-wider px-8 py-3.5 rounded-lg border border-white/10 transition-all hover:bg-white/10 hover:border-white/20;
+    }
+
+    /* Cards */
+    .card {
+        @apply bg-dark-card border border-white/5 rounded-2xl p-7 transition-all;
+    }
+
+    .card-hover {
+        @apply hover:border-primary/30 hover:-translate-y-1;
+    }
+
+    /* Section Container */
+    .section-container {
+        @apply py-24 px-6 max-w-7xl mx-auto;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        @apply relative min-h-screen flex items-center justify-center text-center overflow-hidden;
+    }
+
+    .hero-overlay {
+        @apply absolute inset-0 bg-black/55 backdrop-blur-sm;
+    }
+
+    .hero-content {
+        @apply relative z-10 max-w-3xl mx-auto px-6;
+    }
+}
+
+/* ═══════════════════════════════ UTILITIES ═══════════════════════════════ */
+@layer utilities {
+    /* Smooth Transitions */
+    .transition-smooth {
+        @apply transition-all duration-300 ease-in-out;
+    }
+
+    /* Text Shadows */
+    .text-shadow-neon {
+        text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+    }
+
+    .text-shadow-strong {
+        text-shadow: 0 0 20px rgba(0, 229, 255, 0.7);
+    }
+
+    /* Gradient Text */
+    .text-gradient-neon {
+        @apply bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent;
+    }
+
+    /* Mobile Menu */
+    .mobile-menu-open {
+        @apply overflow-hidden;
+    }
+}
+
+/* ═══════════════════════════════ RESPONSIVE UTILITIES ═══════════════════════════════ */
+@media (max-width: 768px) {
+    .mobile-menu-open {
+        overflow: hidden;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}

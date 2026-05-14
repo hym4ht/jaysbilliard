@@ -1,0 +1,490 @@
+/* ══════════════════════════════════════════════════════════════════
+   USER DASHBOARD STYLES (PREMIUM NEON POOL)
+   ════════════════════════════════════════════════════════════════ */
+
+.user-dashboard-container {
+    padding: 2.5rem;
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════ WELCOME HERO ═══════ */
+.welcome-hero {
+    background: #0a0b0d; /* Hitam Solid Sesuai Gambar */
+    border: 1px solid rgba(0, 242, 255, 0.05);
+    border-radius: 2.5rem;
+    padding: 3.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 3rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+.hero-badge {
+    color: #00f2ff;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.hero-content h1 {
+    font-size: 3.8rem;
+    font-weight: 900;
+    color: #fff;
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.hero-content p {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1.1rem;
+    max-width: 500px;
+    margin-top: 15px;
+    line-height: 1.6;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 35px;
+}
+
+.btn-neon {
+    background: #00f2ff;
+    color: #000;
+    padding: 16px 36px;
+    border-radius: 16px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 0 25px rgba(0, 242, 255, 0.5);
+    transition: all 0.3s ease;
+    border: none;
+    text-decoration: none;
+}
+
+.btn-neon:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 40px rgba(0, 242, 255, 0.7);
+}
+
+.btn-ghost {
+    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+    padding: 16px 36px;
+    border-radius: 16px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ═══════ STAT CARDS ═══════ */
+.user-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.user-card {
+    background: rgba(20, 20, 24, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1.5rem;
+    padding: 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s;
+}
+
+.card-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Menyamakan semua icon menjadi Cyan sesuai permintaan */
+.stats-cyan .card-icon,
+.stats-pink .card-icon { 
+    color: #00f2ff; 
+    background: rgba(0, 242, 255, 0.08); 
+    box-shadow: inset 0 0 15px rgba(0, 242, 255, 0.1); 
+}
+
+.user-card-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.user-card-title {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #fff;
+    display: block;
+}
+
+/* ═══════ BOTTOM GRID ═══════ */
+.dashboard-bottom-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr;
+    gap: 2rem;
+}
+
+.recent-activity-card {
+    background: rgba(20, 20, 24, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 2rem;
+    padding: 2.2rem;
+}
+
+.card-header h3 {
+    margin: 0;
+    color: #fff;
+    font-weight: 800;
+}
+
+.card-header a {
+    color: #00f2ff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.3s;
+    text-shadow: 0 0 8px rgba(0, 242, 255, 0.3);
+}
+
+.card-header a:hover {
+    color: #fff;
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.6);
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.act-icon { width: 10px; height: 10px; border-radius: 50%; }
+.dot-cyan { background: #00f2ff; box-shadow: 0 0 10px #00f2ff; }
+.dot-pink { background: #00f2ff; box-shadow: 0 0 10px #00f2ff; } /* Disamakan ke Cyan */
+
+.act-name { color: #fff; font-weight: 700; display: block; }
+.act-date { color: rgba(255, 255, 255, 0.2); font-size: 0.75rem; }
+
+/* ═══════ PROMO CARD (Hitam & Biru) ═══════ */
+.promo-banner-card {
+    background: linear-gradient(135deg, #0a0b0d 0%, #050505 100%);
+    border: 1px solid rgba(0, 242, 255, 0.3);
+    border-radius: 2rem;
+    padding: 2.5rem;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 250px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    transition: 0.3s;
+}
+
+.promo-banner-card:hover {
+    border-color: #00f2ff;
+    box-shadow: 0 0 30px rgba(0, 242, 255, 0.15);
+}
+
+.promo-banner-card::before {
+    content: '🎱';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 8rem;
+    opacity: 0.1;
+    color: #00f2ff;
+    transform: rotate(15deg);
+}
+
+.promo-content h4 {
+    color: #00f2ff;
+    font-size: 1.8rem;
+    font-weight: 950;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
+
+.promo-content p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+}
+
+.promo-badge {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    background: rgba(0, 242, 255, 0.1);
+    color: #00f2ff;
+    border: 1px solid rgba(0, 242, 255, 0.3);
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    font-weight: 900;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE MOBILE STYLES
+   ══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+    .dashboard-bottom-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .user-dashboard-container {
+        padding: 1.5rem;
+    }
+    
+    .welcome-hero {
+        padding: 2.5rem;
+        border-radius: 2rem;
+        margin-bottom: 2rem;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .hero-content h1 {
+        font-size: 2.5rem;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .hero-content p {
+        font-size: 1rem;
+        margin-top: 12px;
+    }
+    
+    .hero-actions {
+        margin-top: 25px;
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-neon,
+    .btn-ghost {
+        width: 100%;
+        padding: 14px 28px;
+        text-align: center;
+    }
+    
+    .user-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+    
+    .user-card {
+        padding: 1.5rem;
+        border-radius: 1.25rem;
+    }
+    
+    .card-icon {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .user-card-title {
+        font-size: 1.4rem;
+    }
+    
+    .dashboard-bottom-grid {
+        gap: 1.5rem;
+    }
+    
+    .recent-activity-card {
+        padding: 1.75rem;
+        border-radius: 1.5rem;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .activity-item {
+        padding: 12px 0;
+    }
+    
+    .promo-banner-card {
+        padding: 2rem;
+        border-radius: 1.5rem;
+        min-height: 220px;
+    }
+    
+    .promo-banner-card::before {
+        font-size: 6rem;
+    }
+    
+    .promo-content h4 {
+        font-size: 1.5rem;
+    }
+    
+    .promo-content p {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-dashboard-container {
+        padding: 1rem;
+    }
+    
+    .welcome-hero {
+        padding: 2rem;
+        border-radius: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .hero-badge {
+        font-size: 0.7rem;
+        margin-bottom: 12px;
+    }
+    
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+    
+    .hero-content p {
+        font-size: 0.9rem;
+        margin-top: 10px;
+    }
+    
+    .hero-actions {
+        margin-top: 20px;
+        gap: 12px;
+    }
+    
+    .btn-neon,
+    .btn-ghost {
+        padding: 12px 24px;
+        font-size: 0.85rem;
+        border-radius: 12px;
+    }
+    
+    .user-stats-grid {
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .user-card {
+        padding: 1.25rem;
+        border-radius: 1rem;
+        gap: 15px;
+    }
+    
+    .card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+    }
+    
+    .user-card-label {
+        font-size: 0.68rem;
+    }
+    
+    .user-card-title {
+        font-size: 1.25rem;
+    }
+    
+    .dashboard-bottom-grid {
+        gap: 1.25rem;
+    }
+    
+    .recent-activity-card {
+        padding: 1.5rem;
+        border-radius: 1.25rem;
+    }
+    
+    .card-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .card-header a {
+        font-size: 0.8rem;
+    }
+    
+    .activity-item {
+        padding: 10px 0;
+        gap: 12px;
+    }
+    
+    .act-icon {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .act-name {
+        font-size: 0.9rem;
+    }
+    
+    .act-date {
+        font-size: 0.7rem;
+    }
+    
+    .promo-banner-card {
+        padding: 1.75rem;
+        border-radius: 1.25rem;
+        min-height: 200px;
+    }
+    
+    .promo-banner-card::before {
+        font-size: 5rem;
+        top: 5px;
+        right: 5px;
+    }
+    
+    .promo-badge {
+        top: 20px;
+        left: 20px;
+        padding: 4px 10px;
+        font-size: 0.6rem;
+        border-radius: 6px;
+    }
+    
+    .promo-content h4 {
+        font-size: 1.3rem;
+        margin-bottom: 8px;
+    }
+    
+    .promo-content p {
+        font-size: 0.85rem;
+    }
+}
