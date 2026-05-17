@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+n<!DOCTYPE html>
 <html lang="id">
 
 <head>
@@ -205,7 +205,7 @@
                                 }
                             @endphp
 
-                            <div class="adm-meja-card adm-meja--{{ $statusClass }}">
+                            <div class="adm-meja-card adm-meja--{{ $statusClass }}" data-table-id="{{ $table->id }}">
                                 <div class="adm-meja-card-top">
                                     <div class="adm-meja-name-wrap">
                                         <h3 class="adm-meja-name">{{ strtoupper($table->name) }}</h3>
@@ -288,15 +288,9 @@
     @include('component.c_dashboard.modal.logout_modal')
 
     <script src="{{ asset('js/js_component/logout.js') }}"></script>
-<script src="{{ asset('js/js_component/chat.js') }}"></script>
+    <script src="{{ asset('js/js_component/chat.js') }}"></script>
     <script src="{{ asset('js/js_component/akhiri.js') }}"></script>
     <script src="{{ asset('js/js_component/option_dashboard.js') }}"></script>
-    
-    <script>
-        // Auto refresh page every 30 seconds to simulate real-time updates
-        setTimeout(function() {
-            window.location.reload();
-        }, 30000);
-    </script>
+    <script src="{{ asset('js/js_component/dashboard_refresh.js') }}"></script>
 </body>
 </html>
