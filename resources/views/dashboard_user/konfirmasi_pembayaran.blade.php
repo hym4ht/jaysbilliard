@@ -59,16 +59,17 @@
             </div>
 
             <div class="payment-details-section">
-                <div class="detail-section-title" id="payment-method-title">Pembayaran Midtrans</div>
+                <div class="detail-section-title" id="payment-method-title">QRIS via Midtrans</div>
                 <div class="detail-section-content" id="payment-method-content">
-                    <div class="qr-container">
-                        <div class="qr-code">
-                            <img src="{{ asset('images/logo-jb.png') }}" alt="Jay's Billiard" class="qr-image">
+                    <div class="payment-method-preview">
+                        <div class="payment-badge payment-badge--qris">QR</div>
+                        <div>
+                            <div class="payment-method-preview__title">QRIS Dinamis</div>
+                            <p class="payment-method-preview__text">
+                                Snap Midtrans akan membuka kode QRIS yang bisa dibayar lewat aplikasi bank atau e-wallet pendukung QRIS.
+                            </p>
                         </div>
                     </div>
-                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 15px; line-height: 1.5;">
-                        Pilihan QRIS, virtual account, kartu, dan e-wallet akan tampil di popup resmi Midtrans.
-                    </p>
                 </div>
                 <div id="no-method-selected" style="display: none; padding: 40px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
                     Tidak ada metode pembayaran yang dipilih
@@ -110,17 +111,41 @@
                 <div class="method-category">
                     <div class="category-header">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
-                        Gateway Pembayaran
+                        Pilih Metode Pembayaran
                     </div>
-                    <div class="method-grid">
-                        <div class="method-option selected qris-option" data-name="Midtrans">
+                    <div class="method-grid method-grid--wallet">
+                        <button type="button" class="method-option selected" data-key="qris" data-name="QRIS" data-title="QRIS via Midtrans" data-badge="QR" data-badge-class="payment-badge--qris" data-preview-title="QRIS Dinamis" data-description="Snap Midtrans akan membuka kode QRIS yang bisa dibayar lewat aplikasi bank atau e-wallet pendukung QRIS." data-button="Bayar QRIS via Midtrans" data-ui-mode="qr">
                             <div class="option-left">
-                                <span class="option-name">Midtrans Snap</span>
+                                <span class="payment-badge payment-badge--qris">QR</span>
+                                <span class="option-copy">
+                                    <span class="option-name">QRIS</span>
+                                    <span class="option-note">Scan dari bank atau e-wallet</span>
+                                </span>
                             </div>
                             <div class="radio-circle"></div>
-                        </div>
-                        <div style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">
-                            Metode pembayaran dipilih di popup Midtrans setelah tombol bayar ditekan.
+                        </button>
+                        <button type="button" class="method-option" data-key="dana" data-name="DANA" data-title="DANA via Midtrans" data-badge="DANA" data-badge-class="payment-badge--dana" data-preview-title="DANA Direct Debit" data-description="Midtrans akan mengarahkan pelanggan ke halaman pembayaran DANA jika credential Snap-BI sudah dikonfigurasi." data-button="Bayar DANA via Midtrans" data-ui-mode="auto">
+                            <div class="option-left">
+                                <span class="payment-badge payment-badge--dana">DANA</span>
+                                <span class="option-copy">
+                                    <span class="option-name">DANA</span>
+                                    <span class="option-note">Redirect ke pembayaran DANA</span>
+                                </span>
+                            </div>
+                            <div class="radio-circle"></div>
+                        </button>
+                        <button type="button" class="method-option" data-key="gopay" data-name="GoPay" data-title="GoPay via Midtrans" data-badge="GP" data-badge-class="payment-badge--gopay" data-preview-title="GoPay Deeplink" data-description="Snap Midtrans akan mencoba membuka aplikasi GoPay/Gojek langsung di perangkat mobile." data-button="Bayar GoPay via Midtrans" data-ui-mode="deeplink">
+                            <div class="option-left">
+                                <span class="payment-badge payment-badge--gopay">GP</span>
+                                <span class="option-copy">
+                                    <span class="option-name">GoPay</span>
+                                    <span class="option-note">Deeplink atau scan QR</span>
+                                </span>
+                            </div>
+                            <div class="radio-circle"></div>
+                        </button>
+                        <div class="method-helper">
+                            QRIS dan GoPay diproses lewat Midtrans Snap. DANA redirect memakai Snap-BI Direct Debit jika credential tersedia.
                         </div>
                     </div>
                 </div>
@@ -128,7 +153,7 @@
                 {{-- Footer Actions --}}
                 <div class="konfirmasi-footer">
                     <a href="{{ route('user.meja') }}" class="cancel-link" id="cancel-btn">Cancel</a>
-                    <button class="pay-btn" id="main-pay-btn">Bayar dengan Midtrans</button>
+                    <button class="pay-btn" id="main-pay-btn">Bayar QRIS via Midtrans</button>
                 </div>
             </div>
         </div>
@@ -180,8 +205,10 @@
 
             // Dynamic Data Binding from localStorage
             const orderDataRaw = localStorage.getItem('meja_order');
+            let currentOrderData = null;
             if(orderDataRaw) {
                 const orderData = JSON.parse(orderDataRaw);
+                currentOrderData = orderData;
 
                 // Multi Table Info Render
                 const tablesContainer = document.getElementById('konfirmasi-tables-container');
@@ -213,38 +240,173 @@
                 document.getElementById('modal-total-value').innerText = orderData.total;
             }
 
-            methodOptions.forEach(option => {
-                option.addEventListener('click', () => {
-                    methodOptions.forEach(opt => opt.classList.remove('selected'));
-                    option.classList.add('selected');
-
-                    const type = option.dataset.type;
-                    const name = option.dataset.name;
-                    const number = option.dataset.number;
-
-                    updatePaymentView(type, name, number);
-                });
-            });
-
-            function updatePaymentView(type, name, number) {
-                methodTitle.innerText = 'Pembayaran Midtrans';
-                methodContent.innerHTML = `
-                    <div class="qr-container">
-                        <div class="qr-code">
-                            <img src="{{ asset('images/logo-jb.png') }}" alt="Jay's Billiard" class="qr-image">
-                        </div>
-                    </div>
-                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 15px; line-height: 1.5;">
-                        Pilihan QRIS, virtual account, kartu, dan e-wallet akan tampil di popup resmi Midtrans.
-                    </p>
-                `;
-            }
-
             const mainPayBtn = document.getElementById('main-pay-btn');
             const paymentStatusText = document.getElementById('payment-status-text');
             const paymentStatusSub = document.getElementById('payment-status-sub');
             const noMethodText = document.getElementById('no-method-selected');
             const cancelBtn = document.getElementById('cancel-btn');
+            const bookingPaymentStatusUrlTemplate = '{{ route("booking.payment-status", ["orderId" => "__ORDER_ID__"]) }}';
+            let bookingStatusPollInterval = null;
+            let bookingStatusPollTimeout = null;
+
+            methodOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    methodOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    updatePaymentView(option);
+                    setPayButtonIdle();
+                });
+            });
+
+            function getSelectedMethodOption() {
+                return document.querySelector('.method-option.selected') || methodOptions[0];
+            }
+
+            function updatePaymentView(option) {
+                methodTitle.innerText = option.dataset.title || 'Pembayaran Midtrans';
+                methodContent.innerHTML = `
+                    <div class="payment-method-preview">
+                        <div class="payment-badge ${option.dataset.badgeClass || 'payment-badge--qris'}">${option.dataset.badge || 'QR'}</div>
+                        <div>
+                            <div class="payment-method-preview__title">${option.dataset.previewTitle || option.dataset.name || 'Midtrans'}</div>
+                            <p class="payment-method-preview__text">${option.dataset.description || 'Pembayaran akan diproses lewat Midtrans Snap.'}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function setPayButtonIdle() {
+                const selectedOption = getSelectedMethodOption();
+                mainPayBtn.innerText = selectedOption?.dataset.button || 'Bayar dengan Midtrans';
+                mainPayBtn.style.pointerEvents = 'auto';
+            }
+
+            function formatPaymentMethod(paymentType, fallbackName) {
+                const normalized = String(paymentType || '').toLowerCase();
+                const labels = {
+                    qris: 'QRIS',
+                    dana: 'DANA',
+                    gopay: 'GoPay',
+                    shopeepay: 'ShopeePay',
+                    bank_transfer: 'Bank Transfer',
+                    credit_card: 'Kartu Kredit'
+                };
+
+                return labels[normalized] || fallbackName || 'Midtrans';
+            }
+
+            function saveBookingHistory(orderData, paymentMethod, status, orderId = null) {
+                const historyData = JSON.parse(localStorage.getItem('billiard_history') || '[]');
+                const entryId = orderId || 'NEW-' + Math.floor(Math.random() * 1000);
+                const existingIndex = historyData.findIndex(item => item.id === entryId);
+                const newEntry = {
+                    id: entryId,
+                    customer_name: '{{ Auth::user()->name }}',
+                    tables: orderData.tables.map(t => t.name).join(', '),
+                    date: orderData.date,
+                    time: orderData.time.split(' - ')[0],
+                    duration: orderData.duration,
+                    total: orderData.total,
+                    status,
+                    payment_method: paymentMethod,
+                    timestamp: new Date().getTime()
+                };
+
+                if (existingIndex >= 0) {
+                    historyData[existingIndex] = newEntry;
+                } else {
+                    historyData.unshift(newEntry);
+                }
+
+                localStorage.setItem('billiard_history', JSON.stringify(historyData));
+            }
+
+            function clearBookingPaymentPolling() {
+                if (bookingStatusPollInterval) {
+                    clearInterval(bookingStatusPollInterval);
+                    bookingStatusPollInterval = null;
+                }
+
+                if (bookingStatusPollTimeout) {
+                    clearTimeout(bookingStatusPollTimeout);
+                    bookingStatusPollTimeout = null;
+                }
+            }
+
+            function pollBookingPaymentStatus(orderId, latestOrderData, fallbackMethod = 'DANA') {
+                if (!orderId || !latestOrderData) return;
+
+                localStorage.setItem('meja_pending_order_id', orderId);
+                clearBookingPaymentPolling();
+
+                const checkStatus = function () {
+                    const statusUrl = bookingPaymentStatusUrlTemplate.replace('__ORDER_ID__', encodeURIComponent(orderId));
+
+                    fetch(statusUrl, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error('Gagal memeriksa status pembayaran.');
+                        }
+
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.status === 'paid') {
+                            const paymentMethod = data.payment_method || fallbackMethod || 'DANA';
+                            document.getElementById('final-method-name').innerText = paymentMethod;
+                            saveBookingHistory(latestOrderData, paymentMethod, 'paid', orderId);
+                            localStorage.removeItem('meja_pending_order_id');
+                            clearBookingPaymentPolling();
+                            showSuccessModal();
+                        } else if (['cancelled', 'failed', 'expired'].includes(data.status)) {
+                            localStorage.removeItem('meja_pending_order_id');
+                            clearBookingPaymentPolling();
+                            setPayButtonIdle();
+                            alert('Pembayaran tidak berhasil atau sudah berakhir.');
+                        } else {
+                            paymentStatusText.innerText = 'Status Pembayaran : MENUNGGU';
+                            paymentStatusSub.innerText = 'Menunggu konfirmasi pembayaran dari Midtrans';
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
+                };
+
+                checkStatus();
+                bookingStatusPollInterval = setInterval(checkStatus, 3000);
+                bookingStatusPollTimeout = setTimeout(clearBookingPaymentPolling, 25 * 60 * 1000);
+            }
+
+            function showSuccessModal() {
+                mainPayBtn.innerText = 'Pembayaran Selesai';
+                mainPayBtn.style.background = '#00f2ff';
+                mainPayBtn.style.pointerEvents = 'none';
+
+                paymentStatusText.innerHTML = 'Status Pembayaran : <span style="color: #00f2ff;">BERHASIL</span>';
+                paymentStatusSub.innerText = 'Pesanan terkonfirmasi';
+
+                hours = 0; minutes = 0; seconds = 0;
+                updateTimer();
+
+                document.querySelectorAll('.detail-value, .total-value').forEach(el => el.innerText = '-');
+                document.querySelector('.total-value').innerText = 'Rp 0';
+                document.querySelectorAll('.table-name').forEach(el => el.innerHTML = '- <span class="table-capacity">-</span>');
+                document.querySelectorAll('.table-type').forEach(el => el.innerText = '-');
+
+                methodContent.style.display = 'none';
+                noMethodText.style.display = 'block';
+                cancelBtn.style.display = 'none';
+
+                setTimeout(() => {
+                    document.getElementById('success-overlay').classList.add('active');
+                }, 800);
+            }
 
             // Simulate Failed/Cancelled Transaction for testing
             cancelBtn.addEventListener('click', function(e) {
@@ -277,10 +439,13 @@
             });
 
             mainPayBtn.addEventListener('click', function() {
-                const selectedMethod = 'Midtrans';
+                const selectedOption = getSelectedMethodOption();
+                const selectedMethod = selectedOption?.dataset.name || 'QRIS';
+                const selectedMethodKey = selectedOption?.dataset.key || 'qris';
+                const selectedUiMode = selectedOption?.dataset.uiMode || 'auto';
                 document.getElementById('final-method-name').innerText = selectedMethod;
 
-                if (!window.snap) {
+                if (selectedMethodKey !== 'dana' && !window.snap) {
                     alert("Midtrans Snap belum berhasil dimuat. Cek koneksi internet atau client key Midtrans.");
                     return;
                 }
@@ -318,6 +483,7 @@
                         start_time: startTime,
                         end_time: endTime,
                         total_price: cleanTotal,
+                        payment_method: selectedMethodKey,
                         _token: '{{ csrf_token() }}'
                     };
 
@@ -340,86 +506,50 @@
                             throw new Error(errors || data.message || 'Reservasi tidak valid.');
                         }
 
+                        if (data.redirect_url) {
+                            localStorage.setItem('meja_pending_order_id', data.order_id);
+                            saveBookingHistory(orderData, selectedMethod, 'pending', data.order_id);
+                            paymentStatusText.innerText = 'Mengalihkan ke DANA';
+                            paymentStatusSub.innerText = 'Selesaikan pembayaran di halaman DANA';
+                            window.location.href = data.redirect_url;
+                            return;
+                        }
+
                         if (!data.snap_token) {
                             throw new Error(data.message || 'Snap token Midtrans tidak tersedia.');
                         }
 
                         window.snap.pay(data.snap_token, {
+                            uiMode: selectedUiMode,
                             onSuccess: function(result){
-                                // Also save to history for local view consistency
-                                const historyData = JSON.parse(localStorage.getItem('billiard_history') || '[]');
-                                const newEntry = {
-                                    id: result.order_id || 'NEW-' + Math.floor(Math.random() * 1000),
-                                    customer_name: '{{ Auth::user()->name }}',
-                                    tables: orderData.tables.map(t => t.name).join(', '),
-                                    date: orderData.date,
-                                    time: orderData.time.split(' - ')[0],
-                                    duration: orderData.duration,
-                                    total: orderData.total,
-                                    status: 'paid',
-                                    payment_method: result.payment_type || selectedMethod,
-                                    timestamp: new Date().getTime()
-                                };
-                                historyData.unshift(newEntry);
-                                localStorage.setItem('billiard_history', JSON.stringify(historyData));
+                                const paymentMethod = formatPaymentMethod(result.payment_type, selectedMethod);
+                                document.getElementById('final-method-name').innerText = paymentMethod;
+
+                                saveBookingHistory(orderData, paymentMethod, 'paid', result.order_id);
 
                                 showSuccessModal();
                             },
                             onPending: function(result){
-                                mainPayBtn.innerText = 'Bayar dengan Midtrans';
-                                mainPayBtn.style.pointerEvents = 'auto';
+                                document.getElementById('final-method-name').innerText = formatPaymentMethod(result.payment_type, selectedMethod);
+                                setPayButtonIdle();
                                 alert("Menunggu pembayaran Anda!"); console.log(result);
                             },
                             onError: function(result){
-                                mainPayBtn.innerText = 'Bayar dengan Midtrans';
-                                mainPayBtn.style.pointerEvents = 'auto';
+                                setPayButtonIdle();
                                 alert("Pembayaran gagal!"); console.log(result);
                             },
                             onClose: function(){
-                                mainPayBtn.innerText = 'Bayar dengan Midtrans';
-                                mainPayBtn.style.pointerEvents = 'auto';
+                                setPayButtonIdle();
                                 alert("Anda menutup popup pembayaran sebelum menyelesaikan pembayaran");
                             }
                         });
                     })
                     .catch((error) => {
                         console.error('Error:', error);
-                        mainPayBtn.innerText = 'Bayar dengan Midtrans';
-                        mainPayBtn.style.pointerEvents = 'auto';
+                        setPayButtonIdle();
                         alert(error.message || "Terjadi kesalahan sistem saat memproses pesanan.");
                     });
                 }
-                
-                function showSuccessModal() {
-                    mainPayBtn.innerText = 'Pembayaran Selesai';
-                    mainPayBtn.style.background = '#00f2ff';
-                    mainPayBtn.style.pointerEvents = 'none';
-                    
-                    paymentStatusText.innerHTML = 'Status Pembayaran : <span style="color: #00f2ff;">BERHASIL</span>';
-                    paymentStatusSub.innerText = 'Pesanan terkonfirmasi';
-                    
-                    // Reset timer boxes to 0
-                    hours = 0; minutes = 0; seconds = 0;
-                    updateTimer();
-
-                    // Clear left billing details
-                    document.querySelectorAll('.detail-value, .total-value').forEach(el => el.innerText = '-');
-                    document.querySelector('.total-value').innerText = 'Rp 0';
-                    document.querySelectorAll('.table-name').forEach(el => el.innerHTML = '- <span class="table-capacity">-</span>');
-                    document.querySelectorAll('.table-type').forEach(el => el.innerText = '-');
-                    
-                    // Hide payment detail content
-                    methodContent.style.display = 'none';
-                    noMethodText.style.display = 'block';
-                    cancelBtn.style.display = 'none';
-
-                    // Show Custom Success Modal
-                    setTimeout(() => {
-                        document.getElementById('success-overlay').classList.add('active');
-                    }, 800);
-                }
-
-                // Note: The rest of success logic is moved to showSuccessModal()
             });
 
             // DOWNLOAD STRUK LOGIC
@@ -502,6 +632,13 @@
             }
 
             timerInterval = setInterval(updateTimer, 1000);
+
+            const pendingBookingOrderId = localStorage.getItem('meja_pending_order_id');
+            if (pendingBookingOrderId && currentOrderData) {
+                paymentStatusText.innerText = 'Memeriksa pembayaran DANA';
+                paymentStatusSub.innerText = 'Menunggu konfirmasi pembayaran dari Midtrans';
+                pollBookingPaymentStatus(pendingBookingOrderId, currentOrderData, 'DANA');
+            }
         });
     </script>
 @endpush

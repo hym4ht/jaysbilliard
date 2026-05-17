@@ -13,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->validateCsrfTokens(except: [
-            '/api/webhook/midtrans'
+            '/api/webhook/midtrans',
+            '/v1.0/debit/notify',
         ]);
 
         $middleware->alias([

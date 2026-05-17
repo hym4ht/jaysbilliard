@@ -311,6 +311,10 @@
     gap: 15px;
 }
 
+.method-grid--wallet {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .method-option {
     background: rgba(255, 255, 255, 0.02);
     border: 1.5px solid var(--card-border);
@@ -321,6 +325,10 @@
     justify-content: space-between;
     cursor: pointer;
     transition: all 0.3s;
+    width: 100%;
+    color: inherit;
+    font: inherit;
+    text-align: left;
 }
 
 .method-option:hover {
@@ -337,6 +345,77 @@
     display: flex;
     align-items: center;
     gap: 15px;
+    min-width: 0;
+}
+
+.option-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.option-note {
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.payment-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.4px;
+}
+
+.payment-badge--qris {
+    background: linear-gradient(135deg, #00f2ff, #006dff);
+    color: #001014;
+}
+
+.payment-badge--dana {
+    background: linear-gradient(135deg, #1976ff, #00c2ff);
+}
+
+.payment-badge--gopay {
+    background: linear-gradient(135deg, #00aa5b, #00e1a0);
+    color: #00160c;
+}
+
+.method-helper {
+    grid-column: 1 / -1;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.payment-method-preview {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    text-align: left;
+}
+
+.payment-method-preview__title {
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.payment-method-preview__text {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin: 0;
 }
 
 .bank-logo {
@@ -606,6 +685,10 @@
     }
 
     .method-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .method-grid--wallet {
         grid-template-columns: 1fr;
     }
 

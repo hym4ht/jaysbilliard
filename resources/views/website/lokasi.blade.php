@@ -3,16 +3,16 @@
 
 @section('content')
 {{-- ═══════════════════════════════ HEADER ═══════════════════════════════ --}}
-<section class="pt-32 pb-8 px-6 max-w-6xl mx-auto">
-    <h1 class="text-4xl md:text-5xl font-black uppercase text-white tracking-wide">TEMUKAN ARENA KAMI</h1>
+<section class="pt-28 sm:pt-32 pb-8 px-4 sm:px-6 max-w-6xl mx-auto">
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-white tracking-wide">TEMUKAN ARENA KAMI</h1>
 </section>
 
 {{-- ═══════════════════════════════ INFO + MAP ═══════════════════════════════ --}}
-<section class="px-6 pb-16 max-w-6xl mx-auto">
+<section class="px-4 sm:px-6 pb-16 max-w-6xl mx-auto">
     <div class="grid md:grid-cols-2 gap-6 items-start">
 
         {{-- Left: Info Card --}}
-        <div class="bg-gradient-to-b from-[#0f1923] to-[#111118] border border-primary/12 rounded-2xl p-8 flex flex-col gap-6">
+        <div class="bg-gradient-to-b from-[#0f1923] to-[#111118] border border-primary/12 rounded-2xl p-5 sm:p-8 flex flex-col gap-6">
             <span class="inline-flex self-start text-primary text-[0.6rem] font-extrabold uppercase tracking-widest bg-primary/10 border border-primary/30 rounded-full px-3.5 py-1.5">KUNJUNGI KAMI</span>
 
             {{-- Alamat --}}
@@ -34,11 +34,11 @@
                 <div>
                     <p class="text-white font-bold text-sm mb-1">Jam Operasional</p>
                     <div class="flex flex-col gap-1.5">
-                        <div class="flex items-center gap-3 text-xs">
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                             <span class="text-white/50">Hari Kerja (Sen-Jum)</span>
                             <span class="text-white font-bold">10:00 - 00:00</span>
                         </div>
-                        <div class="flex items-center gap-3 text-xs">
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                             <span class="text-white/50">Akhir Pekan (Sab-Ming)</span>
                             <span class="text-primary font-bold">10:00 - 02:00</span>
                         </div>
@@ -68,10 +68,10 @@
         </div>
 
         {{-- Right: Map --}}
-        <div class="rounded-2xl overflow-hidden min-h-[25rem] border border-primary/12">
+        <div class="rounded-2xl overflow-hidden min-h-[20rem] sm:min-h-[25rem] border border-primary/12">
             <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.152290758776!2d109.13612127504331!3d-6.872349093126373!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6fb900340ba34d%3A0x7a438cc8b3fd1052!2sJay&#39;s%20Billiard!5e0!3m2!1sid!2sid!4v1772697633190!5m2!1sid!2sid"
-                class="w-full h-full min-h-[25rem]"
+                class="w-full h-full min-h-[20rem] sm:min-h-[25rem]"
                 style="border:0;"
                 allowfullscreen
                 loading="lazy"
@@ -83,7 +83,7 @@
 </section>
 
 {{-- ═══════════════════════════════ GALLERY ═══════════════════════════════ --}}
-<section class="px-6 pb-20 max-w-6xl mx-auto">
+<section class="px-4 sm:px-6 pb-20 max-w-6xl mx-auto">
     <div class="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 mb-6">
         <div>
             <h2 class="text-xl font-black uppercase text-white mb-1">GALERI VENUE</h2>

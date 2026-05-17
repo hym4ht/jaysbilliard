@@ -74,22 +74,17 @@
             <div class="recent-activity-card">
                 <div class="card-header">
                     <h3>Aktivitas Terakhir</h3>
-                    <a href="{{ route('admin.history') }}">Lihat Semua</a>
+                    <a href="{{ route('user.history') }}">Lihat Semua</a>
                 </div>
                 <div class="activity-list" id="activityList">
                     @forelse($recentActivities as $activity)
-                        @php
-                            $statusText = $activity->status === 'completed' ? 'SELESAI' : ($activity->status === 'confirmed' ? 'DIPESAN' : 'BERHASIL');
-                            // Getting table name
-                            $tableName = \App\Models\Table::find($activity->table_id)->name ?? 'Meja';
-                        @endphp
                         <div class="activity-item">
-                            <div class="act-icon dot-cyan"></div>
+                            <div class="act-icon {{ $activity['dot_class'] }}"></div>
                             <div class="act-info">
-                                <span class="act-name">Booking {{ strtoupper($tableName) }}</span>
-                                <span class="act-date">{{ \Carbon\Carbon::parse($activity->booking_date)->format('d M Y') }}, {{ \Carbon\Carbon::parse($activity->start_time)->format('H:i') }} WIB</span>
+                                <span class="act-name">{{ $activity['title'] }}</span>
+                                <span class="act-date">{{ $activity['subtitle'] }} - {{ $activity['amount'] }}</span>
                             </div>
-                            <span class="act-status success">{{ $statusText }}</span>
+                            <span class="act-status {{ $activity['status_class'] }}">{{ $activity['status_label'] }}</span>
                         </div>
                     @empty
                         <div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.2);">Belum ada aktivitas terbaru.</div>

@@ -186,7 +186,7 @@ class AdminDashboardController extends Controller
         $user = auth()->user();
         
         if (!$user) {
-            return redirect()->route('admin.login')->with('error', 'Silakan login terlebih dahulu.');
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
         }
         
         return view('dashboard_admin.profile_settings', compact('user'));

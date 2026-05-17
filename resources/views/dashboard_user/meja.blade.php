@@ -442,7 +442,22 @@
                 if (!selectedDate) return;
 
                 try {
-                    const response = await fetch(`${availabilityUrl}?date=${formatLocalDate(selectedDate)}`, {
+                    // Build URL with date and optional time range
+                    let url = `${availabilityUrl}?date=${formatLocalDate(selectedDate)}`;
+                    
+                    // Add time range if both start time and duration are selected
+                    const activeTimeSlot = document.querySelector('.time-slot.active');
+                    if (activeTimeSlot && durationSelected) {
+                        const startTime = activeTimeSlot.innerText.trim();
+                        const duration = parseInt(rangeSlider.value);
+                        const startHour = parseInt(startTime.split(':')[0]);
+                        const endHour = startHour + duration;
+                        const endTime = `${String(endHour).padStart(2, '0')}:00`;
+                        
+                        url += `&start_time=${startTime}&end_time=${endTime}`;
+                    }
+                    
+                    const response = await fetch(url, {
                         headers: {
                             'Accept': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest'
@@ -472,7 +487,7 @@
                         updateSelectedTablesList();
                         Swal.fire({
                             title: 'Pilihan Meja Diperbarui',
-                            text: `${removedTableNames.join(', ')} tidak tersedia pada tanggal ini.`,
+                            text: `${removedTableNames.join(', ')} tidak tersedia pada waktu ini.`,
                             icon: 'info',
                             confirmButtonColor: '#00e5ff',
                             background: '#0f1115',
@@ -955,6 +970,10 @@
                     timeSlots.forEach(s => s.classList.remove('active'));
                     slot.classList.add('active');
                     updateTimeSummary();
+                    // Refresh table availability when time is selected
+                    if (durationSelected) {
+                        refreshTableAvailability();
+                    }
                 });
             });
 
@@ -966,6 +985,11 @@
                 document.getElementById('summary-duration').innerText = val + ' Jam';
                 updateTimeSummary();
                 updateCalculations();
+                // Refresh table availability when duration changes
+                const activeTimeSlot = document.querySelector('.time-slot.active');
+                if (activeTimeSlot) {
+                    refreshTableAvailability();
+                }
             });
 
             function updateTimeSummary() {

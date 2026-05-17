@@ -196,6 +196,36 @@
 
 .act-name { color: #fff; font-weight: 700; display: block; }
 .act-date { color: rgba(255, 255, 255, 0.2); font-size: 0.75rem; }
+.act-info { flex: 1; min-width: 0; }
+.act-status {
+    margin-left: auto;
+    border-radius: 999px;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+.act-status.success {
+    color: #00ffaa;
+    background: rgba(0, 255, 170, 0.08);
+    border: 1px solid rgba(0, 255, 170, 0.14);
+}
+.act-status.pending {
+    color: #ffd166;
+    background: rgba(255, 209, 102, 0.08);
+    border: 1px solid rgba(255, 209, 102, 0.14);
+}
+.act-status.danger {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.08);
+    border: 1px solid rgba(255, 107, 107, 0.14);
+}
+.act-status.neutral {
+    color: rgba(255, 255, 255, 0.65);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
 /* ═══════ PROMO CARD (Hitam & Biru) ═══════ */
 .promo-banner-card {

@@ -6,7 +6,7 @@ class Booking extends Model
 {
     protected $fillable = [
         'user_id', 'table_id','customer_name','phone',
-        'booking_date','start_time','end_time','total_price','status'
+        'booking_date','start_time','end_time','total_price','status','payment_method'
     ];
 
     public function table() {

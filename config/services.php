@@ -39,6 +39,15 @@ return [
         'server_key' => env('MIDTRANS_SERVER_KEY'),
         'client_key' => env('MIDTRANS_CLIENT_KEY'),
         'is_production' => filter_var(env('MIDTRANS_IS_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN),
+        'snap_bi' => [
+            'client_id' => env('MIDTRANS_SNAP_BI_CLIENT_ID'),
+            'private_key' => env('MIDTRANS_SNAP_BI_PRIVATE_KEY'),
+            'client_secret' => env('MIDTRANS_SNAP_BI_CLIENT_SECRET'),
+            'partner_id' => env('MIDTRANS_SNAP_BI_PARTNER_ID') ?: env('MIDTRANS_SNAP_BI_CLIENT_ID'),
+            'channel_id' => env('MIDTRANS_SNAP_BI_CHANNEL_ID') ?: '12345',
+            'merchant_id' => env('MIDTRANS_SNAP_BI_MERCHANT_ID', env('MIDTRANS_MERCHANT_ID')),
+            'public_key' => env('MIDTRANS_SNAP_BI_PUBLIC_KEY'),
+        ],
     ],
 
 ];

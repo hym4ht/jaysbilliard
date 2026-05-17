@@ -268,6 +268,7 @@
                     tax: finalTax,
                     total: finalSubtotal + finalTax
                 };
+                localStorage.removeItem('fnb_pending_order_id');
                 localStorage.setItem('fnb_order', JSON.stringify(orderSummary));
 
                 window.location.href = "{{ route('user.fnb.konfirmasi') }}";

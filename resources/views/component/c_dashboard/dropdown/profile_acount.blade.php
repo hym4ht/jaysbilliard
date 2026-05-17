@@ -7,7 +7,7 @@
         </div>
     </div>
     <div class="adm-profile-divider"></div>
-    <a href="{{ route('admin.profile') }}" class="adm-profile-item">
+    <a href="{{ (Request::is('admin*') || Request::is('admin-dashboard*')) ? route('admin.profile') : route('user.profile') }}" class="adm-profile-item">
         <span class="adm-profile-item-text">Profile Settings</span>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -15,7 +15,7 @@
         </svg>
     </a>
     <div class="adm-profile-divider"></div>
-    <form action="{{ (Request::is('admin*') || Request::is('admin-dashboard*')) ? route('admin.logout') : route('logout') }}" method="POST">
+    <form action="{{ route('logout') }}" method="POST">
         @csrf
         <button type="button" class="adm-profile-item adm-profile-item--logout adm-logout-trigger"
             onclick="window.confirmLogout(event, this.form)"

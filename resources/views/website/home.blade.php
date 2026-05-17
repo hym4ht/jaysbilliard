@@ -10,7 +10,7 @@
         <div class="absolute inset-0 bg-black/55 backdrop-blur-sm"></div>
     </div>
 
-    <div class="relative z-10 max-w-3xl mx-auto px-6 pt-24 md:pt-0">
+    <div class="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 pt-28 pb-12 md:pt-0 md:pb-0">
         {{-- Badge --}}
         <span class="inline-flex items-center gap-2 text-xs bg-cyan-500/10 text-cyan-400 border border-cyan-400/40 rounded-full px-4 py-1.5 mb-8 uppercase tracking-wider">
             <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse-custom"></span>
@@ -18,13 +18,13 @@
         </span>
 
         {{-- Headline --}}
-        <h1 class="text-5xl md:text-7xl font-black uppercase leading-tight mb-6 text-white tracking-wide">
+        <h1 class="text-4xl sm:text-5xl md:text-7xl font-black uppercase leading-tight mb-6 text-white tracking-wide">
             Welcome To<br>
             <span class="text-neon">Billiard Jay's</span>
         </h1>
 
         {{-- Subheadline --}}
-        <p class="text-white/65 text-base leading-relaxed max-w-2xl mx-auto mb-10">
+        <p class="text-white/65 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto mb-10">
             Tempat di mana setiap permainan terasa lebih eksklusif. Pesan meja favoritmu sekarang dan rasakan pengalaman billiard dengan standar profesional dan suasana premium
         </p>
 
@@ -42,11 +42,11 @@
 </section>
 
 {{-- ═══════════════════════════════ WHY CHOOSE US ═══════════════════════════════ --}}
-<section class="py-24 px-6 max-w-7xl mx-auto">
+<section class="py-16 sm:py-24 px-4 sm:px-6 max-w-7xl mx-auto">
     <div class="flex flex-col md:flex-row items-start justify-between gap-6 mb-14">
         <div>
             <p class="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-2">Mengapa Memilih Kami</p>
-            <h2 class="text-4xl font-bold text-white">Lebih Dari Sekadar Permainan</h2>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white">Lebih Dari Sekadar Permainan</h2>
         </div>
         <p class="text-gray-400 max-w-sm md:text-right text-sm leading-relaxed">
             Kami telah membangun ruang di mana para profesional & pemula
@@ -75,9 +75,9 @@
 </section>
 
 {{-- ═══════════════════════════════ CURRENT PROMOS ═══════════════════════════════ --}}
-<section class="py-24 px-6 max-w-7xl mx-auto">
-    <div class="flex items-center justify-between mb-8">
-        <h2 class="text-4xl font-bold text-white">Promo Saat Ini</h2>
+<section class="py-16 sm:py-24 px-4 sm:px-6 max-w-7xl mx-auto">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white">Promo Saat Ini</h2>
         <a href="{{ route('promos.index') }}" class="text-cyan-400 text-sm hover:underline cursor-pointer relative z-10 transition-colors">
             Lihat Semua →
         </a>
@@ -91,11 +91,11 @@
 </section>
 
 {{-- ═══════════════════════════════ LOCATION SECTION ═══════════════════════════════ --}}
-<section class="py-24 px-6 max-w-7xl mx-auto">
+<section class="py-16 sm:py-24 px-4 sm:px-6 max-w-7xl mx-auto">
     <div class="grid md:grid-cols-2 gap-12 items-start">
         {{-- Info --}}
         <div>
-            <h2 class="text-4xl font-bold text-white mb-10">Temukan Kami di Tegal</h2>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white mb-10">Temukan Kami di Tegal</h2>
             <div class="space-y-6 text-sm text-gray-300">
                 <div class="flex gap-4">
                     <span class="flex items-center justify-center w-10 h-10 min-w-10 bg-cyan-400/10 rounded-full">
@@ -130,7 +130,7 @@
         </div>
 
         {{-- Map Embed --}}
-        <div class="rounded-2xl overflow-hidden h-80 border border-white/10">
+        <div class="rounded-2xl overflow-hidden h-72 sm:h-80 border border-white/10">
             <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.152290758776!2d109.13612127504331!3d-6.872349093126373!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6fb900340ba34d%3A0x7a438cc8b3fd1052!2sJay&#39;s%20Billiard!5e0!3m2!1sid!2sid!4v1772697633190!5m2!1sid!2sid"
                 class="w-full h-full"

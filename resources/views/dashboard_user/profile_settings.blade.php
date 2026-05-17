@@ -10,8 +10,7 @@
         {{-- Page Header --}}
         <div class="ps-header-section">
             <h1 class="ps-page-title">Profile Settings</h1>
-            <p class="ps-page-subtitle">Kelola profil administratif, kredensial keamanan, dan preferensi notifikasi sistem
-                Anda dari satu pusat kendali.</p>
+            <p class="ps-page-subtitle">Kelola profil, kredensial keamanan, dan preferensi notifikasi Anda dari satu pusat kendali.</p>
         </div>
 
         {{-- Avatar Card --}}
@@ -117,7 +116,7 @@
          * Load foto dari localStorage
          */
         function loadStoredAvatar() {
-            const savedAvatar = localStorage.getItem('admin_avatar');
+            const savedAvatar = localStorage.getItem('user_avatar');
             const circles = document.querySelectorAll('.ps-avatar-circle, .adm-user-avatar');
             
             if (savedAvatar) {
@@ -151,7 +150,7 @@
                 const dataUrl = e.target.result;
                 
                 // Simpan ke localStorage agar tidak hilang saat reload
-                localStorage.setItem('admin_avatar', dataUrl);
+                localStorage.setItem('user_avatar', dataUrl);
                 
                 // Update semua avatar di halaman (termasuk topbar/dropdown jika ada)
                 loadStoredAvatar();
@@ -163,7 +162,7 @@
          * Reset foto profil ke inisial
          */
         function removePhoto() {
-            localStorage.removeItem('admin_avatar');
+            localStorage.removeItem('user_avatar');
             const circles = document.querySelectorAll('.ps-avatar-circle, .adm-user-avatar');
             const userInitial = '{{ strtoupper(substr($user->name ?? "A", 0, 1)) }}';
             

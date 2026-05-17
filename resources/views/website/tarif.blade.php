@@ -3,20 +3,20 @@
 
 @section('content')
     {{-- ═══════════════════════════════ HEADER ═══════════════════════════════ --}}
-    <section class="text-center pt-32 pb-8 px-6 max-w-3xl mx-auto">
-        <h1 class="text-5xl md:text-6xl font-black uppercase text-white mb-4 tracking-wide">MEJA KAMI</h1>
-        <p class="text-white/55 text-base leading-relaxed">
+    <section class="text-center pt-28 sm:pt-32 pb-8 px-4 sm:px-6 max-w-3xl mx-auto">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-black uppercase text-white mb-4 tracking-wide">MEJA KAMI</h1>
+        <p class="text-white/55 text-sm sm:text-base leading-relaxed">
             Pilih arena Anda. Dari meja reguler yang kompetitif hingga suite VIP
             eksklusif, kami menyediakan pengalaman billiard terbaik di Tegal.
         </p>
     </section>
 
     {{-- ═══════════════════════════════ PRICING CARDS ═══════════════════════════════ --}}
-    <section class="px-6 pb-16 max-w-[85rem] mx-auto">
+    <section class="px-4 sm:px-6 pb-16 max-w-[85rem] mx-auto">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             @foreach($tables->take(4) as $table)
                 <div class="bg-dark-card border border-white/5 rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-2 hover:border-primary/15">
-                    <div class="h-45 relative overflow-hidden">
+                    <div class="h-44 sm:h-48 relative overflow-hidden">
                         <span class="absolute top-4 right-4 bg-primary text-black px-3.5 py-1.5 rounded-lg text-xs font-black shadow-neon z-10">
                             Rp {{ number_format($table->price_per_hour, 0, ',', '.') }} / JAM
                         </span>
@@ -44,7 +44,7 @@
     </section>
 
     {{-- ═══════════════════════════════ INFO SECTION ═══════════════════════════════ --}}
-    <section class="py-12 pb-20 px-6 max-w-[85rem] mx-auto border-t border-white/5">
+    <section class="py-12 pb-20 px-4 sm:px-6 max-w-[85rem] mx-auto border-t border-white/5">
         <div class="grid md:grid-cols-3 gap-8">
             <div class="flex gap-4 items-start">
                 <div class="flex items-center justify-center w-10 h-10 min-w-10 bg-primary/10 rounded-xl">

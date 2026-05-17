@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Table;
 use App\Models\Rate;
+use App\Services\MidtransDirectDebitService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -26,7 +27,7 @@ class BookingController extends Controller
         return view('dashboard_admin.pemesanan', compact('tables', 'rates'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, MidtransDirectDebitService $directDebit)
     {
         $validated = $request->validate([
             'table_ids' => 'required|array',
@@ -37,7 +38,15 @@ class BookingController extends Controller
             'start_time' => 'required|string',
             'end_time' => 'required|string',
             'total_price' => 'required|numeric',
+            'payment_method' => 'nullable|string|in:midtrans,qris,dana,gopay',
         ]);
+
+        $paymentMethod = $validated['payment_method'] ?? 'midtrans';
+        if ($paymentMethod === 'dana' && !$directDebit->isConfigured()) {
+            throw ValidationException::withMessages([
+                'payment_method' => 'DANA redirect belum bisa dipakai karena credential Snap-BI Midtrans belum lengkap: ' . implode(', ', $directDebit->missingConfigKeys()),
+            ]);
+        }
 
         [$startTime, $endTime] = $this->validateBookingWindow($validated);
         $validated['start_time'] = $startTime;
@@ -70,6 +79,7 @@ class BookingController extends Controller
                 'end_time' => $validated['end_time'],
                 'total_price' => $validated['total_price'] / count($validated['table_ids']), // distribute price
                 'status' => 'pending',
+                'payment_method' => $paymentMethod,
             ]);
             $bookings[] = $booking;
         }
@@ -80,9 +90,45 @@ class BookingController extends Controller
         \Midtrans\Config::$isSanitized = true;
         \Midtrans\Config::$is3ds = true;
 
-        $orderId = 'ORDER-' . uniqid() . '-' . time();
-        
         $bookingIds = collect($bookings)->pluck('id')->implode(',');
+        $orderId = $paymentMethod === 'dana'
+            ? 'ORDER-' . str_replace(',', '.', $bookingIds) . '-' . substr(uniqid(), -6)
+            : 'ORDER-' . uniqid() . '-' . time();
+
+        if ($paymentMethod === 'dana') {
+            try {
+                $response = $directDebit->createDanaPayment(
+                    $orderId,
+                    (int) $validated['total_price'],
+                    auth()->user(),
+                    [[
+                        'id' => 'TABLE',
+                        'price' => (int) $validated['total_price'],
+                        'quantity' => 1,
+                        'name' => 'Reservasi Meja',
+                        'category' => 'Billiard',
+                    ]],
+                    route('user.meja.konfirmasi')
+                );
+            } catch (\Throwable $e) {
+                Booking::whereIn('id', collect($bookings)->pluck('id'))->update(['status' => 'cancelled']);
+                report($e);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Gagal membuat pembayaran DANA. Coba lagi beberapa saat.',
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking berhasil disimpan!',
+                'bookings' => $bookings,
+                'order_id' => $orderId,
+                'payment_type' => 'dana_direct',
+                'redirect_url' => $directDebit->redirectUrlFromResponse($response),
+            ]);
+        }
 
         $params = array(
             'transaction_details' => array(
@@ -94,7 +140,13 @@ class BookingController extends Controller
                 'phone' => $validated['phone'] ?? (auth()->user()->phone ?? '-'),
             ),
             'custom_field1' => $bookingIds,
+            'custom_field2' => $paymentMethod,
         );
+
+        $enabledPayments = $this->midtransEnabledPayments($paymentMethod);
+        if (!empty($enabledPayments)) {
+            $params['enabled_payments'] = $enabledPayments;
+        }
 
         $snapToken = \Midtrans\Snap::getSnapToken($params);
 
@@ -113,6 +165,53 @@ class BookingController extends Controller
     public function selectTable()
     {
         return view('dashboard_admin.meja');
+    }
+
+    public function paymentStatus(string $orderId, MidtransDirectDebitService $directDebit)
+    {
+        $bookingIds = $this->bookingIdsFromDirectDebitOrderId($orderId);
+        if (empty($bookingIds)) {
+            abort(404);
+        }
+
+        $bookings = Booking::whereIn('id', $bookingIds)
+            ->where('user_id', auth()->id())
+            ->get();
+
+        if ($bookings->count() !== count($bookingIds)) {
+            abort(404);
+        }
+
+        if ($bookings->every(fn ($booking) => $booking->status === 'pending')) {
+            try {
+                $statusResponse = $directDebit->getDanaPaymentStatus($orderId);
+                $paymentStatus = $directDebit->paymentStatusFromStatusResponse($statusResponse);
+
+                if ($paymentStatus === 'paid') {
+                    Booking::whereIn('id', $bookingIds)->update(['status' => 'confirmed']);
+                    $bookings = Booking::whereIn('id', $bookingIds)->get();
+                } elseif (in_array($paymentStatus, ['cancelled', 'failed', 'expired'], true)) {
+                    Booking::whereIn('id', $bookingIds)->update(['status' => 'cancelled']);
+                    $bookings = Booking::whereIn('id', $bookingIds)->get();
+                }
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        $status = 'pending';
+        if ($bookings->every(fn ($booking) => $booking->status === 'confirmed')) {
+            $status = 'paid';
+        } elseif ($bookings->contains(fn ($booking) => $booking->status === 'cancelled')) {
+            $status = 'cancelled';
+        }
+
+        return response()->json([
+            'success' => true,
+            'order_id' => $orderId,
+            'status' => $status,
+            'payment_method' => 'DANA',
+        ]);
     }
 
     private function validateBookingWindow(array $validated): array
@@ -157,5 +256,26 @@ class BookingController extends Controller
         }
 
         return $normalized;
+    }
+
+    private function midtransEnabledPayments(?string $paymentMethod): array
+    {
+        return match ($paymentMethod) {
+            'qris', 'gopay' => ['gopay'],
+            default => [],
+        };
+    }
+
+    private function bookingIdsFromDirectDebitOrderId(string $orderId): array
+    {
+        if (!preg_match('/^ORDER-([0-9.]+)-/', $orderId, $matches)) {
+            return [];
+        }
+
+        return collect(explode('.', $matches[1]))
+            ->filter(fn ($id) => ctype_digit($id))
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
     }
 }
