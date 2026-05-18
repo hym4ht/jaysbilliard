@@ -1,13 +1,13 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Table;
+use App\Models\Rate;
 
 class RateController extends Controller
 {
     public function index()
     {
-        $tables = Table::all();
-        return view('website.tarif', compact('tables'));
+        $rates = Rate::orderBy('start_time')->get();
+        return view('website.tarif', compact('rates'));
     }
 }

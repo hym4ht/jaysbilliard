@@ -48,7 +48,7 @@
                         <div class="billiard-table status-{{ $statusClass }} {{ $index % 4 === 0 || $index % 4 === 3 ? 'vertical' : '' }}"
                             id="meja-{{ str_pad($table->id, 2, '0', STR_PAD_LEFT) }}" data-id="{{ $table->id }}"
                             data-name="{{ $table->name }}" data-type="{{ $table->type }}"
-                            data-price="{{ $table->price_per_hour }}" data-capacity="{{ $table->capacity }}"
+                            data-capacity="{{ $table->capacity }}"
                             data-image="{{ $table->image }}" data-status="{{ $statusClass }}">
                             <div class="{{ $index % 4 === 0 || $index % 4 === 3 ? 'table-side-label' : 'table-number' }} color-{{ $statusClass }}"
                                 @if($index % 4 === 3) style="left: auto; right: -25px;" @endif>
@@ -69,8 +69,6 @@
                                 <div class="tm-image-container">
                                     <img src="{{ $table->image ? asset('storage/' . $table->image) : asset('images/hero-bg.png') }}"
                                         alt="Table">
-                                    <div class="tm-price-badge">Rp {{ number_format($table->price_per_hour, 0, ',', '.') }} /
-                                        JAM</div>
                                 </div>
                                 <div class="tm-body">
                                     <div class="tm-header">
@@ -327,6 +325,8 @@
             const rangeSlider = document.querySelector('.range-slider');
             const durationValue = document.querySelector('.duration-value');
 
+            // Rates data from backend
+            const rates = @json($rates);
 
             // Date Selector elements
             const monthYearDisplay = document.getElementById('current-month-year');
@@ -352,6 +352,18 @@
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
             const today = new Date();
             today.setHours(0, 0, 0, 0);
+
+            // Function to get rate for a specific time
+            function getRateForTime(timeStr) {
+                for (let rate of rates) {
+                    const startTime = rate.start_time.substring(0, 5); // Get HH:MM
+                    const endTime = rate.end_time.substring(0, 5);
+                    if (timeStr >= startTime && timeStr < endTime) {
+                        return rate.hourly_rate;
+                    }
+                }
+                return rates[0]?.hourly_rate || 25000; // Default fallback
+            }
 
             function formatLocalDate(date) {
                 const year = date.getFullYear();
@@ -626,7 +638,9 @@
                 }
 
                 selectedTables.forEach(table => {
-                    const priceFormatted = parseInt(table.price).toLocaleString('id-ID');
+                    const activeTimeSlot = document.querySelector('.time-slot.active');
+                    const currentRate = activeTimeSlot ? getRateForTime(activeTimeSlot.innerText.trim()) : 0;
+                    const priceFormatted = currentRate.toLocaleString('id-ID');
                     const itemHtml = `
                                                     <div class="summary-item-card update-flash" data-id="${table.id}" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 242, 255, 0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(0, 242, 255, 0.1); animation: slideIn 0.3s ease-out;">
                                                         <div style="display: flex; gap: 12px; align-items: center;">
@@ -637,7 +651,7 @@
                                                             </div>
                                                         </div>
                                                         <div style="text-align: right;">
-                                                            <div style="font-size: 0.9rem; font-weight: 800; color: #fff;">Rp ${priceFormatted}</div>
+                                                            <div style="font-size: 0.9rem; font-weight: 800; color: #fff;">Rp ${priceFormatted}/jam</div>
                                                             <button class="remove-table" style="background: none; border: none; color: #ff3b3b; font-size: 0.65rem; font-weight: 700; padding: 0; cursor: pointer;">Hapus</button>
                                                         </div>
                                                     </div>
@@ -748,12 +762,11 @@
                     } else {
                         // Add to selection
                         const name = table.dataset.name;
-                        const price = table.dataset.price;
                         const capacity = table.dataset.capacity || '4';
                         const type = table.dataset.type;
                         const image = table.dataset.image && table.dataset.image.trim() !== '' ? '/storage/' + table.dataset.image : '/images/hero-bg.png';
 
-                        selectedTables.push({ id, name, price, capacity, type, image });
+                        selectedTables.push({ id, name, capacity, type, image });
                         table.classList.add('selected');
 
                         // Flash animation for summary list
@@ -1010,11 +1023,14 @@
 
             function updateCalculations() {
                 const duration = durationSelected ? parseInt(rangeSlider.value) : 0;
+                const activeTimeSlot = document.querySelector('.time-slot.active');
                 let subtotal = 0;
 
-                selectedTables.forEach(t => {
-                    subtotal += (parseInt(t.price) || 0) * duration;
-                });
+                if (activeTimeSlot && duration > 0) {
+                    const startTime = activeTimeSlot.innerText.trim();
+                    const hourlyRate = getRateForTime(startTime);
+                    subtotal = selectedTables.length * hourlyRate * duration;
+                }
 
                 const tax = Math.round(subtotal * 0.1);
                 const total = subtotal + tax;

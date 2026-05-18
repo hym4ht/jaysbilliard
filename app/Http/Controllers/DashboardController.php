@@ -78,10 +78,12 @@ class DashboardController extends Controller
             $query->where('booking_date', $today);
         }])->get();
         
+        $rates = \App\Models\Rate::orderBy('start_time')->get();
+        
         $topbar_title = "Meja";
         $topbar_sub = "Pilih meja favorit Anda dan tentukan waktu bermain";
 
-        return view('dashboard_user.meja', compact('user', 'tables', 'topbar_title', 'topbar_sub'));
+        return view('dashboard_user.meja', compact('user', 'tables', 'rates', 'topbar_title', 'topbar_sub'));
     }
 
     public function mejaAvailability(Request $request)
@@ -176,6 +178,7 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $menus = Menu::where('status', 'available')
+            ->where('stock', '>', 0)
             ->orderBy('category')
             ->orderBy('name')
             ->get();
@@ -231,6 +234,19 @@ class DashboardController extends Controller
         $subtotal = 0;
         $itemDetails = [];
         $orderedItems = [];
+
+        // Validate stock availability
+        foreach ($validated['items'] as $item) {
+            $menu = $menus->get($item['id']);
+            $quantity = (int) $item['quantity'];
+            
+            if (!$menu->isInStock($quantity)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Stok {$menu->name} tidak mencukupi. Stok tersedia: {$menu->stock}",
+                ], 422);
+            }
+        }
 
         foreach ($validated['items'] as $item) {
             $menu = $menus->get($item['id']);

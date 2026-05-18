@@ -8,9 +8,22 @@ class RateSeeder extends Seeder
     public function run()
     {
         Rate::insert([
-            ['label' => 'Regular Table', 'price_per_hour' => 25000,  'description' => 'Standard play area, perfect for casual games.'],
-            ['label' => 'VIP Room',      'price_per_hour' => 75000,  'description' => 'Sound-proofed private room with dedicated service.'],
-            ['label' => 'Tournament',    'price_per_hour' => 120000, 'description' => 'Full-spec competition table with Simonis cloth.'],
+            [
+                'time_period' => 'afternoon',
+                'start_time' => '14:00:00',
+                'end_time' => '18:00:00',
+                'hourly_rate' => 25000,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'time_period' => 'evening',
+                'start_time' => '18:00:00',
+                'end_time' => '01:00:00',
+                'hourly_rate' => 35000,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

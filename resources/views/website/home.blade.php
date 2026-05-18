@@ -78,15 +78,68 @@
 <section class="py-16 sm:py-24 px-4 sm:px-6 max-w-7xl mx-auto">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
         <h2 class="text-3xl sm:text-4xl font-bold text-white">Promo Saat Ini</h2>
-        <a href="{{ route('promos.index') }}" class="text-cyan-400 text-sm hover:underline cursor-pointer relative z-10 transition-colors">
-            Lihat Semua →
-        </a>
     </div>
 
     <div class="grid md:grid-cols-2 gap-6">
-        @foreach($promos as $promo)
-            @include('component.c_website.promo-card', ['promo' => $promo])
-        @endforeach
+        {{-- Promo 1: Malam Pelajar --}}
+        <div class="relative rounded-2xl overflow-hidden group cursor-pointer">
+            <img src="{{ asset('images/hero-bg.png') }}"
+                 alt="Malam Pelajar"
+                 class="w-full aspect-video object-cover object-center group-hover:scale-105 transition duration-500"/>
+            
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+
+            <div class="absolute inset-0 p-6 flex flex-col justify-between">
+                <span class="self-start bg-[#00e5ff] text-black text-[10px] font-black uppercase
+                             tracking-widest rounded-full px-3 py-1 shadow-[0_0_10px_rgba(0,229,255,0.5)]">
+                    WAKTU TERBATAS
+                </span>
+
+                <div>
+                    <h3 class="text-white font-black text-3xl uppercase leading-tight mb-2">
+                        MALAM PELAJAR
+                    </h3>
+                    <p class="text-gray-300 text-sm mb-4">Dapatkan diskon 20% untuk setiap meja sebelum pukul 6 sore pada hari kerja.</p>
+                    <div class="flex justify-end mt-4">
+                        <a href="{{ route('login') }}"
+                           class="inline-flex items-center gap-1 text-[#00e5ff] text-xs font-semibold
+                                  hover:text-white transition">
+                            Book Sekarang <span class="text-lg">→</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Promo 2: Tangga Mingguan --}}
+        <div class="relative rounded-2xl overflow-hidden group cursor-pointer">
+            <img src="{{ asset('images/billiard bg.png') }}"
+                 alt="Tangga Mingguan"
+                 class="w-full aspect-video object-cover object-center group-hover:scale-105 transition duration-500"/>
+            
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+
+            <div class="absolute inset-0 p-6 flex flex-col justify-between">
+                <span class="self-start bg-[#00e5ff] text-black text-[10px] font-black uppercase
+                             tracking-widest rounded-full px-3 py-1 shadow-[0_0_10px_rgba(0,229,255,0.5)]">
+                    TURNAMEN
+                </span>
+
+                <div>
+                    <h3 class="text-white font-black text-3xl uppercase leading-tight mb-2">
+                        TANGGA MINGGUAN
+                    </h3>
+                    <p class="text-gray-300 text-sm mb-4">Bergabunglah dalam kompetisi setiap hari Jumat. Hadiah hingga Rp 5.000.000.</p>
+                    <div class="flex justify-end mt-4">
+                        <a href="{{ route('login') }}"
+                           class="inline-flex items-center gap-1 text-[#00e5ff] text-xs font-semibold
+                                  hover:text-white transition">
+                            Daftar Sekarang <span class="text-lg">→</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 

@@ -3,48 +3,111 @@
 
 @section('content')
     {{-- ═══════════════════════════════ HEADER ═══════════════════════════════ --}}
-    <section class="text-center pt-28 sm:pt-32 pb-8 px-4 sm:px-6 max-w-3xl mx-auto">
-        <h1 class="text-4xl sm:text-5xl md:text-6xl font-black uppercase text-white mb-4 tracking-wide">MEJA KAMI</h1>
-        <p class="text-white/55 text-sm sm:text-base leading-relaxed">
-            Pilih arena Anda. Dari meja reguler yang kompetitif hingga suite VIP
-            eksklusif, kami menyediakan pengalaman billiard terbaik di Tegal.
+    <section class="text-center pt-32 pb-8 px-6 max-w-3xl mx-auto">
+        <h1 class="text-5xl md:text-6xl font-black uppercase text-white mb-4 tracking-wide">TARIF KAMI</h1>
+        <p class="text-white/55 text-base leading-relaxed">
+            Nikmati permainan terbaik di meja reguler kami. Pilih tarif sore atau malam yang sesuai dengan waktu santai Anda
+            setiap harinya.
         </p>
     </section>
 
     {{-- ═══════════════════════════════ PRICING CARDS ═══════════════════════════════ --}}
-    <section class="px-4 sm:px-6 pb-16 max-w-[85rem] mx-auto">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            @foreach($tables->take(4) as $table)
-                <div class="bg-dark-card border border-white/5 rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-2 hover:border-primary/15">
-                    <div class="h-44 sm:h-48 relative overflow-hidden">
-                        <span class="absolute top-4 right-4 bg-primary text-black px-3.5 py-1.5 rounded-lg text-xs font-black shadow-neon z-10">
-                            Rp {{ number_format($table->price_per_hour, 0, ',', '.') }} / JAM
+    <section class="px-6 pb-24 max-w-7xl mx-auto">
+        <div class="max-w-xl mx-auto">
+            <div
+                class="bg-[#0d0e12] border border-white/10 rounded-[2.5rem] overflow-hidden flex flex-col transition-all duration-500 hover:-translate-y-4 hover:border-cyan-400/30 group shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)]">
+                {{-- Image Section --}}
+                <div class="h-72 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0d0e12] via-transparent to-transparent z-10"></div>
+                    <img src="{{ asset('images/meja_premium.png') }}" alt="Reguler Table"
+                        class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
+
+                    {{-- Type Badge --}}
+                    <div class="absolute top-8 left-8 z-20">
+                        <span
+                            class="bg-[#113a3e]/60 backdrop-blur-md text-[#00f2ff] border border-[#00f2ff]/30 px-5 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.15em]">
+                            MEJA REGULER
                         </span>
-                        <img src="{{ $table->image ? asset('storage/' . $table->image) : asset('images/hero-bg.png') }}"
-                            alt="{{ $table->name }}" class="w-full h-full object-cover">
                     </div>
-                    <div class="p-6 flex flex-col gap-3.5 flex-1">
-                        <div class="flex justify-center items-center">
-                            <h3 class="text-xl font-black text-white">{{ strtoupper($table->name) }}</h3>
-                        </div>
-                        <div class="flex items-center justify-center gap-1.5 text-xs font-bold">
-                            <span class="text-white/35 uppercase">{{ strtoupper($table->type) }}</span>
-                            <span class="text-white/10">|</span>
-                            <span class="text-primary">{{ $table->capacity }} orang</span>
-                        </div>
-                        <div class="mt-2">
-                            <a href="{{ route('login') }}" class="block w-full text-center bg-primary/5 border-2 border-primary/15 text-primary px-3 py-3 rounded-xl text-xs font-extrabold transition-all hover:bg-primary hover:text-black hover:shadow-neon">
-                                BOOK NOW
-                            </a>
-                        </div>
+
+                    {{-- Title --}}
+                    <div class="absolute bottom-1 left-8 z-20">
+                        <h3 class="text-4xl font-black text-white uppercase tracking-tight">JAY'S BILLIARD PRICE LIST</h3>
                     </div>
                 </div>
-            @endforeach
+
+                {{-- Content Section --}}
+                <div class="p-10 flex flex-col gap-10 flex-1">
+                    {{-- Open Daily Header --}}
+                    <div class="border-b border-white/5 pb-6">
+                        <p class="text-white/60 text-lg font-medium italic">Open Daily: 14:00 - 01:00 WIB</p>
+                    </div>
+
+                    {{-- Happy Hour Section --}}
+                    <div class="space-y-6">
+                        <h4 class="text-[#00f2ff] text-xl font-black uppercase tracking-wide">HAPPY HOUR (SORE)</h4>
+                        <div class="flex flex-col gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-white/10 p-2 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                        stroke-linejoin="round" class="text-white/60">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <polyline points="12 6 12 12 16 14" />
+                                    </svg>
+                                </div>
+                                <span class="text-white text-2xl font-bold tracking-tight">14:00 - 17:00</span>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-white text-3xl font-black tracking-tight">Rp 25.000</span>
+                                <span class="text-white/40 text-xl font-bold ml-1">/ Jam</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Prime Time Section --}}
+                    <div class="space-y-6">
+                        <h4 class="text-[#00f2ff] text-xl font-black uppercase tracking-wide">PRIME TIME (MALAM)</h4>
+                        <div class="flex flex-col gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-white/10 p-2 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                        stroke-linejoin="round" class="text-white/60">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <polyline points="12 6 12 12 16 14" />
+                                    </svg>
+                                </div>
+                                <span class="text-white text-2xl font-bold tracking-tight">18:00 - 01:00</span>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-white text-3xl font-black tracking-tight">Rp 35.000</span>
+                                <span class="text-white/40 text-xl font-bold ml-1">/ Jam</span>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    {{-- CTA --}}
+                    <div class="mt-6 pt-10 border-t border-white/5">
+                        <a href="{{ route('login') }}"
+                            class="flex items-center justify-center gap-4 w-full bg-[#00f2ff] text-black py-5 rounded-[1.25rem] text-sm font-black uppercase tracking-[0.1em] transition-all duration-300 hover:bg-cyan-300 hover:shadow-[0_0_40px_rgba(0,242,255,0.6)] hover:-translate-y-1 active:scale-95">
+                            BOOK MEJA INI
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 12h14" />
+                                <path d="m12 5 7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
     {{-- ═══════════════════════════════ INFO SECTION ═══════════════════════════════ --}}
-    <section class="py-12 pb-20 px-4 sm:px-6 max-w-[85rem] mx-auto border-t border-white/5">
+    <section class="py-12 pb-20 px-6 max-w-[85rem] mx-auto border-t border-white/5">
         <div class="grid md:grid-cols-3 gap-8">
             <div class="flex gap-4 items-start">
                 <div class="flex items-center justify-center w-10 h-10 min-w-10 bg-primary/10 rounded-xl">
@@ -57,7 +120,8 @@
                 </div>
                 <div>
                     <h4 class="text-white font-bold text-sm mb-1.5">Kebijakan Pemesanan</h4>
-                    <p class="text-white/45 text-xs leading-relaxed">Pemesanan ditahan selama 15 menit setelah waktu yang dijadwalkan. Pembatalan harus dilakukan setidaknya 2 jam sebelumnya.</p>
+                    <p class="text-white/45 text-xs leading-relaxed">Pemesanan ditahan selama 15 menit setelah waktu yang
+                        dijadwalkan. Pembatalan harus dilakukan setidaknya 2 jam sebelumnya.</p>
                 </div>
             </div>
             <div class="flex gap-4 items-start">
@@ -71,8 +135,9 @@
                     </svg>
                 </div>
                 <div>
-                    <h4 class="text-white font-bold text-sm mb-1.5">Ukuran Grup</h4>
-                    <p class="text-white/45 text-xs leading-relaxed">Meja reguler untuk maksimal 4 orang. Suite VIP dapat menampung hingga 10 tamu dengan nyaman.</p>
+                    <h4 class="text-white font-bold text-sm mb-1.5">Fasilitas Meja</h4>
+                    <p class="text-white/45 text-xs leading-relaxed">Tersedia 4 meja reguler berkualitas yang siap
+                        digunakan. Setiap meja nyaman digunakan untuk bermain maksimal hingga 4 orang.</p>
                 </div>
             </div>
             <div class="flex gap-4 items-start">
@@ -88,7 +153,8 @@
                 </div>
                 <div>
                     <h4 class="text-white font-bold text-sm mb-1.5">Makanan dari Luar</h4>
-                    <p class="text-white/45 text-xs leading-relaxed">Makanan dan minuman dari luar sangat dilarang. Silakan tanyakan pilihan menu yang tersedia kepada staff kami.</p>
+                    <p class="text-white/45 text-xs leading-relaxed">Makanan dan minuman dari luar sangat dilarang. Silakan
+                        tanyakan pilihan menu yang tersedia kepada staff kami.</p>
                 </div>
             </div>
         </div>

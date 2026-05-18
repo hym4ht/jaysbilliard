@@ -105,6 +105,7 @@
                                 </div>
                                 <div class="card-details">
                                     <span>{{ strtoupper($menu->category) }}</span>
+                                    <span style="margin-left: 8px; color: {{ $menu->stock > 0 ? '#00e5ff' : '#ff3b3b' }};">• Stok: {{ $menu->stock }}</span>
                                 </div>
 
                                 <p class="card-desc">{{ $menu->description ?: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.' }}</p>

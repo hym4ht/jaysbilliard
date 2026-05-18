@@ -23,7 +23,6 @@ class MejaController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:regular,vip',
-            'price_per_hour' => 'required|numeric|min:0',
             'capacity' => 'required|integer|min:1',
             'description' => 'nullable|string',
             'status' => 'required|in:active,maintenance',
@@ -53,7 +52,6 @@ class MejaController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:regular,vip',
-            'price_per_hour' => 'required|numeric|min:0',
             'capacity' => 'required|integer|min:1',
             'description' => 'nullable|string',
             'status' => 'required|in:active,maintenance',

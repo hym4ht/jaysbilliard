@@ -1,7 +1,7 @@
 @php
     $navLinks = [
         ['label' => 'Beranda', 'route' => 'home'],
-        ['label' => 'Meja', 'route' => 'rates'],
+        ['label' => 'Tarif', 'route' => 'rates'],
         ['label' => 'Lokasi', 'route' => 'location'],
     ];
 @endphp

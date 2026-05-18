@@ -149,6 +149,9 @@ class WebhookController extends Controller
 
         if ($paymentStatus === 'paid' && !$order->paid_at) {
             $updates['paid_at'] = now();
+            
+            // Reduce stock when payment is successful
+            $this->reduceStockForOrder($order);
         }
 
         $order->update($updates);
@@ -198,9 +201,35 @@ class WebhookController extends Controller
 
         if ($paymentStatus === 'paid' && !$order->paid_at) {
             $updates['paid_at'] = now();
+            
+            // Reduce stock when payment is successful
+            $this->reduceStockForOrder($order);
         }
 
         $order->update($updates);
+    }
+
+    private function reduceStockForOrder(FnbOrder $order): void
+    {
+        $items = $order->items ?? [];
+        
+        foreach ($items as $item) {
+            $menuId = $item['menu_id'] ?? null;
+            $quantity = $item['quantity'] ?? 0;
+            
+            if ($menuId && $quantity > 0) {
+                $menu = \App\Models\Menu::find($menuId);
+                if ($menu) {
+                    $menu->reduceStock($quantity);
+                    Log::info('Stock reduced for menu', [
+                        'menu_id' => $menuId,
+                        'menu_name' => $menu->name,
+                        'quantity' => $quantity,
+                        'remaining_stock' => $menu->fresh()->stock,
+                    ]);
+                }
+            }
+        }
     }
 
     private function paymentStatusFromMidtrans(string $transactionStatus, string $fraudStatus): string

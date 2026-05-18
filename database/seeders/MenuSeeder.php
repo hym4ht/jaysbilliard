@@ -13,6 +13,7 @@ class MenuSeeder extends Seeder
             [
                 'name' => 'Nasi Goreng Jay\'s',
                 'price' => 22000,
+                'stock' => 50,
                 'category' => 'Hidangan Utama',
                 'description' => 'Nasi goreng spesial dengan telur, ayam, dan bumbu rumahan.',
                 'image' => 'images/fnb/nasi-goreng.png',
@@ -20,6 +21,7 @@ class MenuSeeder extends Seeder
             [
                 'name' => 'Classic Burger',
                 'price' => 28000,
+                'stock' => 30,
                 'category' => 'Hidangan Utama',
                 'description' => 'Burger roti lembut dengan patty, sayur segar, dan saus spesial.',
                 'image' => 'images/fnb/burger.png',
@@ -174,6 +176,18 @@ class MenuSeeder extends Seeder
         ];
 
         foreach ($menus as $menu) {
+            // Add default stock if not specified
+            if (!isset($menu['stock'])) {
+                // Set stock based on category
+                $menu['stock'] = match($menu['category']) {
+                    'Hidangan Utama' => 30,
+                    'Camilan' => 100,
+                    'Minuman' => 150,
+                    'Kopi' => 80,
+                    default => 50,
+                };
+            }
+            
             Menu::updateOrCreate(
                 ['name' => $menu['name']],
                 $menu + ['status' => 'available']

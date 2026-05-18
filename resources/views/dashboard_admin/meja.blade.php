@@ -87,7 +87,6 @@
                     @forelse($tables ?? [] as $table)
                         <div class="adm-meja-card">
                             <div class="card-image-wrap">
-                                <span class="price-badge">Rp {{ number_format($table->price_per_hour, 0, ',', '.') }} / JAM</span>
                                 <img src="{{ $table->image ? asset('storage/' . $table->image) : asset('images/hero-bg.png') }}" alt="{{ $table->name }}" class="card-image">
                             </div>
                             <div class="card-body">

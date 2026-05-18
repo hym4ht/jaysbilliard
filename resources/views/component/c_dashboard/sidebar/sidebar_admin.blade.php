@@ -15,7 +15,7 @@
                 <span class="adm-brand-name">Jay's Billiard</span>
                 <span class="adm-brand-sub">ADMIN DASHBOARD</span>
             </div>
-            <button class="adm-collapse-btn" id="sidebarToggle">
+            <button type="button" class="adm-collapse-btn" id="sidebarToggle">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="15 18 9 12 15 6"></polyline>
                 </svg>
@@ -77,16 +77,22 @@
     </div>
 </aside>
 <script>
-    const sidebar = document.querySelector('.adm-sidebar');
-    const toggleBtn = document.getElementById('sidebarToggle');
-    
-    // Check initial state
-    if (localStorage.getItem('sidebar-collapsed') === 'true') {
-        sidebar.classList.add('collapsed');
-    }
+    (function () {
+        const sidebar = document.querySelector('.adm-sidebar');
+        const toggleBtn = document.getElementById('sidebarToggle');
 
-    toggleBtn.addEventListener('click', function() {
-        sidebar.classList.toggle('collapsed');
-        localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
-    });
+        if (!sidebar || !toggleBtn) {
+            return;
+        }
+
+        if (localStorage.getItem('sidebar-collapsed') === 'true') {
+            sidebar.classList.add('collapsed');
+        }
+
+        toggleBtn.addEventListener('click', function (event) {
+            event.stopPropagation();
+            sidebar.classList.toggle('collapsed');
+            localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+        });
+    })();
 </script>

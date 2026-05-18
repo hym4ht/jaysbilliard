@@ -16,7 +16,6 @@ class TableSeeder extends Seeder
             [
                 'name' => 'Meja 01',
                 'type' => 'regular',
-                'price_per_hour' => 25000,
                 'capacity' => 4,
                 'status' => 'active',
                 'is_available' => false,
@@ -25,7 +24,6 @@ class TableSeeder extends Seeder
             [
                 'name' => 'Meja 02',
                 'type' => 'vip',
-                'price_per_hour' => 75000,
                 'capacity' => 6,
                 'status' => 'active',
                 'is_available' => false,
@@ -34,7 +32,6 @@ class TableSeeder extends Seeder
             [
                 'name' => 'Meja 03',
                 'type' => 'regular',
-                'price_per_hour' => 25000,
                 'capacity' => 4,
                 'status' => 'active',
                 'is_available' => false,
@@ -43,7 +40,6 @@ class TableSeeder extends Seeder
             [
                 'name' => 'Meja 04',
                 'type' => 'vip',
-                'price_per_hour' => 75000,
                 'capacity' => 6,
                 'status' => 'active',
                 'is_available' => false,
@@ -52,7 +48,6 @@ class TableSeeder extends Seeder
             [
                 'name' => 'Meja 05',
                 'type' => 'regular',
-                'price_per_hour' => 25000,
                 'capacity' => 4,
                 'status' => 'maintenance',
                 'is_available' => false,
@@ -61,7 +56,6 @@ class TableSeeder extends Seeder
             [
                 'name' => 'Meja 06',
                 'type' => 'vip',
-                'price_per_hour' => 75000,
                 'capacity' => 6,
                 'status' => 'maintenance',
                 'is_available' => false,
@@ -70,7 +64,6 @@ class TableSeeder extends Seeder
             [
                 'name' => 'Meja 07',
                 'type' => 'regular',
-                'price_per_hour' => 25000,
                 'capacity' => 4,
                 'status' => 'active',
                 'is_available' => true,
@@ -79,7 +72,6 @@ class TableSeeder extends Seeder
             [
                 'name' => 'Meja 08',
                 'type' => 'vip',
-                'price_per_hour' => 75000,
                 'capacity' => 6,
                 'status' => 'active',
                 'is_available' => true,
@@ -88,7 +80,6 @@ class TableSeeder extends Seeder
             [
                 'name' => 'Meja 09',
                 'type' => 'regular',
-                'price_per_hour' => 25000,
                 'capacity' => 4,
                 'status' => 'active',
                 'is_available' => true,
@@ -97,7 +88,6 @@ class TableSeeder extends Seeder
             [
                 'name' => 'Meja 10',
                 'type' => 'regular',
-                'price_per_hour' => 25000,
                 'capacity' => 4,
                 'status' => 'active',
                 'is_available' => true,
@@ -120,6 +110,9 @@ class TableSeeder extends Seeder
 
         foreach ($bookedTables as $index => $table) {
             $startHour = 14 + $index;
+            // Use afternoon rate (25000) for seeding
+            $rate = \App\Models\Rate::where('time_period', 'afternoon')->first();
+            $hourlyRate = $rate ? $rate->hourly_rate : 25000;
 
             Booking::updateOrCreate(
                 [
@@ -132,7 +125,7 @@ class TableSeeder extends Seeder
                     'customer_name' => $user?->name ?? 'Customer Seeder',
                     'phone' => $user?->phone ?? '080000000000',
                     'end_time' => sprintf('%02d:00:00', $startHour + 1),
-                    'total_price' => (int) $table->price_per_hour,
+                    'total_price' => $hourlyRate,
                     'status' => 'pending',
                 ]
             );

@@ -55,7 +55,6 @@
                                     <div class="table-preview-card">
                                         <div class="table-preview-image">
                                             <img src="/images/hero-bg.png" id="previewImg" alt="Preview Table">
-                                            <div class="table-preview-price-tag">Rp <span id="previewPriceText">Lorem</span></div>
                                         </div>
                                         <div class="table-preview-content">
                                             <div class="table-preview-header">
@@ -108,10 +107,6 @@
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label class="form-label">Tarif Per Jam ($)</label>
-                                        <input type="number" name="price_per_hour" id="priceInput" class="form-input" value="0" min="0" step="1000">
-                                    </div>
-                                    <div class="form-group">
                                         <label class="form-label">Kapasitas</label>
                                         <input type="number" name="capacity" id="capacityInput" class="form-input" value="1" min="1" step="1">
                                     </div>
@@ -150,22 +145,14 @@
     <script>
         const nameInput = document.getElementById('nameInput');
         const typeInput = document.getElementById('typeInput');
-        const priceInput = document.getElementById('priceInput');
         const descInput = document.getElementById('descInput');
         
         const previewNameText = document.getElementById('previewNameText');
-        const previewPriceText = document.getElementById('previewPriceText');
         const previewDescText = document.getElementById('previewDescText');
         
         // Dynamic Preview Logic
         nameInput.addEventListener('input', (e) => {
             previewNameText.textContent = e.target.value || 'Meja Baru';
-        });
-
-        priceInput.addEventListener('input', (e) => {
-            if (Number(e.target.value) < 0) e.target.value = 0;
-            const val = e.target.value;
-            previewPriceText.textContent = val && val != 0 ? Number(val).toLocaleString('id-ID') : '0';
         });
 
         document.getElementById('capacityInput').addEventListener('input', (e) => {
