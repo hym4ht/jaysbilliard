@@ -2,6 +2,17 @@
 @section('title', "Promo - Jay's Billiard")
 
 @section('content')
+@php
+    $promoTableImages = collect($tableImages ?? [])->values();
+    $promoImage = function (int $index) use ($promoTableImages) {
+        if ($promoTableImages->isEmpty()) {
+            return asset('images/hero-bg.png');
+        }
+
+        return asset('storage/' . $promoTableImages->get($index % $promoTableImages->count()));
+    };
+@endphp
+
 {{-- ═══════════════════════════════ HERO SECTION ═══════════════════════════════ --}}
 <section class="relative min-h-[40vh] flex items-center justify-center text-center overflow-hidden">
     <div class="absolute inset-0 bg-[#0d0d0d]" style="background-image: url('/images/billiard bg.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
@@ -23,7 +34,7 @@
     <div class="grid md:grid-cols-2 gap-6">
         {{-- Promo 1: Malam Pelajar --}}
         <div class="relative rounded-2xl overflow-hidden group cursor-pointer">
-            <img src="{{ asset('images/hero-bg.png') }}"
+            <img src="{{ $promoImage(0) }}"
                  alt="Malam Pelajar"
                  class="w-full aspect-video object-cover object-center group-hover:scale-105 transition duration-500"/>
             
@@ -53,7 +64,7 @@
 
         {{-- Promo 2: Tangga Mingguan --}}
         <div class="relative rounded-2xl overflow-hidden group cursor-pointer">
-            <img src="{{ asset('images/billiard bg.png') }}"
+            <img src="{{ $promoImage(1) }}"
                  alt="Tangga Mingguan"
                  class="w-full aspect-video object-cover object-center group-hover:scale-105 transition duration-500"/>
             
@@ -83,7 +94,7 @@
 
         {{-- Promo 3: Happy Hour Monday --}}
         <div class="relative rounded-2xl overflow-hidden group cursor-pointer">
-            <img src="{{ asset('images/hero-bg.png') }}"
+            <img src="{{ $promoImage(2) }}"
                  alt="Happy Hour Monday"
                  class="w-full aspect-video object-cover object-center group-hover:scale-105 transition duration-500"/>
             
@@ -113,7 +124,7 @@
 
         {{-- Promo 4: Weekend Special --}}
         <div class="relative rounded-2xl overflow-hidden group cursor-pointer">
-            <img src="{{ asset('images/billiard bg.png') }}"
+            <img src="{{ $promoImage(3) }}"
                  alt="Weekend Special"
                  class="w-full aspect-video object-cover object-center group-hover:scale-105 transition duration-500"/>
             
