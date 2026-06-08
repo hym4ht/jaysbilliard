@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -110,62 +109,5 @@ class AuthController extends Controller
         return $this->logout($request);
     }
 
-    // Redirect to Google
-    public function redirectToGoogle()
-    {
-        return Socialite::driver('google')
-            ->with(['prompt' => 'select_account'])
-            ->redirect();
-    }
-    
 
-    // Handle Google Callback
-    public function handleGoogleCallback()
-    {
-        try {
-            $googleUser = Socialite::driver('google')->user();
-            
-            $query = User::where('google_id', $googleUser->id);
-            if (!empty($googleUser->email)) {
-                $query->orWhere('email', $googleUser->email);
-            }
-            $user = $query->first();
-
-            if (!$user) {
-                // Create new user
-                $user = User::create([
-                    'name' => $googleUser->name,
-                    'username' => 'user_' . Str::random(8),
-                    'email' => $googleUser->email,
-                    'phone' => '-',
-                    'password' => Hash::make(Str::random(16)),
-                    'role' => 'user',
-                    'google_id' => $googleUser->id,
-                ]);
-            } else {
-                // Update google_id and email if not set
-                $updates = [];
-                if (!$user->google_id) {
-                    $updates['google_id'] = $googleUser->id;
-                }
-                if (!$user->email && $googleUser->email) {
-                    $updates['email'] = $googleUser->email;
-                }
-                if (!empty($updates)) {
-                    $user->update($updates);
-                }
-            }
-
-            Auth::login($user);
-            if ($user->role === 'admin') {
-                return redirect()->intended(route('admin.dashboard'));
-            }
-            return redirect()->intended(route('dashboard'));
-
-        } catch (\Exception $e) {
-            return redirect()->route('login')->withErrors([
-                'username' => 'Gagal login dengan Google: ' . $e->getMessage()
-            ]);
-        }
-    }
 }

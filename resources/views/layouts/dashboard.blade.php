@@ -359,45 +359,6 @@
         </script>
     @endif
 
-    {{-- Mobile Sidebar Toggle Logic --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-            const sidebar = document.querySelector('.adm-sidebar');
-            const body = document.body;
-
-            // Create overlay if not present
-            let overlay = document.getElementById('mobileOverlay');
-            if (!overlay) {
-                overlay = document.createElement('div');
-                overlay.id = 'mobileOverlay';
-                overlay.className = 'mobile-overlay';
-                body.appendChild(overlay);
-            }
-
-            if (mobileMenuBtn && sidebar && overlay) {
-                mobileMenuBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    sidebar.classList.add('mobile-open');
-                    overlay.classList.add('active');
-                });
-
-                overlay.addEventListener('click', function() {
-                    sidebar.classList.remove('mobile-open');
-                    overlay.classList.remove('active');
-                });
-
-                // Close on ESC key
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape') {
-                        sidebar.classList.remove('mobile-open');
-                        overlay.classList.remove('active');
-                    }
-                });
-            }
-        });
-    </script>
-
     @stack('scripts')
 </body>
 </html>

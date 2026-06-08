@@ -34,3 +34,4 @@
 </header>
 
 <script src="{{ asset('js/js_component/profile_dropdown.js') }}"></script>
+<script src="{{ asset('js/js_component/mobile_menu.js') }}"></script>
