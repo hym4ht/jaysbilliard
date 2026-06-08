@@ -17,7 +17,5 @@
     </main>
 
     @include('component.c_website.footer')
-    
-    <script src="{{ asset('js/js_component/website_menu.js') }}"></script>
 </body>
 </html>

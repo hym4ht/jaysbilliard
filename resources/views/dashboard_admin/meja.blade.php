@@ -87,18 +87,53 @@
                     @forelse($tables ?? [] as $table)
                         <div class="adm-meja-card">
                             <div class="card-image-wrap">
-                                <img src="{{ $table->image ? asset('storage/' . $table->image) : asset('images/hero-bg.png') }}" alt="{{ $table->name }}" class="card-image">
+                                @php
+                                    $imagePath = $table->image;
+                                    if ($imagePath && !Str::startsWith($imagePath, ['http://', 'https://'])) {
+                                        $cleanPath = str_replace(['public/', 'storage/'], '', $imagePath);
+                                        $finalImageUrl = asset('storage/' . $cleanPath);
+                                    } elseif ($imagePath) {
+                                        $finalImageUrl = $imagePath;
+                                    } else {
+                                        $finalImageUrl = asset('images/hero-bg.png');
+                                    }
+                                @endphp
+                                <img src="{{ $finalImageUrl }}" 
+                                     alt="{{ $table->name }}" 
+                                     class="card-image"
+                                     onerror="this.src='{{ asset('images/hero-bg.png') }}'">
                             </div>
                             <div class="card-body">
                                 <div class="card-header-row">
                                     <h3 class="card-title">{{ strtoupper($table->name) }}</h3>
-                                    <div class="card-status {{ $table->status }}">
+                                    @php
+                                        $activeBooking = $table->bookings ? $table->bookings->first() : null;
+                                        $statusClass = 'tersedia';
+                                        $statusText = 'TERSEDIA';
+
+                                        if ($table->status === 'maintenance') {
+                                            $statusClass = 'maintenance';
+                                            $statusText = 'MAINTENANCE';
+                                        } elseif ($activeBooking) {
+                                            if ($activeBooking->status === 'confirmed') {
+                                                $statusClass = 'terisi';
+                                                $statusText = 'TERISI';
+                                            } elseif (in_array($activeBooking->status, ['pending', 'booked', 'dipesan'])) {
+                                                $statusClass = 'dipesan';
+                                                $statusText = 'DIPESAN';
+                                            }
+                                        } elseif ($table->status === 'active') {
+                                            $statusClass = 'tersedia';
+                                            $statusText = 'TERSEDIA';
+                                        }
+                                    @endphp
+                                    <div class="card-status {{ $statusClass }}">
                                         <span class="status-dot-sm"></span> 
-                                        {{ strtoupper($table->status === 'active' ? 'Tersedia' : ($table->status === 'maintenance' ? 'Maintenance' : $table->status)) }}
+                                        {{ $statusText }}
                                     </div>
                                 </div>
                                 <div class="card-details">
-                                    <span class="type-text">{{ strtoupper($table->type) }}</span>
+                                    <span class="type-text">{{ strtoupper($table->type === 'regular' ? 'standar' : $table->type) }}</span>
                                     <span style="color: rgba(255,255,255,0.1);">|</span>
                                     <span class="cap-text">{{ $table->capacity }} orang</span>
                                 </div>
@@ -108,7 +143,7 @@
                                 <a href="{{ route('admin.meja.edit', $table->id) }}" class="btn-edit-meja">EDIT MEJA</a>
                                 <form action="{{ route('admin.meja.destroy', $table->id) }}" method="POST" style="display: contents;">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn-delete-meja" onclick="return confirm('Apakah Anda yakin ingin menghapus meja ini?')">
+                                    <button type="submit" class="btn-delete-meja" onclick="return confirmDelete(this.form, '{{ $table->name }}')">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                                     </button>
                                 </form>
@@ -131,7 +166,76 @@
         </main>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        @if(session('success'))
+            Swal.fire({
+                title: 'Berhasil!',
+                text: '{{ session('success') }}',
+                icon: 'success',
+                background: '#111418',
+                color: '#fff',
+                confirmButtonColor: '#00e5ff',
+                customClass: {
+                    title: 'swal-title-left',
+                    htmlContainer: 'swal-text-left',
+                    confirmButton: 'btn-swal-confirm'
+                }
+            });
+        @endif
+
+        function confirmDelete(form, tableName) {
+            Swal.fire({
+                title: 'Hapus Meja',
+                html: `Apakah Anda yakin ingin menghapus menu <b>${tableName}</b>? <br><span style="font-size: 0.85rem; color: #8a8a98; margin-top: 10px; display: block;">jika anda menghapusnya nanti data meja ini di halaman user tidak ada lagi, sampai anda inputkan mejanya lagi</span>`,
+                icon: 'warning',
+                iconColor: '#ff3b3b',
+                showCancelButton: true,
+                confirmButtonText: 'HAPUS',
+                cancelButtonText: 'BATAL',
+                reverseButtons: false,
+                background: '#111418',
+                color: '#fff',
+                confirmButtonColor: '#ff3b3b',
+                cancelButtonColor: 'transparent',
+                customClass: {
+                    title: 'swal-title-left',
+                    htmlContainer: 'swal-text-left',
+                    cancelButton: 'btn-swal-cancel',
+                    confirmButton: 'btn-swal-confirm'
+                },
+                didOpen: () => {
+                    // Force text alignment to left as per image
+                    const title = document.querySelector('.swal2-title');
+                    const content = document.querySelector('.swal2-html-container');
+                    if(title) title.style.textAlign = 'left';
+                    if(content) content.style.textAlign = 'left';
+                    
+                    // Style cancel button to be text-only
+                    const cancelBtn = document.querySelector('.swal2-cancel');
+                    if(cancelBtn) {
+                        cancelBtn.style.fontWeight = '800';
+                        cancelBtn.style.fontSize = '0.85rem';
+                        cancelBtn.style.color = '#8a8a98';
+                    }
+                    
+                    // Style confirm button
+                    const confirmBtn = document.querySelector('.swal2-confirm');
+                    if(confirmBtn) {
+                        confirmBtn.style.fontWeight = '800';
+                        confirmBtn.style.fontSize = '0.85rem';
+                        confirmBtn.style.padding = '12px 30px';
+                        confirmBtn.style.borderRadius = '12px';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+            return false;
+        }
+
         // Simple and clean searching logic
         document.getElementById('tableSearch').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();

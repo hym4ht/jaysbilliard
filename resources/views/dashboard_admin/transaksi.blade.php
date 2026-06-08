@@ -50,7 +50,7 @@
                         </div>
                         <div class="adm-hstat-info">
                             <span class="adm-hstat-label">TOTAL PENDAPATAN</span>
-                            <span class="adm-hstat-value" id="statTotalIncome">Rp {{ number_format(collect($transactions)->whereIn('status', ['paid', 'completed', 'confirmed'])->sum('total_price'), 0, ',', '.') }}</span>
+                            <span class="adm-hstat-value" id="statTotalIncome">Rp {{ number_format(collect($transactions)->whereIn('status', ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai'])->sum('total_price'), 0, ',', '.') }}</span>
                         </div>
                     </div>
 
@@ -62,7 +62,7 @@
                         </div>
                         <div class="adm-hstat-info">
                             <span class="adm-hstat-label">TRANSAKSI BERHASIL</span>
-                            <span class="adm-hstat-value" id="statTodayCount">{{ collect($transactions)->whereIn('status', ['paid', 'completed', 'confirmed'])->count() }}</span>
+                            <span class="adm-hstat-value" id="statTodayCount">{{ collect($transactions)->whereIn('status', ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai'])->count() }}</span>
                         </div>
                     </div>
 
@@ -74,7 +74,7 @@
                         </div>
                         <div class="adm-hstat-info">
                             <span class="adm-hstat-label">TRANSAKSI GAGAL</span>
-                            <span class="adm-hstat-value" id="statFailedCount">{{ collect($transactions)->whereNotIn('status', ['paid', 'completed', 'confirmed', 'pending'])->count() }}</span>
+                            <span class="adm-hstat-value" id="statFailedCount">{{ collect($transactions)->whereNotIn('status', ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai', 'pending'])->count() }}</span>
                         </div>
                     </div>
                 </div>
@@ -117,7 +117,7 @@
                                     @php
                                         $initial = strtoupper(substr($item->customer_name, 0, 1));
                                         $status = strtolower($item->status);
-                                        $isSuccess = in_array($status, ['paid', 'completed', 'confirmed']);
+                                        $isSuccess = in_array($status, ['paid', 'completed', 'confirmed', 'booked', 'payment']);
                                         $statusHtml = $isSuccess ? '<span class="status-pill paid">Berhasil</span>' : '<span class="status-pill failed">Gagal</span>';
                                         $amountClass = $isSuccess ? 'income-positive' : 'income-negative';
                                         
@@ -125,8 +125,11 @@
                                         $hasFnb = $fnbItems && $fnbItems->count() > 0;
                                         
                                         try {
-                                            $start = \Carbon\Carbon::parse($item->start_time);
-                                            $end = \Carbon\Carbon::parse($item->end_time);
+                                            $start = \Carbon\Carbon::parse($item->booking_date . ' ' . $item->start_time);
+                                            $end = \Carbon\Carbon::parse($item->booking_date . ' ' . $item->end_time);
+                                            if ($end->lt($start)) {
+                                                $end->addDay();
+                                            }
                                             $duration = $start->diffInHours($end) . ' Jam';
                                         } catch (\Exception $e) {
                                             $duration = '2 Jam';

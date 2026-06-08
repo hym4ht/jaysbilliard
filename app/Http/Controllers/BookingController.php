@@ -9,6 +9,9 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Schema;
+use Midtrans\Config;
+use Midtrans\Transaction;
+use Midtrans\Snap;
 
 class BookingController extends Controller
 {
@@ -52,17 +55,34 @@ class BookingController extends Controller
         $validated['start_time'] = $startTime;
         $validated['end_time'] = $endTime;
 
+        // Check for time overlaps for each selected table
         foreach ($validated['table_ids'] as $table_id) {
-            $hasConflict = Booking::where('table_id', $table_id)
+            $overlap = Booking::where('table_id', $table_id)
                 ->where('booking_date', $validated['booking_date'])
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->where('start_time', '<', $validated['end_time'])
-                ->where('end_time', '>', $validated['start_time'])
+                ->whereIn('status', ['pending', 'booked', 'dipesan', 'confirmed', 'paid', 'lunas', 'completed'])
+                ->where(function ($query) use ($validated) {
+                    $newStart = $validated['start_time'];
+                    $newEnd = $validated['end_time'];
+
+                    $query->where(function ($q) use ($newStart, $newEnd) {
+                        $q->whereRaw('start_time < end_time')
+                          ->where('start_time', '<', $newEnd)
+                          ->where('end_time', '>', $newStart);
+                    })->orWhere(function ($q) use ($newStart, $newEnd) {
+                        $q->whereRaw('start_time > end_time')
+                          ->where(function($q2) use ($newStart, $newEnd) {
+                              $q2->where('start_time', '<', $newEnd)
+                                 ->orWhere('end_time', '>', $newStart);
+                          });
+                    });
+                })
                 ->exists();
 
-            if ($hasConflict) {
+            if ($overlap) {
+                $table = Table::find($table_id);
+                $tableName = $table ? $table->name : 'Meja';
                 throw ValidationException::withMessages([
-                    'table_ids' => 'Meja yang dipilih sudah dipesan pada jam tersebut.',
+                    'table_ids' => ['Meja ' . $tableName . ' sudah dipesan pada tanggal dan jam tersebut. Silakan pilih meja atau waktu lain.']
                 ]);
             }
         }
@@ -148,23 +168,58 @@ class BookingController extends Controller
             $params['enabled_payments'] = $enabledPayments;
         }
 
-        $snapToken = \Midtrans\Snap::getSnapToken($params);
+        try {
+            $snapToken = Snap::getSnapToken($params);
 
-        if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Booking berhasil disimpan!',
                 'bookings' => $bookings,
+                'order_id' => $orderId,
                 'snap_token' => $snapToken
             ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
-
-        return redirect()->route('dashboard')->with('success', 'Booking berhasil!');
     }
 
     public function selectTable()
     {
-        return view('dashboard_admin.meja');
+        $today = \Carbon\Carbon::now('Asia/Jakarta')->toDateString();
+        $tables = Table::with(['bookings' => function($query) use ($today) {
+            $query->whereIn('status', ['confirmed', 'booked', 'pending', 'dipesan', 'paid', 'lunas', 'completed'])
+                  ->where('booking_date', '>=', $today)
+                  ->orderBy('booking_date', 'asc')
+                  ->orderBy('start_time', 'asc');
+        }])->get();
+        return view('dashboard_admin.meja', compact('tables'));
+    }
+
+    public function bookingSuccess(Request $request)
+    {
+        $orderId = $request->order_id;
+        
+        Config::$serverKey = trim(config('services.midtrans.server_key'));
+        Config::$isProduction = (bool) config('services.midtrans.is_production');
+
+        try {
+            $status = Transaction::status($orderId);
+            $transactionStatus = $status->transaction_status;
+            $paymentType = $status->payment_type ?? null;
+
+            if (in_array($transactionStatus, ['settlement', 'capture'])) {
+                $bookingIds = explode(',', $status->custom_field1);
+                $updateData = ['status' => 'confirmed'];
+                if ($paymentType) {
+                    $updateData['payment_method'] = $paymentType;
+                }
+                Booking::whereIn('id', $bookingIds)->update($updateData);
+                return response()->json(['success' => true]);
+            }
+            return response()->json(['success' => false]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
     public function paymentStatus(string $orderId, MidtransDirectDebitService $directDebit)
@@ -213,6 +268,10 @@ class BookingController extends Controller
             'payment_method' => 'DANA',
         ]);
     }
+
+    // ============================================================
+    // Private Helper Methods
+    // ============================================================
 
     private function validateBookingWindow(array $validated): array
     {

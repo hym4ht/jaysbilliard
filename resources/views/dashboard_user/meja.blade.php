@@ -4,7 +4,6 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/css_page/user_meja.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/css_page/css_interaksi component/chat.css') }}">
 @endpush
 
 @section('content')
@@ -28,7 +27,20 @@
                 <div class="meja-grid w-[90%] h-[90%] relative md:w-[90%] md:h-[90%] sm:w-[85%] sm:h-[85%]">
                     @foreach($tables as $index => $table)
                         @php
-                            $activeBooking = $table->bookings->first();
+                            $todayStr = \Carbon\Carbon::now('Asia/Jakarta')->toDateString();
+                            $nowTime = \Carbon\Carbon::now('Asia/Jakarta');
+                            $nowFloat = $nowTime->hour + ($nowTime->minute / 60);
+
+                            $activeBooking = $table->bookings->filter(function($b) use ($todayStr, $nowFloat) {
+                                if ($b->booking_date !== $todayStr) return false;
+                                $startParts = explode(':', $b->start_time);
+                                $startFloat = intval($startParts[0]) + (intval($startParts[1]) / 60);
+                                $endParts = explode(':', $b->end_time);
+                                $endFloat = intval($endParts[0]) + (intval($endParts[1]) / 60);
+                                if ($endFloat <= $startFloat) { $endFloat += 24; }
+                                return $nowFloat >= $startFloat && $nowFloat < $endFloat;
+                            })->first();
+
                             $statusClass = 'available';
                             $statusText = 'TERSEDIA';
 
@@ -36,10 +48,11 @@
                                 $statusClass = 'maintenance';
                                 $statusText = 'MAINTENANCE';
                             } elseif ($activeBooking) {
-                                if ($activeBooking->status === 'confirmed') {
+                                $statusLower = strtolower($activeBooking->status);
+                                if ($statusLower === 'confirmed') {
                                     $statusClass = 'occupied';
                                     $statusText = 'TERISI';
-                                } elseif ($activeBooking->status === 'pending' || $activeBooking->status === 'booked' || $activeBooking->status === 'dipesan') {
+                                } elseif (in_array($statusLower, ['pending', 'booked', 'dipesan', 'paid', 'lunas'])) {
                                     $statusClass = 'booked';
                                     $statusText = 'DIPESAN';
                                 }
@@ -48,7 +61,7 @@
                         <div class="billiard-table status-{{ $statusClass }} {{ $index % 4 === 0 || $index % 4 === 3 ? 'vertical' : '' }}"
                             id="meja-{{ str_pad($table->id, 2, '0', STR_PAD_LEFT) }}" data-id="{{ $table->id }}"
                             data-name="{{ $table->name }}" data-type="{{ $table->type }}"
-                            data-capacity="{{ $table->capacity }}"
+                            data-price="{{ $table->price_per_hour }}" data-capacity="{{ $table->capacity }}"
                             data-image="{{ $table->image }}" data-status="{{ $statusClass }}">
                             <div class="{{ $index % 4 === 0 || $index % 4 === 3 ? 'table-side-label' : 'table-number' }} color-{{ $statusClass }}"
                                 @if($index % 4 === 3) style="left: auto; right: -25px;" @endif>
@@ -69,6 +82,8 @@
                                 <div class="tm-image-container">
                                     <img src="{{ $table->image ? asset('storage/' . $table->image) : asset('images/hero-bg.png') }}"
                                         alt="Table">
+                                    <div class="tm-price-badge" style="display: none;">Rp {{ number_format($table->price_per_hour, 0, ',', '.') }} /
+                                        JAM</div>
                                 </div>
                                 <div class="tm-body">
                                     <div class="tm-header">
@@ -90,11 +105,11 @@
                                         kenyamanan maksimal.
                                     </p>
                                     <div class="tm-footer">
-                                        @if($statusClass === 'available')
-                                            <button class="tm-btn-add">TAMBAH</button>
-                                        @else
+                                        @if($statusClass === 'maintenance')
                                             <button class="tm-btn-add" disabled
-                                                style="opacity: 0.5; cursor: not-allowed; background: #333;">PENUH</button>
+                                                style="opacity: 0.5; cursor: not-allowed; background: #333;">MAINTENANCE</button>
+                                        @else
+                                            <button class="tm-btn-add">TAMBAH</button>
                                         @endif
                                         <button class="tm-btn-chat" style="position: relative;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
@@ -217,15 +232,30 @@
                     </div>
                 </div>
 
-                <div class="time-grid">
-                    <div class="time-slot">14:00</div>
-                    <div class="time-slot">15:00</div>
-                    <div class="time-slot">16:00</div>
-                    <div class="time-slot">17:00</div>
-                    <div class="time-slot">18:00</div>
-                    <div class="time-slot">19:00</div>
-                    <div class="time-slot">20:00</div>
-                    <div class="time-slot">21:00</div>
+                <style>
+                    .time-slot.disabled {
+                        opacity: 0.3;
+                        cursor: not-allowed;
+                        background: #1a1a1e !important;
+                        border-color: rgba(255,255,255,0.05) !important;
+                        color: #666 !important;
+                        pointer-events: none;
+                    }
+                </style>
+
+                <div class="time-grid" id="time-grid">
+                    <div class="time-slot" data-hour="14">14:00</div>
+                    <div class="time-slot" data-hour="15">15:00</div>
+                    <div class="time-slot" data-hour="16">16:00</div>
+                    <div class="time-slot" data-hour="17">17:00</div>
+                    <div class="time-slot" data-hour="18">18:00</div>
+                    <div class="time-slot" data-hour="19">19:00</div>
+                    <div class="time-slot" data-hour="20">20:00</div>
+                    <div class="time-slot" data-hour="21">21:00</div>
+                    <div class="time-slot" data-hour="22">22:00</div>
+                    <div class="time-slot" data-hour="23">23:00</div>
+                    <div class="time-slot" data-hour="24">00:00</div>
+                    <div class="time-slot" data-hour="25">01:00</div>
                 </div>
 
                 {{-- Duration --}}
@@ -311,8 +341,6 @@
         </div>
     </div>
 
-    {{-- Chat Popup Component --}}
-    @include('component.c_dashboard.modal.chat_blade')
 @endsection
 
 @push('scripts')
@@ -325,8 +353,6 @@
             const rangeSlider = document.querySelector('.range-slider');
             const durationValue = document.querySelector('.duration-value');
 
-            // Rates data from backend
-            const rates = @json($rates);
 
             // Date Selector elements
             const monthYearDisplay = document.getElementById('current-month-year');
@@ -344,179 +370,23 @@
             const mpMonthsGrid = document.getElementById('mp-months-grid');
 
             let startDate = new Date(); // Start view from today
-            let selectedDate = new Date(); // Match initial table statuses to today's bookings
+            startDate.setHours(0, 0, 0, 0); 
+            let selectedDate = null; // No date selected by default
             let durationSelected = false; // Flag for duration selection
             let pickerYear = startDate.getFullYear();
-            const availabilityUrl = @json(route('user.meja.availability'));
+
+            // Tables and Bookings data from PHP for dynamic map updates
+            const allTables = @json($tables);
+
+            function timeToFloat(timeStr) {
+                if (!timeStr) return 0;
+                const parts = timeStr.split(':');
+                const hours = parseInt(parts[0]) || 0;
+                const minutes = parseInt(parts[1]) || 0;
+                return hours + (minutes / 60);
+            }
 
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            // Function to get rate for a specific time
-            function getRateForTime(timeStr) {
-                for (let rate of rates) {
-                    const startTime = rate.start_time.substring(0, 5); // Get HH:MM
-                    const endTime = rate.end_time.substring(0, 5);
-                    if (timeStr >= startTime && timeStr < endTime) {
-                        return rate.hourly_rate;
-                    }
-                }
-                return rates[0]?.hourly_rate || 25000; // Default fallback
-            }
-
-            function formatLocalDate(date) {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            }
-
-            function isPastDate(date) {
-                const compareDate = new Date(date);
-                compareDate.setHours(0, 0, 0, 0);
-                return compareDate < today;
-            }
-
-            function isPastStartTime(timeText) {
-                if (!selectedDate) return false;
-
-                const selectedDay = new Date(selectedDate);
-                selectedDay.setHours(0, 0, 0, 0);
-                const now = new Date();
-                const currentDay = new Date(now);
-                currentDay.setHours(0, 0, 0, 0);
-
-                if (selectedDay.getTime() !== currentDay.getTime()) return false;
-
-                const [hour, minute] = timeText.split(':').map(Number);
-                const slotDate = new Date(now);
-                slotDate.setHours(hour, minute, 0, 0);
-
-                return slotDate <= now;
-            }
-
-            function updateTimeSlotAvailability() {
-                timeSlots.forEach(slot => {
-                    const disabled = isPastStartTime(slot.innerText.trim());
-                    slot.classList.toggle('disabled', disabled);
-                    slot.style.opacity = disabled ? '0.35' : '';
-                    slot.style.cursor = disabled ? 'not-allowed' : '';
-                    slot.style.pointerEvents = disabled ? 'none' : '';
-
-                    if (disabled && slot.classList.contains('active')) {
-                        slot.classList.remove('active');
-                    }
-                });
-
-                updateTimeSummary();
-            }
-
-            function updateTableVisualStatus(table, status, statusText) {
-                const statuses = ['available', 'booked', 'occupied', 'maintenance'];
-                statuses.forEach(item => {
-                    table.classList.remove(`status-${item}`);
-                });
-                table.classList.add(`status-${status}`);
-                table.dataset.status = status;
-
-                const label = table.querySelector('.table-number, .table-side-label');
-                if (label) {
-                    statuses.forEach(item => label.classList.remove(`color-${item}`));
-                    label.classList.add(`color-${status}`);
-                }
-
-                const dot = table.querySelector('.tm-status-dot');
-                if (dot) {
-                    statuses.forEach(item => dot.classList.remove(`dot-${item}`));
-                    dot.classList.add(`dot-${status}`);
-                }
-
-                const text = table.querySelector('.tm-status-text');
-                if (text) {
-                    statuses.forEach(item => text.classList.remove(`text-${item}`));
-                    text.classList.add(`text-${status}`);
-                    text.innerText = statusText;
-                }
-
-                const addButton = table.querySelector('.tm-btn-add');
-                if (addButton) {
-                    const isAvailable = status === 'available';
-                    addButton.disabled = !isAvailable;
-                    addButton.innerText = isAvailable ? 'TAMBAH' : 'PENUH';
-                    addButton.style.opacity = isAvailable ? '' : '0.5';
-                    addButton.style.cursor = isAvailable ? '' : 'not-allowed';
-                    addButton.style.background = isAvailable ? '' : '#333';
-                }
-            }
-
-            async function refreshTableAvailability() {
-                if (!selectedDate) return;
-
-                try {
-                    // Build URL with date and optional time range
-                    let url = `${availabilityUrl}?date=${formatLocalDate(selectedDate)}`;
-                    
-                    // Add time range if both start time and duration are selected
-                    const activeTimeSlot = document.querySelector('.time-slot.active');
-                    if (activeTimeSlot && durationSelected) {
-                        const startTime = activeTimeSlot.innerText.trim();
-                        const duration = parseInt(rangeSlider.value);
-                        const startHour = parseInt(startTime.split(':')[0]);
-                        const endHour = startHour + duration;
-                        const endTime = `${String(endHour).padStart(2, '0')}:00`;
-                        
-                        url += `&start_time=${startTime}&end_time=${endTime}`;
-                    }
-                    
-                    const response = await fetch(url, {
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    });
-
-                    if (!response.ok) throw new Error('Gagal memuat status meja');
-
-                    const data = await response.json();
-                    const removedTableNames = [];
-
-                    tables.forEach(table => {
-                        const availability = data.statuses?.[table.dataset.id];
-                        if (!availability) return;
-
-                        updateTableVisualStatus(table, availability.status, availability.text);
-
-                        if (availability.status !== 'available' && table.classList.contains('selected')) {
-                            table.classList.remove('selected');
-                            const selectedTable = selectedTables.find(item => item.id === table.dataset.id);
-                            if (selectedTable) removedTableNames.push(selectedTable.name);
-                            selectedTables = selectedTables.filter(item => item.id !== table.dataset.id);
-                        }
-                    });
-
-                    if (removedTableNames.length > 0) {
-                        updateSelectedTablesList();
-                        Swal.fire({
-                            title: 'Pilihan Meja Diperbarui',
-                            text: `${removedTableNames.join(', ')} tidak tersedia pada waktu ini.`,
-                            icon: 'info',
-                            confirmButtonColor: '#00e5ff',
-                            background: '#0f1115',
-                            color: '#fff'
-                        });
-                    }
-                } catch (error) {
-                    Swal.fire({
-                        title: 'Status Meja Gagal Dimuat',
-                        text: 'Coba pilih tanggal lagi beberapa saat lagi.',
-                        icon: 'error',
-                        confirmButtonColor: '#ff3b3b',
-                        background: '#0f1115',
-                        color: '#fff'
-                    });
-                }
-            }
 
             function renderMonthPicker() {
                 mpYearDisplay.innerText = pickerYear;
@@ -580,30 +450,86 @@
                     const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
                     const dayName = date.toLocaleDateString('id-ID', { weekday: 'short' }).toUpperCase();
                     const dayNum = date.getDate();
-                    const fullDate = formatLocalDate(date);
-                    const disabled = isPastDate(date);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const fullDate = `${year}-${month}-${day}`;
 
                     const card = document.createElement('div');
-                    card.className = `date-card ${isSelected ? 'active' : ''} ${disabled ? 'disabled' : ''}`;
+                    card.className = `date-card ${isSelected ? 'active' : ''}`;
                     card.dataset.date = fullDate;
-                    card.style.opacity = disabled ? '0.35' : '';
-                    card.style.cursor = disabled ? 'not-allowed' : '';
                     card.innerHTML = `
                                                                                                                     <span class="day-name">${dayName}</span>
                                                                                                                     <span class="day-num">${dayNum}</span>
                                                                                                                 `;
 
                     card.addEventListener('click', () => {
-                        if (disabled) return;
                         selectedDate = new Date(date);
+                        selectedDate.setHours(0, 0, 0, 0);
                         renderDates();
                         updateSummaryDate();
-                        updateTimeSlotAvailability();
-                        refreshTableAvailability();
+                        updateTimeSlots(); 
+                        updateMapStatus(); // Refresh map colors for selected date
                     });
 
                     dateCardsContainer.appendChild(card);
                 }
+            }
+
+            function updateTimeSlots() {
+                const now = new Date();
+                const checkDate = selectedDate ? new Date(selectedDate) : new Date();
+                const year = checkDate.getFullYear();
+                const month = String(checkDate.getMonth() + 1).padStart(2, '0');
+                const day = String(checkDate.getDate()).padStart(2, '0');
+                const selectedDateStr = `${year}-${month}-${day}`;
+                
+                timeSlots.forEach(slot => {
+                    const dataHour = parseInt(slot.dataset.hour);
+                    const slotDateTime = new Date(checkDate);
+                    
+                    if (dataHour >= 24) {
+                        slotDateTime.setDate(slotDateTime.getDate() + 1);
+                        slotDateTime.setHours(dataHour - 24, 0, 0, 0);
+                    } else {
+                        slotDateTime.setHours(dataHour, 0, 0, 0);
+                    }
+
+                    // Base disabling (past time)
+                    let isDisabled = selectedDate ? (slotDateTime < now) : false;
+
+                    // Additional disabling (already booked for any of the selected tables)
+                    if (selectedDate && !isDisabled && selectedTables.length > 0) {
+                        const slotStart = dataHour;
+                        const slotEnd = dataHour + 1;
+                        
+                        const isBooked = selectedTables.some(selected => {
+                            const tableData = allTables.find(t => t.id == selected.id);
+                            if (!tableData || !tableData.bookings) return false;
+                            
+                            return tableData.bookings.some(b => {
+                                if (b.booking_date !== selectedDateStr) return false;
+                                
+                                let bStart = timeToFloat(b.start_time);
+                                let bEnd = timeToFloat(b.end_time);
+                                if (bEnd <= bStart) bEnd += 24;
+                                
+                                return slotStart < bEnd && slotEnd > bStart;
+                            });
+                        });
+                        
+                        if (isBooked) isDisabled = true;
+                    }
+
+                    if (isDisabled) {
+                        slot.classList.add('disabled');
+                        slot.classList.remove('active');
+                    } else {
+                        slot.classList.remove('disabled');
+                    }
+                });
+                updateTimeSummary();
+                updateMapStatus(); // Automatically refresh map to match new slot states
             }
 
             function updateSummaryDate() {
@@ -615,9 +541,119 @@
                 summaryDate.innerText = selectedDate.toLocaleDateString('id-ID', options);
             }
 
+            function updateMapStatus() {
+                const checkDate = selectedDate ? new Date(selectedDate) : new Date();
+                const year = checkDate.getFullYear();
+                const month = String(checkDate.getMonth() + 1).padStart(2, '0');
+                const day = String(checkDate.getDate()).padStart(2, '0');
+                const selectedDateStr = `${year}-${month}-${day}`;
+
+                // Get selected time slot and duration
+                const activeTimeSlot = document.querySelector('.time-slot.active');
+                let selectedStartHour = null;
+                let selectedEndHour = null;
+                if (activeTimeSlot) {
+                    selectedStartHour = parseInt(activeTimeSlot.dataset.hour);
+                    const duration = durationSelected ? parseInt(rangeSlider.value) : 1;
+                    selectedEndHour = selectedStartHour + duration;
+                }
+
+                allTables.forEach(table => {
+                    const tableIdStr = table.id.toString().padStart(2, '0');
+                    const tableEl = document.getElementById(`meja-${tableIdStr}`);
+                    if (!tableEl) return;
+
+                    let statusClass = 'available';
+                    let statusText = 'TERSEDIA';
+
+                    if (table.status === 'maintenance') {
+                        statusClass = 'maintenance';
+                        statusText = 'MAINTENANCE';
+                    } else {
+                        // Find overlapping bookings for this table on selected date and selected timeslot
+                        const overlappingBooking = table.bookings.find(b => {
+                            if (b.booking_date !== selectedDateStr) return false;
+                            
+                            // If no timeslot is selected yet, we default to checking if currently occupied right now (if date is today)
+                            if (selectedStartHour === null) {
+                                const localDate = new Date();
+                                const y = localDate.getFullYear();
+                                const m = String(localDate.getMonth() + 1).padStart(2, '0');
+                                const d = String(localDate.getDate()).padStart(2, '0');
+                                const todayStr = `${y}-${m}-${d}`;
+                                
+                                if (selectedDateStr === todayStr) {
+                                    const nowHour = localDate.getHours() + (localDate.getMinutes() / 60);
+                                    const bStart = timeToFloat(b.start_time);
+                                    const bEnd = timeToFloat(b.end_time);
+                                    return nowHour >= bStart && nowHour < bEnd;
+                                }
+                                return false;
+                            }
+
+                            // If a slot is selected, check for interval overlap
+                            let bStart = timeToFloat(b.start_time);
+                            let bEnd = timeToFloat(b.end_time);
+                            if (bEnd <= bStart) bEnd += 24;
+                            return selectedStartHour < bEnd && selectedEndHour > bStart;
+                        });
+
+                        if (overlappingBooking) {
+                            const statusLower = overlappingBooking.status.toLowerCase();
+                            if (statusLower === 'confirmed') {
+                                statusClass = 'occupied';
+                                statusText = 'TERISI';
+                            } else if (['pending', 'booked', 'dipesan', 'paid', 'lunas'].includes(statusLower)) {
+                                statusClass = 'booked';
+                                statusText = 'DIPESAN';
+                            }
+                        }
+                    }
+
+                    // Update visual classes on map
+                    tableEl.className = tableEl.className.replace(/status-\w+/g, `status-${statusClass}`);
+                    tableEl.dataset.status = statusClass;
+
+                    // Update label color
+                    const label = tableEl.querySelector('.table-side-label, .table-number');
+                    if (label) {
+                        label.className = label.className.replace(/color-\w+/g, `color-${statusClass}`);
+                    }
+
+                    // Update tooltip elements
+                    const dot = tableEl.querySelector('.tm-status-dot');
+                    const txt = tableEl.querySelector('.tm-status-text');
+                    const btn = tableEl.querySelector('.tm-btn-add');
+
+                    if (dot) dot.className = `tm-status-dot dot-${statusClass}`;
+                    if (txt) {
+                        txt.className = `tm-status-text text-${statusClass}`;
+                        txt.innerText = statusText;
+                    }
+                    if (btn) {
+                        if (statusClass === 'maintenance') {
+                            btn.disabled = true;
+                            btn.style.opacity = '0.5';
+                            btn.style.cursor = 'not-allowed';
+                            btn.style.background = '#333';
+                            btn.innerText = 'MAINTENANCE';
+                        } else {
+                            btn.disabled = false;
+                            btn.style.opacity = '1';
+                            btn.style.cursor = 'pointer';
+                            btn.style.background = 'linear-gradient(to right, var(--primary-cyan), #00c2ff)';
+                            btn.innerText = 'TAMBAH';
+                        }
+                    }
+                });
+            }
+
             let selectedTables = []; // Array to store multiple selected table objects
 
             function updateSelectedTablesList() {
+                // Update prices first based on current time
+                updateCalculations();
+
                 const listContainer = document.getElementById('selected-tables-list');
                 const badge = document.getElementById('tables-count-badge');
                 listContainer.innerHTML = '';
@@ -638,20 +674,18 @@
                 }
 
                 selectedTables.forEach(table => {
-                    const activeTimeSlot = document.querySelector('.time-slot.active');
-                    const currentRate = activeTimeSlot ? getRateForTime(activeTimeSlot.innerText.trim()) : 0;
-                    const priceFormatted = currentRate.toLocaleString('id-ID');
+                    const priceFormatted = parseInt(table.price).toLocaleString('id-ID');
                     const itemHtml = `
                                                     <div class="summary-item-card update-flash" data-id="${table.id}" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 242, 255, 0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(0, 242, 255, 0.1); animation: slideIn 0.3s ease-out;">
                                                         <div style="display: flex; gap: 12px; align-items: center;">
                                                             <img src="${table.image}" style="width: 45px; height: 45px; border-radius: 8px; object-fit: cover;">
                                                             <div class="item-info">
                                                                 <div style="font-size: 0.9rem; font-weight: 800; color: #fff;">${table.name}</div>
-                                                                <div style="font-size: 0.7rem; color: #8a8a98;">${table.type === 'vip' ? 'VIP' : 'Regular'} • ${table.capacity} Orang</div>
+                                                                <div style="font-size: 0.7rem; color: #8a8a98;">${table.type === 'vip' ? 'VIP' : 'Standar'} • ${table.capacity} Orang</div>
                                                             </div>
                                                         </div>
                                                         <div style="text-align: right;">
-                                                            <div style="font-size: 0.9rem; font-weight: 800; color: #fff;">Rp ${priceFormatted}/jam</div>
+                                                            <div style="font-size: 0.9rem; font-weight: 800; color: #fff;">Rp ${priceFormatted}</div>
                                                             <button class="remove-table" style="background: none; border: none; color: #ff3b3b; font-size: 0.65rem; font-weight: 700; padding: 0; cursor: pointer;">Hapus</button>
                                                         </div>
                                                     </div>
@@ -678,10 +712,11 @@
                         if (mapTable) mapTable.classList.remove('selected');
 
                         updateSelectedTablesList();
+                        updateTimeSlots();
+                        updateMapStatus();
                     });
                 });
 
-                updateCalculations();
                 updateSummaryDate();
                 updateTimeSummary();
             }
@@ -709,8 +744,8 @@
             // Initial render
             renderDates();
             updateSummaryDate();
-            updateTimeSlotAvailability();
-            refreshTableAvailability();
+            updateTimeSlots();
+            updateMapStatus();
 
             // Hover Tooltip Fallback JS
             tables.forEach(table => {
@@ -737,12 +772,10 @@
                     const status = table.dataset.status;
 
                     // Validation for Real-time Status
-                    if (status === 'occupied' || status === 'booked' || status === 'maintenance') {
+                    if (status === 'maintenance') {
                         Swal.fire({
-                            title: 'Meja Tidak Tersedia',
-                            text: status === 'maintenance'
-                                ? 'Gagal! Meja ini sedang maintenance.'
-                                : 'Gagal! Meja ini sedang digunakan atau sudah dipesan.',
+                            title: 'Meja Maintenance',
+                            text: 'Gagal! Meja ini sedang dalam perbaikan.',
                             icon: 'error',
                             confirmButtonColor: '#ff3b3b',
                             background: '#0f1115',
@@ -750,6 +783,20 @@
                         });
                         return;
                     }
+
+                    if (status === 'occupied' || status === 'booked') {
+                        Swal.fire({
+                            title: 'Meja Tidak Tersedia',
+                            text: 'Gagal! Meja ini sudah dipesan/terisi pada waktu tersebut. Silakan pilih waktu atau meja lain.',
+                            icon: 'error',
+                            confirmButtonColor: '#ff3b3b',
+                            background: '#0f1115',
+                            color: '#fff'
+                        });
+                        return;
+                    }
+
+
 
                     // Current behavior: Hover opens popup, click selection toggle
                     const id = table.dataset.id;
@@ -762,11 +809,12 @@
                     } else {
                         // Add to selection
                         const name = table.dataset.name;
+                        const price = table.dataset.price;
                         const capacity = table.dataset.capacity || '4';
                         const type = table.dataset.type;
                         const image = table.dataset.image && table.dataset.image.trim() !== '' ? '/storage/' + table.dataset.image : '/images/hero-bg.png';
 
-                        selectedTables.push({ id, name, capacity, type, image });
+                        selectedTables.push({ id, name, price, capacity, type, image });
                         table.classList.add('selected');
 
                         // Flash animation for summary list
@@ -777,6 +825,7 @@
                     }
 
                     updateSelectedTablesList();
+                    updateTimeSlots(); // Refresh time slots based on new selection
                 });
             });
 
@@ -815,178 +864,30 @@
                 });
             });
 
-            // Chat Logic for User Dashboard (Meja)
+            // Handle CHAT button click inside tooltip
             const chatButtons = document.querySelectorAll('.tm-btn-chat');
-            const chatOverlay = document.getElementById('chatOverlay');
-            const chatPopup = document.getElementById('chatPopup');
-            const chatCloseBtn = document.getElementById('chatClose');
-            const chatBody = document.getElementById('chatBody');
-            const chatInput = document.getElementById('chatInput');
-            const chatSendBtn = document.getElementById('chatSend');
-
-            let userChatData = JSON.parse(localStorage.getItem('billiard_chat_history'));
-            if (!userChatData) {
-                userChatData = {
-                    1: { table: 'MEJA 01', status: 'TERISI', statusColor: '#00e5ff', user: 'Rian S.', messages: [] },
-                    2: { table: 'MEJA 02', status: 'TERSEDIA', statusColor: '#00e5ff', user: 'System', messages: [] },
-                    3: { table: 'MEJA 03', status: 'DIPESAN', statusColor: '#ffab00', user: 'Zaenal', messages: [] },
-                    4: { table: 'MEJA 04', status: 'TERISI', statusColor: '#00e5ff', user: 'Haecan', messages: [] }
-                };
-                localStorage.setItem('billiard_chat_history', JSON.stringify(userChatData));
-            }
-
-            function updateUserBadges() {
-                chatButtons.forEach(btn => {
-                    const parentTable = btn.closest('.billiard-table');
-                    if (parentTable) {
-                        const id = parentTable.dataset.id;
-                        let badge = btn.querySelector('.notif-badge');
-
-                        if (userChatData[id] && userChatData[id].hasUnreadForUser) {
-                            if (badge) badge.style.display = 'flex';
-                        } else {
-                            if (badge) badge.style.display = 'none';
-                        }
-                    }
-                });
-            }
-
-            function renderUserMessages(id) {
-                chatBody.innerHTML = '';
-                const messages = userChatData[id] ? userChatData[id].messages : [];
-                if (messages.length === 0) {
-                    const welcomeWrapper = document.createElement('div');
-                    welcomeWrapper.className = 'chat-msg chat-msg--customer'; // Left side (admin)
-                    welcomeWrapper.innerHTML = `
-                                                <div class="chat-bubble">Halo, ada yang bisa kami bantu mengenai meja ini?</div>
-                                                <div class="chat-meta">System &bull; Now</div>
-                                            `;
-                    chatBody.appendChild(welcomeWrapper);
-                } else {
-                    messages.forEach(msg => {
-                        const wrapper = document.createElement('div');
-                        // from 'user' -> right (admin class), from 'admin' -> left (customer class)
-                        wrapper.className = 'chat-msg ' + (msg.from === 'user' ? 'chat-msg--admin' : 'chat-msg--customer');
-                        wrapper.innerHTML = `
-                                                    <div class="chat-bubble">${msg.text}</div>
-                                                    <div class="chat-meta">${msg.time}</div>
-                                                `;
-                        chatBody.appendChild(wrapper);
-                    });
-                }
-                chatBody.scrollTop = chatBody.scrollHeight;
-            }
-
             chatButtons.forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
+                    e.stopPropagation(); // Avoid triggering parent click (table selection)
+
                     const parentTable = btn.closest('.billiard-table');
                     if (parentTable) {
                         const id = parentTable.dataset.id;
-                        const name = parentTable.dataset.name;
-                        const statusClass = parentTable.dataset.status;
-
-                        // Clear unread flag for user when opening chat
-                        if (userChatData[id] && userChatData[id].hasUnreadForUser) {
-                            userChatData[id].hasUnreadForUser = false;
-                            localStorage.setItem('billiard_chat_history', JSON.stringify(userChatData));
-                            updateUserBadges();
+                        if (typeof window.openChatWindow === 'function') {
+                            window.openChatWindow(id);
                         }
-
-                        document.getElementById('chatTableName').textContent = name;
-                        let statusText = 'TERSEDIA';
-                        let statusColor = '#00e5ff';
-                        if (statusClass === 'occupied') { statusText = 'TERISI'; statusColor = '#ff3b3b'; }
-                        else if (statusClass === 'booked') { statusText = 'DIPESAN'; statusColor = '#ffab00'; }
-                        else if (statusClass === 'maintenance') { statusText = 'MAINTENANCE'; statusColor = '#ff3b3b'; }
-
-                        document.getElementById('chatStatus').textContent = statusText;
-                        document.getElementById('chatStatus').style.color = statusColor;
-                        document.querySelector('.chat-popup-dot').style.color = statusColor;
-                        document.getElementById('chatUserName').textContent = "Admin";
-
-                        renderUserMessages(id);
-                        chatPopup.dataset.activeTableId = id;
-
-                        chatOverlay.classList.add('active');
-                        chatPopup.classList.add('active');
                     }
                 });
             });
 
-            function closeChatPopup() {
-                chatOverlay.classList.remove('active');
-                chatPopup.classList.remove('active');
-                chatPopup.dataset.activeTableId = '';
-            }
-
-            if (chatCloseBtn) chatCloseBtn.addEventListener('click', closeChatPopup);
-            if (chatOverlay) chatOverlay.addEventListener('click', closeChatPopup);
-
-            if (chatSendBtn) {
-                chatSendBtn.addEventListener('click', () => {
-                    const text = chatInput.value.trim();
-                    const tableId = chatPopup.dataset.activeTableId;
-                    if (!text || !tableId) return;
-
-                    const now = new Date();
-                    const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-
-                    if (!userChatData[tableId]) userChatData[tableId] = { messages: [] };
-                    userChatData[tableId].messages.push({ from: 'user', text: text, time: timeStr });
-
-                    // Notify admin there is an unread message
-                    userChatData[tableId].hasUnreadForAdmin = true;
-
-                    localStorage.setItem('billiard_chat_history', JSON.stringify(userChatData));
-
-                    renderUserMessages(tableId);
-                    chatInput.value = '';
-                });
-
-                chatInput.addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') {
-                        chatSendBtn.click();
-                    }
-                });
-            }
-
-            window.addEventListener('storage', (e) => {
-                if (e.key === 'billiard_chat_history') {
-                    userChatData = JSON.parse(e.newValue);
-                    updateUserBadges();
-
-                    const activeId = chatPopup.dataset.activeTableId;
-                    if (activeId && chatPopup.classList.contains('active')) {
-                        if (userChatData[activeId] && userChatData[activeId].hasUnreadForUser) {
-                            userChatData[activeId].hasUnreadForUser = false;
-                            localStorage.setItem('billiard_chat_history', JSON.stringify(userChatData));
-                            updateUserBadges();
-                        }
-                        renderUserMessages(activeId);
-                    }
-                }
-            });
-
-            // Initialize badges on load
-            updateUserBadges();
-
-            // Time Selection
             timeSlots.forEach(slot => {
                 slot.addEventListener('click', () => {
-                    if (slot.classList.contains('disabled') || isPastStartTime(slot.innerText.trim())) {
-                        Swal.fire({ icon: 'warning', title: 'Jam Sudah Lewat', text: 'Silakan pilih jam mulai yang masih tersedia.', background: '#0f1115', color: '#fff' });
-                        updateTimeSlotAvailability();
-                        return;
-                    }
-
+                    if (slot.classList.contains('disabled')) return; // Prevent selection of past time
                     timeSlots.forEach(s => s.classList.remove('active'));
                     slot.classList.add('active');
                     updateTimeSummary();
-                    // Refresh table availability when time is selected
-                    if (durationSelected) {
-                        refreshTableAvailability();
-                    }
+                    updateSelectedTablesList();
+                    updateMapStatus(); // Refresh map statuses for the newly selected hour
                 });
             });
 
@@ -997,12 +898,8 @@
                 durationValue.innerText = val + ' Jam';
                 document.getElementById('summary-duration').innerText = val + ' Jam';
                 updateTimeSummary();
-                updateCalculations();
-                // Refresh table availability when duration changes
-                const activeTimeSlot = document.querySelector('.time-slot.active');
-                if (activeTimeSlot) {
-                    refreshTableAvailability();
-                }
+                updateSelectedTablesList();
+                updateMapStatus(); // Refresh map statuses for updated duration window
             });
 
             function updateTimeSummary() {
@@ -1013,24 +910,43 @@
                     return;
                 }
 
-                const activeTime = activeTimeSlot.innerText;
                 const duration = parseInt(rangeSlider.value);
-                const startHour = parseInt(activeTime.split(':')[0]);
-                const endHour = startHour + duration;
-                document.getElementById('summary-time').innerText = `${activeTime} - ${endHour}:00`;
+                const dataHour = parseInt(activeTimeSlot.dataset.hour);
+
+                // For data-hour >= 24, the real hour is dataHour - 24
+                const startRealHour = dataHour >= 24 ? dataHour - 24 : dataHour;
+                const endRealHour = (startRealHour + duration) % 24;
+
+                const startStr = String(startRealHour).padStart(2, '0') + ':00';
+                const endStr = String(endRealHour).padStart(2, '0') + ':00';
+
+                document.getElementById('summary-time').innerText = `${startStr} - ${endStr}`;
                 document.getElementById('summary-duration').innerText = duration + ' Jam';
             }
 
             function updateCalculations() {
                 const duration = durationSelected ? parseInt(rangeSlider.value) : 0;
                 const activeTimeSlot = document.querySelector('.time-slot.active');
-                let subtotal = 0;
-
-                if (activeTimeSlot && duration > 0) {
-                    const startTime = activeTimeSlot.innerText.trim();
-                    const hourlyRate = getRateForTime(startTime);
-                    subtotal = selectedTables.length * hourlyRate * duration;
+                
+                let dynamicPrice = null;
+                if (activeTimeSlot) {
+                    const hour = parseInt(activeTimeSlot.dataset.hour);
+                    // Logika: Jam 2-5 sore -> 25000, Jam 6 sore-1 malam -> 35000
+                    if (hour >= 14 && hour <= 17) {
+                        dynamicPrice = 25000;
+                    } else if (hour >= 18 && hour <= 25) {
+                        dynamicPrice = 35000;
+                    }
                 }
+
+                let subtotal = 0;
+                selectedTables.forEach(t => {
+                    // Jika ada harga dinamis yang berlaku, gunakan itu
+                    if (dynamicPrice !== null) {
+                        t.price = dynamicPrice;
+                    }
+                    subtotal += (parseInt(t.price) || 0) * duration;
+                });
 
                 const tax = Math.round(subtotal * 0.1);
                 const total = subtotal + tax;
@@ -1051,7 +967,7 @@
                     const orderData = {
                         tables: selectedTables,
                         date: document.getElementById('summary-date').innerText,
-                        date_iso: selectedDate ? formatLocalDate(selectedDate) : null,
+                        isoDate: selectedDate ? selectedDate.getFullYear() + '-' + String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + String(selectedDate.getDate()).padStart(2, '0') : null,
                         time: document.getElementById('summary-time').innerText,
                         duration: document.getElementById('summary-duration').innerText,
                         subtotal: document.getElementById('summary-subtotal').innerText,
@@ -1075,14 +991,46 @@
                         return;
                     }
 
-                    if (isPastDate(selectedDate) || isPastStartTime(activeTimeSlot.innerText.trim())) {
-                        Swal.fire({ icon: 'warning', title: 'Waktu Tidak Valid', text: 'Tidak bisa reservasi untuk tanggal atau jam yang sudah lewat.', background: '#0f1115', color: '#fff' });
-                        updateTimeSlotAvailability();
+                    if (!durationSelected) {
+                        Swal.fire({ icon: 'warning', title: 'Durasi Belum Dipilih', text: 'Silakan tentukan durasi main dulu.', background: '#0f1115', color: '#fff' });
                         return;
                     }
 
-                    if (!durationSelected) {
-                        Swal.fire({ icon: 'warning', title: 'Durasi Belum Dipilih', text: 'Silakan tentukan durasi main dulu.', background: '#0f1115', color: '#fff' });
+                    // Client-side Overlap Conflict Verification
+                    const selectedStartHour = parseInt(activeTimeSlot.dataset.hour);
+                    const duration = parseInt(rangeSlider.value);
+                    const selectedEndHour = selectedStartHour + duration;
+                    const selectedDateStr = orderData.isoDate;
+
+                    let hasOverlapConflict = false;
+                    let conflictingTable = '';
+
+                    selectedTables.forEach(selected => {
+                        const tableData = allTables.find(t => t.id == selected.id);
+                        if (!tableData || !tableData.bookings) return;
+
+                        tableData.bookings.forEach(b => {
+                            if (b.booking_date !== selectedDateStr) return;
+
+                            let bStart = timeToFloat(b.start_time);
+                            let bEnd = timeToFloat(b.end_time);
+                            if (bEnd <= bStart) bEnd += 24;
+
+                            if (selectedStartHour < bEnd && selectedEndHour > bStart) {
+                                hasOverlapConflict = true;
+                                conflictingTable = tableData.name;
+                            }
+                        });
+                    });
+
+                    if (hasOverlapConflict) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Jadwal Bentrok',
+                            text: `Meja ${conflictingTable} sudah dipesan pada slot jam tersebut. Silakan pilih waktu bermain atau meja lain.`,
+                            background: '#0f1115',
+                            color: '#fff'
+                        });
                         return;
                     }
 

@@ -1,11 +1,14 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\Promo;
+
 class HomeController extends Controller
 {
     public function index()
     {
-        return view('website.home');
+        $promos = Promo::where('is_active', true)->latest()->take(2)->get();
+        return view('website.home', compact('promos'));
     }
 
     public function location()

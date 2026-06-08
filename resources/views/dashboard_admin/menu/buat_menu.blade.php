@@ -138,7 +138,7 @@
                                         <label class="adm-label">Harga</label>
                                         <div class="adm-input-wrap">
                                             <span class="adm-input-prefix">Rp</span>
-                                            <input type="number" name="price" id="inputPrice" class="adm-input adm-input--prefixed" value="0" min="0" step="1000" required oninput="updatePreview()">
+                                            <input type="number" name="price" id="inputPrice" class="adm-input adm-input--prefixed" value="0" required oninput="updatePreview()">
                                             <div class="adm-input-arrows">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 15 12 10 17 15"></polyline></svg>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 9 12 14 17 9"></polyline></svg>
@@ -146,24 +146,13 @@
                                         </div>
                                     </div>
                                     <div class="adm-form-group">
-                                        <label class="adm-label">Stok</label>
-                                        <div class="adm-input-wrap">
-                                            <input type="number" name="stock" id="inputStock" class="adm-input" value="0" min="0" step="1" required>
-                                            <div class="adm-input-arrows">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 15 12 10 17 15"></polyline></svg>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 9 12 14 17 9"></polyline></svg>
-                                            </div>
-                                        </div>
+                                        <label class="adm-label">Kategori</label>
+                                        @include('component.c_dashboard.dropdown.option_kategori', [
+                                            'id' => 'categoryDropdown',
+                                            'name' => 'category',
+                                            'placeholder' => 'Hidangan Utama'
+                                        ])
                                     </div>
-                                </div>
-
-                                <div class="adm-form-group">
-                                    <label class="adm-label">Kategori</label>
-                                    @include('component.c_dashboard.dropdown.option_kategori', [
-                                        'id' => 'categoryDropdown',
-                                        'name' => 'category',
-                                        'placeholder' => 'Hidangan Utama'
-                                    ])
                                 </div>
 
                                 <div class="adm-form-group">
@@ -205,13 +194,11 @@
 
                     function updatePreview() {
                         const name = document.getElementById('inputName').value;
-                        const priceInput = document.getElementById('inputPrice');
-                        if (Number(priceInput.value) < 0) priceInput.value = 0;
-                        const price = priceInput.value;
+                        const price = document.getElementById('inputPrice').value;
                         const desc = document.getElementById('inputDesc').value;
                         
                         document.getElementById('previewNameText').innerText = name || 'Lorem';
-                        document.getElementById('previewPriceText').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(price || 0));
+                        document.getElementById('previewPriceText').innerText = 'Rp ' + (price ? new Intl.NumberFormat('id-ID').format(price) : 'Lorem');
                         document.getElementById('previewDescText').innerText = (desc || '.Lorem ipsum dolor sit amet');
                     }
 

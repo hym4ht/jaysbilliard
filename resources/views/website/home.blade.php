@@ -10,7 +10,7 @@
         <div class="absolute inset-0 bg-black/55 backdrop-blur-sm"></div>
     </div>
 
-    <div class="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 pt-28 pb-12 md:pt-0 md:pb-0">
+    <div class="relative z-10 max-w-3xl mx-auto px-6 pt-24 md:pt-0">
         {{-- Badge --}}
         <span class="inline-flex items-center gap-2 text-xs bg-cyan-500/10 text-cyan-400 border border-cyan-400/40 rounded-full px-4 py-1.5 mb-8 uppercase tracking-wider">
             <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse-custom"></span>
@@ -18,13 +18,13 @@
         </span>
 
         {{-- Headline --}}
-        <h1 class="text-4xl sm:text-5xl md:text-7xl font-black uppercase leading-tight mb-6 text-white tracking-wide">
+        <h1 class="text-5xl md:text-7xl font-black uppercase leading-tight mb-6 text-white tracking-wide">
             Welcome To<br>
             <span class="text-neon">Billiard Jay's</span>
         </h1>
 
         {{-- Subheadline --}}
-        <p class="text-white/65 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto mb-10">
+        <p class="text-white/65 text-base leading-relaxed max-w-2xl mx-auto mb-10">
             Tempat di mana setiap permainan terasa lebih eksklusif. Pesan meja favoritmu sekarang dan rasakan pengalaman billiard dengan standar profesional dan suasana premium
         </p>
 
@@ -35,18 +35,18 @@
                 Book a Table
             </a>
             <a href="{{ route('rates') }}" class="inline-flex items-center gap-2 bg-transparent text-white font-semibold text-sm uppercase tracking-wider px-8 py-3.5 rounded-lg border-2 border-white/30 transition-all hover:border-white/60 hover:bg-white/5 hover:-translate-y-0.5 w-full sm:w-auto justify-center">
-                Lihat Meja
+                Lihat Tarif
             </a>
         </div>
     </div>
 </section>
 
 {{-- ═══════════════════════════════ WHY CHOOSE US ═══════════════════════════════ --}}
-<section class="py-16 sm:py-24 px-4 sm:px-6 max-w-7xl mx-auto">
+<section class="py-24 px-6 max-w-7xl mx-auto">
     <div class="flex flex-col md:flex-row items-start justify-between gap-6 mb-14">
         <div>
             <p class="text-cyan-400 text-xs font-bold uppercase tracking-widest mb-2">Mengapa Memilih Kami</p>
-            <h2 class="text-3xl sm:text-4xl font-bold text-white">Lebih Dari Sekadar Permainan</h2>
+            <h2 class="text-4xl font-bold text-white">Lebih Dari Sekadar Permainan</h2>
         </div>
         <p class="text-gray-400 max-w-sm md:text-right text-sm leading-relaxed">
             Kami telah membangun ruang di mana para profesional & pemula
@@ -63,7 +63,7 @@
         ])
         @include('component.c_website.feature-card', [
             'icon'        => '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h8"/><path d="M12 11v11"/><path d="M10 22V6.5a.5.5 0 0 0-.5-.5 3.498 3.498 0 0 1-3.237-4.766A.5.5 0 0 1 6.73 1h10.54a.5.5 0 0 1 .467.234A3.498 3.498 0 0 1 14.5 6a.5.5 0 0 0-.5.5V22"/></svg>',
-            'title'       => 'Bar Lengkap',
+            'title'       => 'F&B Area',
             'description' => 'Sajian rasa untuk menemani tiap kemenangan. Nikmati kemudahan akses menu favorit tanpa harus meninggalkan meja di Ruang Nyaman. Stay focused, stay cool.'
         ])
         @include('component.c_website.feature-card', [
@@ -74,81 +74,14 @@
     </div>
 </section>
 
-{{-- ═══════════════════════════════ CURRENT PROMOS ═══════════════════════════════ --}}
-<section class="py-16 sm:py-24 px-4 sm:px-6 max-w-7xl mx-auto">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
-        <h2 class="text-3xl sm:text-4xl font-bold text-white">Promo Saat Ini</h2>
-    </div>
 
-    <div class="grid md:grid-cols-2 gap-6">
-        {{-- Promo 1: Malam Pelajar --}}
-        <div class="relative rounded-2xl overflow-hidden group cursor-pointer">
-            <img src="{{ asset('images/hero-bg.png') }}"
-                 alt="Malam Pelajar"
-                 class="w-full aspect-video object-cover object-center group-hover:scale-105 transition duration-500"/>
-            
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
-
-            <div class="absolute inset-0 p-6 flex flex-col justify-between">
-                <span class="self-start bg-[#00e5ff] text-black text-[10px] font-black uppercase
-                             tracking-widest rounded-full px-3 py-1 shadow-[0_0_10px_rgba(0,229,255,0.5)]">
-                    WAKTU TERBATAS
-                </span>
-
-                <div>
-                    <h3 class="text-white font-black text-3xl uppercase leading-tight mb-2">
-                        MALAM PELAJAR
-                    </h3>
-                    <p class="text-gray-300 text-sm mb-4">Dapatkan diskon 20% untuk setiap meja sebelum pukul 6 sore pada hari kerja.</p>
-                    <div class="flex justify-end mt-4">
-                        <a href="{{ route('login') }}"
-                           class="inline-flex items-center gap-1 text-[#00e5ff] text-xs font-semibold
-                                  hover:text-white transition">
-                            Book Sekarang <span class="text-lg">→</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Promo 2: Tangga Mingguan --}}
-        <div class="relative rounded-2xl overflow-hidden group cursor-pointer">
-            <img src="{{ asset('images/billiard bg.png') }}"
-                 alt="Tangga Mingguan"
-                 class="w-full aspect-video object-cover object-center group-hover:scale-105 transition duration-500"/>
-            
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
-
-            <div class="absolute inset-0 p-6 flex flex-col justify-between">
-                <span class="self-start bg-[#00e5ff] text-black text-[10px] font-black uppercase
-                             tracking-widest rounded-full px-3 py-1 shadow-[0_0_10px_rgba(0,229,255,0.5)]">
-                    TURNAMEN
-                </span>
-
-                <div>
-                    <h3 class="text-white font-black text-3xl uppercase leading-tight mb-2">
-                        TANGGA MINGGUAN
-                    </h3>
-                    <p class="text-gray-300 text-sm mb-4">Bergabunglah dalam kompetisi setiap hari Jumat. Hadiah hingga Rp 5.000.000.</p>
-                    <div class="flex justify-end mt-4">
-                        <a href="{{ route('login') }}"
-                           class="inline-flex items-center gap-1 text-[#00e5ff] text-xs font-semibold
-                                  hover:text-white transition">
-                            Daftar Sekarang <span class="text-lg">→</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
 {{-- ═══════════════════════════════ LOCATION SECTION ═══════════════════════════════ --}}
-<section class="py-16 sm:py-24 px-4 sm:px-6 max-w-7xl mx-auto">
+<section class="py-24 px-6 max-w-7xl mx-auto">
     <div class="grid md:grid-cols-2 gap-12 items-start">
         {{-- Info --}}
         <div>
-            <h2 class="text-3xl sm:text-4xl font-bold text-white mb-10">Temukan Kami di Tegal</h2>
+            <h2 class="text-4xl font-bold text-white mb-10">Temukan Kami di Tegal</h2>
             <div class="space-y-6 text-sm text-gray-300">
                 <div class="flex gap-4">
                     <span class="flex items-center justify-center w-10 h-10 min-w-10 bg-cyan-400/10 rounded-full">
@@ -165,8 +98,8 @@
                     </span>
                     <div>
                         <p class="text-white font-semibold mb-1">Jam Buka</p>
-                        <p>Sen - Kam: 10:00 - 24:00</p>
-                        <p>Jum - Min: 10:00 - 02:00</p>
+                        <p>Setiap Hari</p>
+                        <p>14.00-01.00 WIB</p>
                     </div>
                 </div>
                 <div class="flex gap-4">
@@ -183,7 +116,7 @@
         </div>
 
         {{-- Map Embed --}}
-        <div class="rounded-2xl overflow-hidden h-72 sm:h-80 border border-white/10">
+        <div class="rounded-2xl overflow-hidden h-80 border border-white/10">
             <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.152290758776!2d109.13612127504331!3d-6.872349093126373!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6fb900340ba34d%3A0x7a438cc8b3fd1052!2sJay&#39;s%20Billiard!5e0!3m2!1sid!2sid!4v1772697633190!5m2!1sid!2sid"
                 class="w-full h-full"

@@ -31,6 +31,6 @@ class RoleMiddlewareTest extends TestCase
     public function test_guest_cannot_open_admin_dashboard(): void
     {
         $this->get(route('admin.dashboard'))
-            ->assertRedirect(route('login'));
+            ->assertRedirect(route('admin.login'));
     }
 }

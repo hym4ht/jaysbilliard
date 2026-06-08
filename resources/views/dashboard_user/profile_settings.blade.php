@@ -10,14 +10,14 @@
         {{-- Page Header --}}
         <div class="ps-header-section">
             <h1 class="ps-page-title">Profile Settings</h1>
-            <p class="ps-page-subtitle">Kelola profil, kredensial keamanan, dan preferensi notifikasi Anda dari satu pusat kendali.</p>
+            <p class="ps-page-subtitle">Kelola profil pribadi, kata sandi, dan preferensi akun Anda dari satu tempat.</p>
         </div>
 
         {{-- Avatar Card --}}
         <div class="ps-avatar-card">
             <div class="ps-avatar-card-inner">
                 <div class="ps-avatar-left">
-                    <div class="ps-avatar-circle" id="psAvatarCircle">{{ strtoupper(substr($user->name ?? 'A', 0, 1)) }}</div>
+                    <div class="ps-avatar-circle" id="psAvatarCircle">{{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}</div>
                     {{-- Hidden File Input --}}
                     <input type="file" id="psAvatarInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
                     
@@ -28,9 +28,9 @@
                 </div>
                 <div class="ps-avatar-center">
                     <h2 class="ps-user-name">{{ $user->name ?? 'User' }}</h2>
-                    <p class="ps-user-meta">{{ ucfirst($user->role ?? 'User') }} <span class="ps-dot">•</span> Join Tahun {{ date('Y', strtotime($user->created_at ?? now())) }}</p>
+                    <p class="ps-user-meta">{{ ucfirst($user->role ?? 'User') }} <span class="ps-dot">•</span> Anggota Sejak {{ date('Y', strtotime($user->created_at ?? now())) }}</p>
                     <div class="ps-avatar-actions">
-                        <button class="btn-ps-upload" onclick="document.getElementById('psAvatarInput').click()">Upload New Photo</button>
+                        <button class="btn-ps-cyan" onclick="document.getElementById('psAvatarInput').click()">Upload New Photo</button>
                         <button class="btn-ps-remove" onclick="removePhoto()">Remove</button>
                     </div>
                 </div>
@@ -75,7 +75,7 @@
 
             {{-- Keamanan & Kata Sandi --}}
             <div class="ps-form-card">
-                <h3 class="ps-card-title">Kemanan & Kata Sandi</h3>
+                <h3 class="ps-card-title">Keamanan & Kata Sandi</h3>
                 <form id="securityForm" class="ps-form">
                     <div class="ps-form-group">
                         <label>Kata Sandi Saat Ini</label>
@@ -152,7 +152,7 @@
                 // Simpan ke localStorage agar tidak hilang saat reload
                 localStorage.setItem('user_avatar', dataUrl);
                 
-                // Update semua avatar di halaman (termasuk topbar/dropdown jika ada)
+                // Update semua avatar di halaman
                 loadStoredAvatar();
             }
             reader.readAsDataURL(file);
@@ -164,7 +164,7 @@
         function removePhoto() {
             localStorage.removeItem('user_avatar');
             const circles = document.querySelectorAll('.ps-avatar-circle, .adm-user-avatar');
-            const userInitial = '{{ strtoupper(substr($user->name ?? "A", 0, 1)) }}';
+            const userInitial = '{{ strtoupper(substr($user->name ?? "U", 0, 1)) }}';
             
             circles.forEach(circle => {
                 circle.innerHTML = userInitial;
@@ -174,7 +174,7 @@
         }
 
         /**
-         * Validasi dan simpan satu form
+         * Validasi dan simpan satu form via AJAX ke backend
          */
         function validateAndSave(formId) {
             const form = document.getElementById(formId);
@@ -201,78 +201,199 @@
                 }
             }
 
-            // Jika valid, tampilkan feedback sukses (simulasi simpan)
+            // Tampilkan loading spinner
             Swal.fire({
-                icon: 'success',
-                title: 'Berhasil Disimpan',
-                text: 'Perubahan pada bagian ini telah diperbarui.',
+                title: 'Menyimpan...',
+                text: 'Harap tunggu sebentar.',
                 background: '#16191d',
                 color: '#fff',
-                confirmButtonColor: '#00e5ff'
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Persiapkan data
+            const formData = new FormData(form);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            // Send AJAX
+            fetch('{{ route("user.profile.update") }}', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Update user name di topbar & avatar card
+                    if (formId === 'personalInfoForm') {
+                        const newName = form.querySelector('input[name="full_name"]').value;
+                        document.querySelectorAll('.adm-profile-name, .ps-user-name').forEach(el => {
+                            el.textContent = newName;
+                        });
+                    }
+
+                    // Reset password fields jika security form berhasil
+                    if (formId === 'securityForm') {
+                        form.reset();
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil Disimpan',
+                        text: data.message || 'Perubahan telah berhasil diperbarui.',
+                        background: '#16191d',
+                        color: '#fff',
+                        confirmButtonColor: '#00e5ff'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: data.message || 'Terjadi kesalahan saat menyimpan.',
+                        background: '#16191d',
+                        color: '#fff',
+                        confirmButtonColor: '#d33'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                let errMsg = 'Terjadi kesalahan sistem.';
+                if (error.errors) {
+                    errMsg = Object.values(error.errors).flat().join('\n');
+                } else if (error.message) {
+                    errMsg = error.message;
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Menyimpan',
+                    text: errMsg,
+                    background: '#16191d',
+                    color: '#fff',
+                    confirmButtonColor: '#d33'
+                });
             });
         }
 
         /**
          * Validasi dan simpan semua data
          */
-        function validateAndSaveAll() {
+        async function validateAndSaveAll() {
             const form1 = document.getElementById('personalInfoForm');
             const form2 = document.getElementById('securityForm');
 
-            // Cek validitas kedua form
-            const isForm1Valid = form1.checkValidity();
-            const isForm2Valid = form2.checkValidity();
-
-            if (!isForm1Valid || !isForm2Valid) {
-                // Tampilkan pesan error jika ada yang belum terisi
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Data Belum Lengkap',
-                    text: 'Pastikan semua kolom yang diperlukan telah diisi sebelum menyimpan semua data.',
-                    background: '#16191d',
-                    color: '#fff',
-                    confirmButtonColor: '#d33'
-                }).then(() => {
-                    // Trigger validasi browser pada form yang bermasalah saja (form 1 diprioritaskan)
-                    if (!isForm1Valid) form1.reportValidity();
-                    else form2.reportValidity();
-                });
+            // Cek validitas form personal
+            if (!form1.checkValidity()) {
+                form1.reportValidity();
                 return;
             }
 
-            // Cek kecocokan password khusus sebelum save semua
-            const newPass = form2.querySelector('input[name="new_password"]').value;
-            const confirmPass = form2.querySelector('input[name="confirm_password"]').value;
-
-            if (newPass !== confirmPass) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Kata Sandi Tidak Cocok',
-                    text: 'Konfirmasi kata sandi baru pada bagian keamanan tidak sesuai.',
-                    background: '#16191d',
-                    color: '#fff',
-                    confirmButtonColor: '#d33'
-                }).then(() => {
-                    form2.querySelector('input[name="confirm_password"]').focus();
-                });
-                return;
-            }
-
-            // Jika semua valid, tampilkan feedback sukses
+            // Tampilkan loading spinner
             Swal.fire({
-                icon: 'success',
-                title: 'Semua Perubahan Disimpan!',
-                text: 'Profil dan kredensial keamanan Anda telah berhasil diperbarui.',
+                title: 'Menyimpan Semua Perubahan...',
+                text: 'Harap tunggu sebentar.',
                 background: '#16191d',
                 color: '#fff',
-                confirmButtonColor: '#00e5ff',
-                showConfirmButton: true,
-                timer: 3000
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
             });
+
+            try {
+                // Submit Form 1 (Personal Info)
+                const formData1 = new FormData(form1);
+                formData1.append('_token', '{{ csrf_token() }}');
+                
+                const response1 = await fetch('{{ route("user.profile.update") }}', {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' },
+                    body: formData1
+                });
+                
+                const resData1 = await response1.json();
+                if (!response1.ok) {
+                    throw resData1;
+                }
+
+                // Update UI name
+                const newName = form1.querySelector('input[name="full_name"]').value;
+                document.querySelectorAll('.adm-profile-name, .ps-user-name').forEach(el => {
+                    el.textContent = newName;
+                });
+
+                // Cek jika ada input password, maka submit Form 2 (Security)
+                const currentPass = form2.querySelector('input[name="current_password"]').value;
+                const newPass = form2.querySelector('input[name="new_password"]').value;
+                const confirmPass = form2.querySelector('input[name="confirm_password"]').value;
+
+                if (currentPass || newPass || confirmPass) {
+                    if (!form2.checkValidity()) {
+                        Swal.close();
+                        form2.reportValidity();
+                        return;
+                    }
+
+                    if (newPass !== confirmPass) {
+                        throw { message: 'Konfirmasi kata sandi baru tidak cocok.' };
+                    }
+
+                    const formData2 = new FormData(form2);
+                    formData2.append('_token', '{{ csrf_token() }}');
+
+                    const response2 = await fetch('{{ route("user.profile.update") }}', {
+                        method: 'POST',
+                        headers: { 'Accept': 'application/json' },
+                        body: formData2
+                    });
+                    
+                    const resData2 = await response2.json();
+                    if (!response2.ok) {
+                        throw resData2;
+                    }
+                    
+                    form2.reset();
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Semua Perubahan Disimpan!',
+                    text: 'Profil dan kredensial keamanan Anda telah berhasil diperbarui.',
+                    background: '#16191d',
+                    color: '#fff',
+                    confirmButtonColor: '#00e5ff'
+                });
+
+            } catch (error) {
+                console.error(error);
+                let errMsg = 'Terjadi kesalahan sistem.';
+                if (error.errors) {
+                    errMsg = Object.values(error.errors).flat().join('\n');
+                } else if (error.message) {
+                    errMsg = error.message;
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Penyimpanan Gagal',
+                    text: errMsg,
+                    background: '#16191d',
+                    color: '#fff',
+                    confirmButtonColor: '#d33'
+                });
+            }
         }
 
         /**
-         * Feedback untuk toggle (bonus interactivity)
+         * Feedback untuk toggle
          */
         function toggleNotification(checkbox) {
             const status = checkbox.checked ? 'diaktifkan' : 'dinonaktifkan';
@@ -390,7 +511,7 @@
             gap: 0.75rem;
         }
 
-        .btn-ps-upload {
+        .btn-ps-cyan {
             background: #00e5ff;
             color: #0c0e14;
             border: none;
@@ -518,18 +639,6 @@
             margin-top: 1rem;
         }
 
-        .btn-ps-cyan {
-            background: #00e5ff;
-            color: #0c0e14;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 0.6rem;
-            font-size: 0.85rem;
-            font-weight: 700;
-            cursor: pointer;
-            width: fit-content;
-        }
-
         /* Bottom Actions */
         .ps-bottom-actions {
             display: flex;
@@ -552,165 +661,9 @@
             .ps-forms-grid {
                 grid-template-columns: 1fr;
             }
-
-            .ps-avatar-card-inner {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .ps-avatar-center {
-                width: 100%;
-            }
-
-            .ps-avatar-actions {
-                justify-content: center;
-            }
-
-            .ps-form-row {
-                grid-template-columns: 1fr;
-            }
         }
 
-        @media (max-width: 768px) {
-            .ps-page-wrapper {
-                padding: 1.5rem 1rem;
-            }
-
-            .ps-page-title {
-                font-size: 1.25rem;
-            }
-
-            .ps-page-subtitle {
-                font-size: 0.8rem;
-            }
-
-            .ps-avatar-card {
-                padding: 1.5rem;
-            }
-
-            .ps-avatar-circle {
-                width: 80px;
-                height: 80px;
-                font-size: 2rem;
-            }
-
-            .ps-user-name {
-                font-size: 1.1rem;
-            }
-
-            .ps-user-meta {
-                font-size: 0.8rem;
-            }
-
-            .ps-avatar-actions {
-                flex-direction: column;
-                width: 100%;
-            }
-
-            .btn-ps-upload,
-            .btn-ps-remove {
-                width: 100%;
-                text-align: center;
-            }
-
-            .ps-form-card {
-                padding: 1.5rem;
-            }
-
-            .ps-card-title {
-                font-size: 1rem;
-                margin-bottom: 1.5rem;
-            }
-
-            .ps-form-group input {
-                padding: 0.75rem 0.85rem;
-                font-size: 0.85rem;
-            }
-
-            .btn-ps-cyan {
-                width: 100%;
-                padding: 0.85rem 1.5rem;
-            }
-
-            .ps-bottom-actions {
-                justify-content: stretch;
-            }
-
-            .btn-ps-cyan-large {
-                width: 100%;
-                padding: 0.85rem 2rem;
-                font-size: 0.9rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .ps-page-wrapper {
-                padding: 1rem 0.75rem;
-            }
-
-            .ps-page-title {
-                font-size: 1.1rem;
-            }
-
-            .ps-page-subtitle {
-                font-size: 0.75rem;
-            }
-
-            .ps-avatar-card {
-                padding: 1rem;
-                border-radius: 1rem;
-            }
-
-            .ps-avatar-circle {
-                width: 70px;
-                height: 70px;
-                font-size: 1.75rem;
-            }
-
-            .ps-upload-label {
-                font-size: 0.85rem;
-            }
-
-            .ps-upload-hint {
-                font-size: 0.7rem;
-            }
-
-            .ps-form-card {
-                padding: 1rem;
-                border-radius: 1rem;
-            }
-
-            .ps-card-title {
-                font-size: 0.95rem;
-            }
-
-            .ps-form-group label {
-                font-size: 0.75rem;
-            }
-
-            .ps-form-group input {
-                padding: 0.7rem 0.8rem;
-                font-size: 0.8rem;
-            }
-
-            .btn-ps-upload,
-            .btn-ps-remove {
-                padding: 0.5rem 1rem;
-                font-size: 0.8rem;
-            }
-
-            .btn-ps-cyan {
-                padding: 0.75rem 1.25rem;
-                font-size: 0.8rem;
-            }
-
-            .btn-ps-cyan-large {
-                padding: 0.75rem 1.5rem;
-                font-size: 0.85rem;
-            }
-        }
-
-        /* Swall Custom Overrides */
+        /* Swal Custom Overrides */
         .swal2-popup {
             border-radius: 1.5rem !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;

@@ -6,9 +6,12 @@ use App\Models\Booking;
 use App\Models\FnbOrder;
 use App\Models\Table;
 use App\Models\Menu;
+use App\Models\Order;
+use App\Models\StockTransaction;
 use App\Services\MidtransDirectDebitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -24,9 +27,12 @@ class DashboardController extends Controller
         $dbBookings = $this->userBookingsQuery($user)->get();
         $totalHours = 0;
         foreach ($dbBookings as $booking) {
-            $start = \Carbon\Carbon::parse($booking->start_time);
-            $end = \Carbon\Carbon::parse($booking->end_time);
-            $totalHours += $end->diffInHours($start);
+            $start = \Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->start_time);
+            $end = \Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->end_time);
+            if ($end->lt($start)) {
+                $end->addDay();
+            }
+            $totalHours += $start->diffInHours($end);
         }
         
         $tables = Table::with(['bookings' => function($query) use ($today) {
@@ -56,26 +62,42 @@ class DashboardController extends Controller
     public function history()
     {
         $user = Auth::user();
-        $histories = $this->userHistoryItems($user);
-
-        $stats = [
-            'total' => $histories->count(),
-            'booking' => $histories->where('type', 'booking')->count(),
-            'fnb' => $histories->where('type', 'fnb')->count(),
-        ];
+        
+        $bookings = Booking::with('table')
+            ->where(function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                    ->orWhere(function ($legacyQuery) use ($user) {
+                        $legacyQuery->whereNull('user_id')
+                            ->where('customer_name', $user->name);
+                    });
+            })
+            ->orderBy('booking_date', 'desc')
+            ->orderBy('start_time', 'desc')
+            ->get();
+                            
+        $fnbOrders = \App\Models\Order::whereHas('booking', function ($query) use ($user) {
+            $query->where('user_id', $user->id)
+                  ->orWhere('customer_name', $user->name);
+        })
+        ->with(['details.menu', 'booking.table'])
+        ->orderBy('created_at', 'desc')
+        ->get();
 
         $topbar_title = "Riwayat Pesanan";
-        $topbar_sub = "Semua booking meja dan pesanan F&B Anda tersimpan dari database";
+        $topbar_sub = "Lihat daftar pesanan dan riwayat bermain Anda";
 
-        return view('dashboard_user.history', compact('user', 'histories', 'stats', 'topbar_title', 'topbar_sub'));
+        return view('dashboard_user.history', compact('user', 'bookings', 'fnbOrders', 'topbar_title', 'topbar_sub'));
     }
 
     public function meja()
     {
         $user = Auth::user();
-        $today = \Carbon\Carbon::now()->toDateString();
-        $tables = Table::with(['bookings' => function($query) use ($today) {
-            $query->where('booking_date', $today);
+        $today = \Carbon\Carbon::now('Asia/Jakarta')->toDateString();
+        // Load all tables with all active bookings to support dynamic date selection on frontend
+        $tables = Table::with(['bookings' => function($query) {
+            $query->whereIn('status', ['confirmed', 'booked', 'pending', 'dipesan', 'paid', 'lunas', 'completed'])
+                  ->where('booking_date', '>=', \Carbon\Carbon::now('Asia/Jakarta')->subDays(1))
+                  ->orderBy('start_time', 'asc');
         }])->get();
         
         $rates = \App\Models\Rate::orderBy('start_time')->get();
@@ -113,14 +135,11 @@ class DashboardController extends Controller
                     // If time range is provided, check for time conflicts
                     if (!empty($validated['start_time']) && !empty($validated['end_time'])) {
                         $hasConflict = $bookings->contains(function ($booking) use ($validated) {
-                            // Check if the requested time overlaps with existing booking
-                            // Overlap occurs when: start_time < booking.end_time AND end_time > booking.start_time
                             return $validated['start_time'] < $booking->end_time
                                 && $validated['end_time'] > $booking->start_time;
                         });
                         
                         if ($hasConflict) {
-                            // Find the most relevant booking status
                             $conflictingBooking = $bookings
                                 ->filter(function ($booking) use ($validated) {
                                     return $validated['start_time'] < $booking->end_time
@@ -385,6 +404,53 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function fnbSuccess(Request $request)
+    {
+        $orderId = $request->order_id;
+        
+        // Setup Midtrans
+        \Midtrans\Config::$serverKey = trim(config('services.midtrans.server_key'));
+        \Midtrans\Config::$isProduction = (bool) config('services.midtrans.is_production');
+
+        try {
+            $status = \Midtrans\Transaction::status($orderId);
+            $transactionStatus = $status->transaction_status;
+            $paymentType = $status->payment_type ?? null;
+
+            if (in_array($transactionStatus, ['settlement', 'capture'])) {
+                $order = Order::with('details.menu')->where('order_id', $orderId)->first();
+                
+                if ($order && $order->status !== 'paid') {
+                    $updateData = ['status' => 'paid'];
+                    if ($paymentType) {
+                        $updateData['payment_method'] = $paymentType;
+                    }
+                    $order->update($updateData);
+                    
+                    foreach ($order->details as $detail) {
+                        $menu = $detail->menu;
+                        if ($menu) {
+                            $menu->decrement('stock', $detail->quantity);
+                            
+                            StockTransaction::create([
+                                'menu_id' => $menu->id,
+                                'type' => 'out',
+                                'quantity' => $detail->quantity,
+                                'note' => 'Penjualan (Order: ' . $orderId . ')',
+                            ]);
+                        }
+                    }
+                    return response()->json(['success' => true, 'message' => 'Stok berhasil dikurangi']);
+                }
+            }
+            
+            return response()->json(['success' => false, 'message' => 'Pembayaran belum lunas atau sudah diproses']);
+        } catch (\Exception $e) {
+            Log::error('FnB Success Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
     public function fnbPaymentStatus(string $orderId, MidtransDirectDebitService $directDebit)
     {
         $order = FnbOrder::where('midtrans_order_id', $orderId)
@@ -420,6 +486,104 @@ class DashboardController extends Controller
             'paid_at' => $order->paid_at?->toIso8601String(),
         ]);
     }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Silakan login terlebih dahulu.'], 401);
+        }
+
+        // Determine if updating password or personal info
+        if ($request->has('current_password') || $request->has('new_password')) {
+            $request->validate([
+                'current_password' => 'required|string',
+                'new_password' => 'required|string|min:6',
+            ]);
+
+            if (!\Illuminate\Support\Facades\Hash::check($request->current_password, $user->password)) {
+                return response()->json(['success' => false, 'message' => 'Kata sandi saat ini salah.'], 422);
+            }
+
+            $user->password = \Illuminate\Support\Facades\Hash::make($request->new_password);
+            $user->save();
+
+            return response()->json(['success' => true, 'message' => 'Kata sandi berhasil diperbarui.']);
+        } else {
+            $request->validate([
+                'full_name' => 'required|string|max:255',
+                'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+                'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+                'phone' => 'required|string|max:20',
+            ]);
+
+            $user->name = $request->full_name;
+            $user->username = $request->username;
+            $user->email = $request->email;
+            $user->phone = $request->phone;
+            $user->save();
+
+            return response()->json(['success' => true, 'message' => 'Profil berhasil diperbarui.']);
+        }
+    }
+
+    public function checkNotifications()
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'notifications' => []], 401);
+        }
+
+        // Get 5 latest bookings of this user sorted by updated_at
+        $bookings = Booking::with('table')
+            ->where('user_id', $user->id)
+            ->latest('updated_at')
+            ->take(5)
+            ->get()
+            ->map(function($b) {
+                $b->type = 'booking';
+                $b->time_ago = $b->updated_at->diffForHumans();
+                return $b;
+            });
+
+        // Get 5 latest F&B orders of this user
+        $fnbOrders = FnbOrder::where('user_id', $user->id)
+            ->latest('updated_at')
+            ->take(5)
+            ->get()
+            ->map(function($o) {
+                $o->type = 'fnb_order';
+                $o->time_ago = $o->updated_at->diffForHumans();
+                return $o;
+            });
+
+        // Combine and Sort by updated_at desc
+        $combined = $bookings->concat($fnbOrders)->sortByDesc('updated_at')->values();
+
+        return response()->json([
+            'success' => true,
+            'notifications' => $combined
+        ]);
+    }
+
+    public function profile()
+    {
+        // Get authenticated user or redirect to login if not authenticated
+        $user = Auth::user();
+        
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
+        }
+        
+        $topbar_title = "Profile Settings";
+        $topbar_sub = "Kelola profil, kredensial keamanan, dan preferensi notifikasi Anda";
+        
+        return view('dashboard_user.profile_settings', compact('user', 'topbar_title', 'topbar_sub'));
+    }
+
+    // ============================================================
+    // Private Helper Methods
+    // ============================================================
 
     private function userBookingsQuery($user)
     {
@@ -542,20 +706,5 @@ class DashboardController extends Controller
             'qris', 'gopay' => ['gopay'],
             default => [],
         };
-    }
-
-    public function profile()
-    {
-        // Get authenticated user or redirect to login if not authenticated
-        $user = Auth::user();
-        
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
-        }
-        
-        $topbar_title = "Profile Settings";
-        $topbar_sub = "Kelola profil, kredensial keamanan, dan preferensi notifikasi Anda";
-        
-        return view('dashboard_user.profile_settings', compact('user', 'topbar_title', 'topbar_sub'));
     }
 }

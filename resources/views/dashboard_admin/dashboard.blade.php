@@ -1,4 +1,4 @@
-n<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 
 <head>
@@ -13,6 +13,7 @@ n<!DOCTYPE html>
     <link rel="stylesheet" href="{{ asset('css/css_page/css_interaksi component/akhiri.css') }}">
     <link rel="stylesheet" href="{{ asset('css/css_page/dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/css_page/css_interaksi component/chat.css') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body>
@@ -55,7 +56,7 @@ n<!DOCTYPE html>
                                                             </div>
 
                         </div>
-                        <span class="adm-stat-label">PENDAPATAN {{ $activePeriodLabel ?? 'HARI INI' }}</span>
+                        <span class="adm-stat-label">PENDAPATAN HARI INI</span>
                         <span class="adm-stat-value">IDR {{ number_format($pendapatanHariIni, 0, ',', '.') }}</span>
                     </div>
 
@@ -98,38 +99,6 @@ n<!DOCTYPE html>
                     </div>
                 </div>
 
-               {{-- ═══════ TREN PENDAPATAN (BAR CHART) ═══════ --}}
-                <section class="adm-chart-section">
-                    <div class="adm-chart-header">
-                         <div class="adm-chart-titles">
-                            <h2 class="adm-chart-title">Tren Pendapatan</h2>
-                            <p class="adm-chart-sub">{{ $chartSubtitle ?? 'Metrik pendapatan per jam' }}</p>
-                        </div>
-                        @include('component.c_dashboard.dropdown.option_dashboard')
-                    </div>
-                    <div class="adm-chart-area">
-                        <div class="adm-chart-bars">
-                            @foreach($chartData as $hour => $data)
-                                @php
-                                    $colorClass = 'adm-bar--gray';
-                                    if ($data['percentage'] >= 80) {
-                                        $colorClass = 'adm-bar--cyan';
-                                    } elseif ($data['percentage'] >= 60) {
-                                        $colorClass = 'adm-bar--cyan-alt';
-                                    } elseif ($data['percentage'] >= 40) {
-                                        $colorClass = 'adm-bar--teal';
-                                    }
-                                @endphp
-                                <div class="adm-bar-group" title="Rp {{ number_format($data['revenue'], 0, ',', '.') }}">
-                                    <div class="adm-bar-v {{ $colorClass }}" style="height: {{ $data['percentage'] }}%;"></div>
-                                @if($loop->iteration % 2 === 0 || ($period ?? 'today') === 'year')
-                                        <span class="adm-bar-label">{{ $data['label'] }}</span>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </section>
 
                 {{-- ═══════ STATUS MEJA (PREMIUM MOCKUP) ═══════════ --}}
                 <section class="adm-meja-section">
@@ -166,82 +135,97 @@ n<!DOCTYPE html>
                                 $statusLabel = 'TERSEDIA';
 
                                 if ($activeBooking) {
-                                    $bookingStartAt = \Carbon\Carbon::parse($activeBooking->booking_date . ' ' . $activeBooking->start_time);
-                                    $bookingEndAt = \Carbon\Carbon::parse($activeBooking->booking_date . ' ' . $activeBooking->end_time);
-                                    $nowAt = \Carbon\Carbon::now();
-
-                                    if ($activeBooking->status === 'confirmed' && $nowAt->betweenIncluded($bookingStartAt, $bookingEndAt)) {
+                                    if ($activeBooking->status === 'confirmed') {
                                         $statusClass = 'terisi';
                                         $statusLabel = 'TERISI';
-                                    } elseif (in_array($activeBooking->status, ['pending', 'confirmed', 'booked', 'dipesan'])) {
+                                    } elseif ($activeBooking->status === 'pending' || $activeBooking->status === 'booked' || $activeBooking->status === 'dipesan') {
                                         $statusClass = 'dipesan';
                                         $statusLabel = 'DIPESAN';
                                     }
                                 }
 
-                                // Dynamic Time Calculation for all tables
+                                // Dynamic Time Calculation for all tables based on booked duration
                                 $elapsedTime = '00:00:00';
                                 $remainingTime = '00:00:00';
-                                if ($activeBooking && $activeBooking->status === 'confirmed') {
-                                    try {
-                                        $start = \Carbon\Carbon::parse($activeBooking->booking_date . ' ' . $activeBooking->start_time);
-                                        $end = \Carbon\Carbon::parse($activeBooking->booking_date . ' ' . $activeBooking->end_time);
-                                        $now = \Carbon\Carbon::now();
-                                        
-                                        if ($now->greaterThan($start) && $now->lessThanOrEqualTo($end)) {
-                                            $diff = $start->diff($now);
-                                            $elapsedTime = sprintf('%02d:%02d:%02d', ($diff->days * 24) + $diff->h, $diff->i, $diff->s);
-                                        }
-                                        
-                                        if ($end->greaterThan($now)) {
-                                            $diffRem = $now->diff($end);
-                                            $remainingTime = sprintf('%02d:%02d:%02d', ($diffRem->days * 24) + $diffRem->h, $diffRem->i, $diffRem->s);
-                                        } else {
-                                            $remainingTime = '00:00:00';
-                                        }
-                                    } catch (\Exception $e) {
-                                        // Silent fallback
-                                    }
-                                }
-                            @endphp
-
-                            <div class="adm-meja-card adm-meja--{{ $statusClass }}" data-table-id="{{ $table->id }}">
-                                <div class="adm-meja-card-top">
-                                    <div class="adm-meja-name-wrap">
-                                        <h3 class="adm-meja-name">{{ strtoupper($table->name) }}</h3>
-                                        <div class="adm-meja-status">
-                                            <span class="status-dot-sm"></span> {{ $statusLabel }}
-                                        </div>
-                                    </div>
-                                    <div class="adm-ball-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" fill="currentColor" fill-opacity="0.1"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div class="adm-meja-card-body">
-                                    <div class="adm-info-box">
-                                        @if($activeBooking)
-                                            @if($statusClass === 'terisi')
-                                                <div class="adm-info-row adm-info-row--border-bottom">
-                                                    <span class="adm-label">PEMAIN</span>
-                                                    <span class="adm-value">{{ $activeBooking->customer_name }}</span>
+                                       if ($activeBooking) {
+                                     try {
+                                         $start = \Carbon\Carbon::parse($activeBooking->booking_date . ' ' . $activeBooking->start_time);
+                                         $end = \Carbon\Carbon::parse($activeBooking->booking_date . ' ' . $activeBooking->end_time);
+                                         if ($end->lt($start)) { $end->addDay(); }
+                                         $durationInMinutes = $start->diffInMinutes($end);
+                                         $durationString = round($durationInMinutes / 60, 1) . ' Jam';
+                                         
+                                         if ($activeBooking->status === 'confirmed') {
+                                             // Count down starting from when admin confirmed (updated_at)
+                                             $confirmTime = \Carbon\Carbon::parse($activeBooking->updated_at)->timezone('Asia/Jakarta');
+                                             $sessionEndTime = $confirmTime->copy()->addMinutes($durationInMinutes);
+                                             $sessionEndTimeIso = $sessionEndTime->toIso8601String();
+                                             
+                                             $now = \Carbon\Carbon::now('Asia/Jakarta');
+                                             
+                                             if ($now->gt($confirmTime)) {
+                                                 $diff = $confirmTime->diff($now);
+                                                 $elapsedTime = sprintf('%02d:%02d:%02d', ($diff->days * 24) + $diff->h, $diff->i, $diff->s);
+                                             }
+                                             
+                                             if ($sessionEndTime->gt($now)) {
+                                                 $diffRem = $now->diff($sessionEndTime);
+                                                 $remainingTime = sprintf('%02d:%02d:%02d', ($diffRem->days * 24) + $diffRem->h, $diffRem->i, $diffRem->s);
+                                             } else {
+                                                 $remainingTime = '00:00:00';
+                                             }
+                                         }
+                                     } catch (\Exception $e) {
+                                         // Silent fallback
+                                     }
+                                 }
+                             @endphp
+ 
+                             <div class="adm-meja-card adm-meja--{{ $statusClass }}">
+                                 <div class="adm-meja-card-top">
+                                     <div class="adm-meja-name-wrap">
+                                         <h3 class="adm-meja-name">{{ strtoupper($table->name) }}</h3>
+                                         <div class="adm-meja-status">
+                                             <span class="status-dot-sm"></span> {{ $statusLabel }}
+                                         </div>
+                                     </div>
+                                     <div class="adm-ball-icon">
+                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                                             <circle cx="12" cy="12" r="10"></circle>
+                                             <circle cx="12" cy="12" r="1"></circle>
+                                         </svg>
+                                     </div>
+                                 </div>
+                                 <div class="adm-meja-card-body">
+                                     <div class="adm-info-box">
+                                         @if($activeBooking && $statusClass !== 'tersedia')
+                                             @if($statusClass === 'terisi')
+                                                 <div class="adm-info-row" style="margin-bottom: 0.5rem;">
+                                                     <span class="adm-label">PEMAIN</span>
+                                                     <span class="adm-value" style="color: #00d1ff;">{{ $activeBooking->customer_name }}</span>
+                                                 </div>
+                                                 <div class="adm-timer-container" style="justify-content: center; width: 100%; display: flex;">
+                                                     <div class="adm-timer-group" style="width: 100%; text-align: center;">
+                                                         <span class="adm-timer-label">SISA WAKTU</span>
+                                                         <div class="adm-timer-display timer-remaining" style="font-size: 1.75rem; font-weight: 800; color: #00d1ff;" 
+                                                              data-id="{{ $activeBooking->id }}"
+                                                              data-end="{{ $sessionEndTimeIso }}">
+                                                              {{ $remainingTime }}
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                             @else
+                                                 <div class="adm-info-row"><span class="adm-label">DIPESAN OLEH</span><span class="adm-value">{{ $activeBooking->customer_name }}</span></div>
+                                                 <div class="adm-info-row"><span class="adm-label">DURASI</span><span class="adm-value">{{ $durationString }}</span></div>
+                                                 <div class="adm-info-row"><span class="adm-label">MAIN JAM</span><span class="adm-value">
+                                                     {{ \Carbon\Carbon::parse($activeBooking->start_time)->format('H:i') }}
+                                                     @if($activeBooking->booking_date !== \Carbon\Carbon::now('Asia/Jakarta')->toDateString())
+                                                         ({{ \Carbon\Carbon::parse($activeBooking->booking_date)->translatedFormat('d M') }})
+                                                     @endif
+                                                 </span></div>
+                                                <div style="margin-top: auto;">
+                                                     <div class="adm-info-row"><span class="adm-label">DIPESAN JAM</span><span class="adm-value">{{ \Carbon\Carbon::parse($activeBooking->created_at)->timezone('Asia/Jakarta')->format('H:i') }}</span></div>
                                                 </div>
-                                                <div class="adm-timer-container">
-                                                    <div class="adm-timer-group">
-                                                        <span class="adm-timer-label">WAKTU BERLALU</span>
-                                                        <div class="adm-timer-display">{{ $elapsedTime }}</div>
-                                                    </div>
-                                                    <div class="adm-timer-group">
-                                                        <span class="adm-timer-label">SISA WAKTU</span>
-                                                        <div class="adm-timer-display">{{ $remainingTime }}</div>
-                                                    </div>
-                                                </div>
-                                            @else
-                                                <div class="adm-info-row"><span class="adm-label">DIPESAN OLEH</span><span class="adm-value">{{ $activeBooking->customer_name }}</span></div>
-                                                <div class="adm-info-row"><span class="adm-label">DURASI</span><span class="adm-value">{{ $activeBooking->duration ?? '2 Jam' }}</span></div>
-                                                <div class="adm-info-row"><span class="adm-label">MAIN JAM</span><span class="adm-value">{{ $activeBooking->start_time }}</span></div>
-                                                <div class="adm-info-row adm-info-row--highlight"><span class="adm-label">DIPESAN JAM</span><span class="adm-value">{{ $activeBooking->created_at->format('H:i') }}</span></div>
                                             @endif
                                         @else
                                             <div class="adm-info-empty">TIDAK ADA PEMAIN</div>
@@ -253,22 +237,28 @@ n<!DOCTYPE html>
                                         <button type="button" class="btn-akhiri trigger-end-session" 
                                                 data-id="{{ $activeBooking->id }}" 
                                                 data-table="{{ $table->name }}"
-                                                data-duration="{{ $activeBooking->duration ?? '2 Jam' }}"
+                                                data-duration="{{ $durationString }}" 
                                                 data-elapsed="{{ $elapsedTime }}">AKHIRI SESI</button>
                                         <form id="end-session-form-{{ $activeBooking->id }}" action="{{ route('admin.booking.end', $activeBooking->id) }}" method="POST" style="display:none">
                                             @csrf
                                         </form>
                                     @elseif($statusClass === 'dipesan')
-                                        <form action="{{ route('admin.booking.confirm', $activeBooking->id) }}" method="POST" style="flex:1">
-                                            @csrf
-                                            <button type="submit" class="btn-akhiri" style="background: rgba(0, 209, 255, 0.1); color: #00d1ff; border-color: rgba(0, 209, 255, 0.2);">KONFIRMASI</button>
-                                        </form>
+                                        <div style="display: flex; gap: 8px; width: 100%;">
+                                            <form action="{{ route('admin.booking.confirm', $activeBooking->id) }}" method="POST" style="flex: 1;">
+                                                @csrf
+                                                <button type="submit" class="btn-konfirmasi" onclick="return confirmAction(this.form, '{{ $activeBooking->customer_name }}', 'konfirmasi')">KONFIRMASI</button>
+                                            </form>
+                                            <form action="{{ route('admin.booking.cancel', $activeBooking->id) }}" method="POST" style="flex: 1;">
+                                                @csrf
+                                                <button type="submit" class="btn-batal" onclick="return confirmAction(this.form, '{{ $activeBooking->customer_name }}', 'batal')">BATAL</button>
+                                            </form>
+                                        </div>
                                     @else
                                         <div style="flex:1"></div>
                                     @endif
                                     <div class="btn-chat-icon adm-btn-chat" data-meja="{{ $table->id }}">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                        @if($activeBooking && $activeBooking->status === 'pending')
+                                        @if($activeBooking && in_array($activeBooking->status, ['pending', 'booked']))
                                             <span class="notif-badge">!</span>
                                         @endif
                                     </div>
@@ -288,9 +278,102 @@ n<!DOCTYPE html>
     @include('component.c_dashboard.modal.logout_modal')
 
     <script src="{{ asset('js/js_component/logout.js') }}"></script>
-    <script src="{{ asset('js/js_component/chat.js') }}"></script>
+<script src="{{ asset('js/js_component/chat.js') }}"></script>
     <script src="{{ asset('js/js_component/akhiri.js') }}"></script>
-    <script src="{{ asset('js/js_component/option_dashboard.js') }}"></script>
-    <script src="{{ asset('js/js_component/dashboard_refresh.js') }}"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmAction(form, customerName, type) {
+            const isConfirm = type === 'konfirmasi';
+            Swal.fire({
+                title: isConfirm ? 'Konfirmasi Pesanan' : 'Batalkan Pesanan',
+                html: isConfirm 
+                    ? `Apakah Anda yakin ingin mengkonfirmasi pesanan <b>${customerName}</b>? <br><span style="font-size: 0.85rem; color: #8a8a98; margin-top: 10px; display: block;">Meja akan ditandai sebagai Terisi dan sesi permainan akan dimulai.</span>`
+                    : `Apakah Anda yakin ingin membatalkan pesanan <b>${customerName}</b>? <br><span style="font-size: 0.85rem; color: #8a8a98; margin-top: 10px; display: block;">Meja akan kembali menjadi tersedia.</span>`,
+                icon: isConfirm ? 'info' : 'warning',
+                iconColor: isConfirm ? '#00e5ff' : '#ff3b3b',
+                showCancelButton: true,
+                confirmButtonText: isConfirm ? 'KONFIRMASI' : 'BATALKAN',
+                cancelButtonText: 'KEMBALI',
+                background: '#111418',
+                color: '#fff',
+                confirmButtonColor: isConfirm ? '#00e5ff' : '#ff3b3b',
+                cancelButtonColor: 'transparent',
+                didOpen: () => {
+                    const title = document.querySelector('.swal2-title');
+                    const content = document.querySelector('.swal2-html-container');
+                    if(title) title.style.textAlign = 'left';
+                    if(content) content.style.textAlign = 'left';
+                    
+                    const cancelBtn = document.querySelector('.swal2-cancel');
+                    if(cancelBtn) {
+                        cancelBtn.style.fontWeight = '800';
+                        cancelBtn.style.color = '#8a8a98';
+                    }
+                    
+                    const confirmBtn = document.querySelector('.swal2-confirm');
+                    if(confirmBtn) {
+                        confirmBtn.style.fontWeight = '800';
+                        confirmBtn.style.color = '#000';
+                        confirmBtn.style.borderRadius = '10px';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+            return false;
+        }
+
+        // Auto refresh page every 30 seconds to simulate real-time updates
+        setTimeout(function() {
+            window.location.reload();
+        }, 30000);
+    </script>
+    <script>
+        // Real-time Timer Logic
+        function updateTimers() {
+            const now = new Date();
+
+            // Update Remaining Timers
+            document.querySelectorAll('.timer-remaining').forEach(el => {
+                const endStr = el.dataset.end;
+                const bookingId = el.dataset.id;
+                if (!endStr) return;
+
+                const endTime = new Date(endStr);
+                if (isNaN(endTime.getTime())) return;
+
+                const diffMs = endTime - now;
+                if (diffMs > 0) {
+                    el.textContent = formatSeconds(Math.floor(diffMs / 1000));
+                } else {
+                    el.textContent = "00:00:00";
+                    el.style.color = "#ff3b3b";
+
+                    // Auto end session when remaining time is up
+                    if (bookingId && !el.dataset.ended) {
+                        el.dataset.ended = "true"; // Prevent duplicate submissions
+                        const form = document.getElementById(`end-session-form-${bookingId}`);
+                        if (form) {
+                            form.submit();
+                        }
+                    }
+                }
+            });
+        }
+
+        function formatSeconds(totalSeconds) {
+            if (totalSeconds < 0) totalSeconds = 0;
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        setInterval(updateTimers, 1000);
+        updateTimers(); 
+    </script>
 </body>
 </html>

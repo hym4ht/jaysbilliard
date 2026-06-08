@@ -55,6 +55,7 @@
                                     <div class="table-preview-card">
                                         <div class="table-preview-image">
                                             <img src="/images/hero-bg.png" id="previewImg" alt="Preview Table">
+                                            <div class="table-preview-price-tag" style="display: none;">Rp <span id="previewPriceText">Lorem</span></div>
                                         </div>
                                         <div class="table-preview-content">
                                             <div class="table-preview-header">
@@ -97,18 +98,13 @@
                                         <label class="form-label">Nomor/Nama Meja</label>
                                         <input type="text" name="name" id="nameInput" class="form-input @error('name') is-invalid @enderror" value="{{ old('name') }}" placeholder="Cth. Meja 0..." required>
                                     </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Tipe Meja</label>
-                                        <select name="type" id="typeInput" class="form-input">
-                                            <option value="regular">Standar</option>
-                                            <option value="vip">VIP</option>
-                                        </select>
-                                    </div>
+                                    <input type="hidden" name="type" id="typeInput" value="regular">
                                 </div>
                                 <div class="form-row">
-                                    <div class="form-group">
+                                    <input type="hidden" name="price_per_hour" id="priceInput" value="0">
+                                    <div class="form-group" style="grid-column: span 2;">
                                         <label class="form-label">Kapasitas</label>
-                                        <input type="number" name="capacity" id="capacityInput" class="form-input" value="1" min="1" step="1">
+                                        <input type="number" name="capacity" id="capacityInput" class="form-input" value="0">
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -134,7 +130,7 @@
                             </div>
                             <div class="adm-form-footer">
                                 <a href="{{ route('admin.meja.index') }}" class="btn-cancel">Cancel</a>
-                                <button type="submit" class="btn-submit">Buat Meja</button>
+                                <button type="submit" class="btn-submit">Simpan</button>
                             </div>
                         </div>
                     </div>
@@ -145,9 +141,11 @@
     <script>
         const nameInput = document.getElementById('nameInput');
         const typeInput = document.getElementById('typeInput');
+        const priceInput = document.getElementById('priceInput');
         const descInput = document.getElementById('descInput');
         
         const previewNameText = document.getElementById('previewNameText');
+        const previewPriceText = document.getElementById('previewPriceText');
         const previewDescText = document.getElementById('previewDescText');
         
         // Dynamic Preview Logic
@@ -155,8 +153,9 @@
             previewNameText.textContent = e.target.value || 'Meja Baru';
         });
 
-        document.getElementById('capacityInput').addEventListener('input', (e) => {
-            if (Number(e.target.value) < 1) e.target.value = 1;
+        priceInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+            previewPriceText.textContent = val && val != 0 ? Number(val).toLocaleString('id-ID') : '0';
         });
 
         descInput.addEventListener('input', (e) => {

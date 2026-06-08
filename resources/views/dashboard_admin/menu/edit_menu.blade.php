@@ -47,13 +47,6 @@
                     @endif
 
                     {{-- Main Interaction Grid --}}
-                    @php
-                        $menuImage = $menu->image
-                            ? (\Illuminate\Support\Str::startsWith($menu->image, ['images/', 'http://', 'https://'])
-                                ? asset($menu->image)
-                                : asset('storage/' . $menu->image))
-                            : asset('images/hero-bg.png');
-                    @endphp
                     <div class="adm-interaksi-grid">
                         
                         {{-- Left Column (Preview & Upload) --}}
@@ -65,7 +58,7 @@
                                 <div class="preview-card-wrap">
                                     <div class="adm-menu-card-preview">
                                         <div class="preview-img-box">
-                                            <img src="{{ $menuImage }}" id="previewImg" alt="{{ $menu->name }}" onerror="this.src='{{ asset('images/hero-bg.png') }}'">
+                                            <img src="{{ $menu->image ? asset('storage/' . $menu->image) : 'https://images.unsplash.com/photo-1544145945-f904253db0ad?auto=format&fit=crop&q=80&w=400' }}" id="previewImg" alt="{{ $menu->name }}">
                                             <span class="preview-price" id="previewPriceText">Rp {{ number_format($menu->price, 0, ',', '.') }}</span>
                                         </div>
                                         <div class="preview-body">
@@ -146,7 +139,7 @@
                                         <label class="adm-label">Harga</label>
                                         <div class="adm-input-wrap">
                                             <span class="adm-input-prefix">Rp</span>
-                                            <input type="number" name="price" id="inputPrice" class="adm-input adm-input--prefixed" value="{{ $menu->price }}" min="0" step="1000" required oninput="updatePreview()">
+                                            <input type="number" name="price" id="inputPrice" class="adm-input adm-input--prefixed" value="{{ $menu->price }}" required oninput="updatePreview()">
                                             <div class="adm-input-arrows">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 15 12 10 17 15"></polyline></svg>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 9 12 14 17 9"></polyline></svg>
@@ -154,24 +147,13 @@
                                         </div>
                                     </div>
                                     <div class="adm-form-group">
-                                        <label class="adm-label">Stok</label>
-                                        <div class="adm-input-wrap">
-                                            <input type="number" name="stock" id="inputStock" class="adm-input" value="{{ $menu->stock }}" min="0" step="1" required>
-                                            <div class="adm-input-arrows">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 15 12 10 17 15"></polyline></svg>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 9 12 14 17 9"></polyline></svg>
-                                            </div>
-                                        </div>
+                                        <label class="adm-label">Kategori</label>
+                                        @include('component.c_dashboard.dropdown.option_kategori', [
+                                            'id' => 'categoryDropdown',
+                                            'name' => 'category',
+                                            'placeholder' => $menu->category
+                                        ])
                                     </div>
-                                </div>
-
-                                <div class="adm-form-group">
-                                    <label class="adm-label">Kategori</label>
-                                    @include('component.c_dashboard.dropdown.option_kategori', [
-                                        'id' => 'categoryDropdown',
-                                        'name' => 'category',
-                                        'placeholder' => $menu->category
-                                    ])
                                 </div>
 
                                 <div class="adm-form-group">
@@ -213,13 +195,11 @@
 
                     function updatePreview() {
                         const name = document.getElementById('inputName').value;
-                        const priceInput = document.getElementById('inputPrice');
-                        if (Number(priceInput.value) < 0) priceInput.value = 0;
-                        const price = priceInput.value;
+                        const price = document.getElementById('inputPrice').value;
                         const desc = document.getElementById('inputDesc').value;
                         
                         document.getElementById('previewNameText').innerText = name || 'Lorem';
-                        document.getElementById('previewPriceText').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(price || 0));
+                        document.getElementById('previewPriceText').innerText = 'Rp ' + (price ? new Intl.NumberFormat('id-ID').format(price) : 'Lorem');
                         document.getElementById('previewDescText').innerText = (desc || '.Lorem ipsum dolor sit amet');
                     }
 

@@ -2,11 +2,6 @@
 @section('title', 'Tarif — Jay\'s Billiard')
 
 @section('content')
-    @php
-        $pricingTableImage = collect($tableImages ?? [])->first();
-        $pricingTableImageUrl = $pricingTableImage ? asset('storage/' . $pricingTableImage) : asset('images/hero-bg.png');
-    @endphp
-
     {{-- ═══════════════════════════════ HEADER ═══════════════════════════════ --}}
     <section class="text-center pt-32 pb-8 px-6 max-w-3xl mx-auto">
         <h1 class="text-5xl md:text-6xl font-black uppercase text-white mb-4 tracking-wide">TARIF KAMI</h1>
@@ -24,7 +19,7 @@
                 {{-- Image Section --}}
                 <div class="h-72 relative overflow-hidden">
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0d0e12] via-transparent to-transparent z-10"></div>
-                    <img src="{{ $pricingTableImageUrl }}" alt="Meja billiard Jay's Billiard"
+                    <img src="{{ asset('images/meja_premium.png') }}" alt="Reguler Table"
                         class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
 
                     {{-- Type Badge --}}

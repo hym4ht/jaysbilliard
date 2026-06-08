@@ -275,6 +275,44 @@
         }
 
         .btn-update:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0, 209, 255, 0.3); }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .adm-edit-grid {
+                grid-template-columns: 1fr;
+            }
+            .adm-preview-col {
+                order: 2;
+            }
+            .adm-form-main-col {
+                order: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .form-group[style*="grid-column"] {
+                grid-column: span 1 !important;
+            }
+            .status-options {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .form-actions {
+                flex-direction: column-reverse;
+                gap: 1rem;
+            }
+            .btn-update, .btn-cancel {
+                width: 100%;
+                text-align: center;
+                box-sizing: border-box;
+            }
+            .adm-form-card {
+                padding: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -306,6 +344,7 @@
                             <div class="adm-preview-card-wrap">
                                 <div class="preview-table-card">
                                     <div class="preview-img-wrap">
+                                        <div class="preview-price-badge" style="display: none;">Rp <span id="viewPrice">{{ number_format($table->price_per_hour, 0, ',', '.') }}</span></div>
                                         <img src="{{ $table->image ? asset('storage/' . $table->image) : asset('images/hero-bg.png') }}" id="renderImg" alt="Preview">
                                     </div>
                                     <div class="preview-body">
@@ -317,7 +356,7 @@
                                             </div>
                                         </div>
                                         <div class="preview-details">
-                                            <span id="viewType">{{ strtoupper($table->type) }}</span>
+                                            <span id="viewType">{{ strtoupper($table->type === 'regular' ? 'standar' : $table->type) }}</span>
                                             <span>|</span>
                                             <span id="viewCap">{{ $table->capacity }} ORANG</span>
                                         </div>
@@ -352,19 +391,14 @@
                                         <label class="form-label">Nama / Nomor Meja</label>
                                         <input type="text" name="name" id="inpName" class="form-input" value="{{ $table->name }}" required>
                                     </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Tipe Meja</label>
-                                        <select name="type" id="inpType" class="form-input">
-                                            <option value="regular" {{ $table->type == 'regular' ? 'selected' : '' }}>Standar / Regular</option>
-                                            <option value="vip" {{ $table->type == 'vip' ? 'selected' : '' }}>VIP Exclusive</option>
-                                        </select>
-                                    </div>
+                                    <input type="hidden" name="type" id="inpType" value="{{ $table->type }}">
                                 </div>
 
                                 <div class="form-row">
-                                    <div class="form-group">
+                                    <input type="hidden" name="price_per_hour" id="inpPrice" value="{{ (int)$table->price_per_hour }}">
+                                    <div class="form-group" style="grid-column: span 2;">
                                         <label class="form-label">Kapasitas Maksimal</label>
-                                        <input type="number" name="capacity" id="inpCap" class="form-input" value="{{ $table->capacity }}" min="1" step="1">
+                                        <input type="number" name="capacity" id="inpCap" class="form-input" value="{{ $table->capacity }}">
                                     </div>
                                 </div>
 
@@ -402,21 +436,21 @@
     <script>
         // Real-time Preview Script
         const inpName = document.getElementById('inpName');
+        const inpPrice = document.getElementById('inpPrice');
         const inpType = document.getElementById('inpType');
         const inpCap = document.getElementById('inpCap');
         const inpDesc = document.getElementById('inpDesc');
 
         const viewName = document.getElementById('viewName');
+        const viewPrice = document.getElementById('viewPrice');
         const viewType = document.getElementById('viewType');
         const viewCap = document.getElementById('viewCap');
         const viewDesc = document.getElementById('viewDesc');
 
         inpName.addEventListener('input', (e) => viewName.innerText = e.target.value.toUpperCase() || 'NAMA MEJA');
+        inpPrice.addEventListener('input', (e) => viewPrice.innerText = Number(e.target.value).toLocaleString('id-ID'));
         inpType.addEventListener('change', (e) => viewType.innerText = e.target.value.toUpperCase());
-        inpCap.addEventListener('input', (e) => {
-            if (Number(e.target.value) < 1) e.target.value = 1;
-            viewCap.innerText = e.target.value + ' ORANG';
-        });
+        inpCap.addEventListener('input', (e) => viewCap.innerText = (e.target.value || 0) + ' ORANG');
         inpDesc.addEventListener('input', (e) => viewDesc.innerText = e.target.value || 'Deskripsi...');
 
         function updateStatusPreview(status) {

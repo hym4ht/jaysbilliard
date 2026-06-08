@@ -17,7 +17,7 @@
             {{-- Top Bar --}}
             @include('component.c_dashboard.topbar.topbar', [
                 'topbar_title' => 'History Pemesanan',
-                'topbar_sub' => 'Lorem ipsum dolor sit amet'
+                'topbar_sub' => 'Data riwayat transaksi dan pemesanan pelanggan'
             ])
 
             <div class="adm-content adm-history-content">
@@ -62,7 +62,7 @@
                 </div>
 
                 {{-- ═══════ SEARCH & ACTIONS ═══════ --}}
-                <div class="adm-history-actions">
+                <div class="adm-history-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div class="adm-search-wrap">
                         <svg class="adm-search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                         <input type="text" class="adm-search-input" placeholder="Cari Meja">
@@ -92,23 +92,51 @@
                                         $colors = ['#ff5252', '#00acc1', '#26c6da', '#ffb300', '#ab47bc'];
                                         $color = $colors[$index % count($colors)];
                                         
+                                        // Status Logic Sync
                                         $statusPill = '';
-                                        if (in_array(strtolower($booking->status), ['completed', 'selesai'])) {
-                                            $statusPill = '<span class="status-pill completed" style="background: rgba(255,82,82,0.1); color: #ff5252;">Selesai</span>';
+                                        $rawStatus = strtolower($booking->status);
+                                        
+                                        if (in_array($rawStatus, ['completed', 'selesai'])) {
+                                            $statusPill = '<span class="status-pill completed" style="background: rgba(255,82,82,0.1); color: #ff5252; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Selesai</span>';
+                                        } elseif (in_array($rawStatus, ['confirmed', 'paid', 'lunas'])) {
+                                            $statusPill = '<span class="status-pill paid" style="background: rgba(0,229,255,0.1); color: #00e5ff; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Lunas</span>';
+                                        } elseif ($rawStatus == 'pending') {
+                                            $statusPill = '<span class="status-pill pending" style="background: rgba(255,179,0,0.1); color: #ffb300; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Pending</span>';
+                                        } elseif ($rawStatus == 'cancelled' || $rawStatus == 'batal') {
+                                            $statusPill = '<span class="status-pill cancelled" style="background: rgba(255,255,255,0.05); color: #888; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Batal</span>';
                                         } else {
-                                            $statusPill = '<span class="status-pill paid">Lunas</span>';
+                                            $statusPill = '<span class="status-pill" style="background: rgba(255,255,255,0.1); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">'.ucfirst($booking->status).'</span>';
                                         }
                                         
-                                        // Calculate duration
+                                        // Duration Logic
                                         try {
-                                            $start = \Carbon\Carbon::parse($booking->start_time);
-                                            $end = \Carbon\Carbon::parse($booking->end_time);
+                                            $start = \Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->start_time);
+                                            $end = \Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->end_time);
+                                            if ($end->lt($start)) {
+                                                $end->addDay();
+                                            }
                                             $duration = $start->diffInHours($end) . ' Jam';
                                         } catch (\Exception $e) {
                                             $duration = '2 Jam';
                                         }
-                                        
-                                        $fnbItems = $booking->orders; // assuming relation exists
+
+                                        // F&B Summary Logic
+                                        $fnbItems = $booking->orders;
+                                        $menuSummary = [];
+                                        $allDetails = collect();
+                                        foreach($fnbItems as $order) {
+                                            foreach($order->details as $detail) {
+                                                if($detail->menu) {
+                                                    $menuSummary[] = $detail->menu->name . ' (x' . $detail->quantity . ')';
+                                                    $allDetails->push([
+                                                        'name' => $detail->menu->name,
+                                                        'quantity' => $detail->quantity,
+                                                        'price' => $detail->price
+                                                    ]);
+                                                }
+                                            }
+                                        }
+                                        $fnbString = implode(', ', $menuSummary);
                                     @endphp
                                     <tr>
                                         <td class="col-id">{{ $index + 1 }}</td>
@@ -120,9 +148,9 @@
                                         </td>
                                         <td><span class="meja-badge">{{ $booking->table->name ?? 'Meja' }}</span></td>
                                         <td>
-                                            @if($fnbItems && $fnbItems->count() > 0)
+                                            @if(count($menuSummary) > 0)
                                                 <div class="menu-list-inline" style="font-size: 0.75rem; color: var(--primary-cyan); font-weight: 700; max-width: 150px; line-height: 1.4; word-wrap: break-word;">
-                                                    {{ $fnbItems->pluck('menu_name')->implode(', ') }}
+                                                    {{ $fnbString }}
                                                 </div>
                                             @else
                                                 <span class="menu-empty">-</span>
@@ -133,27 +161,35 @@
                                             <span class="time-secondary">{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}</span>
                                         </td>
                                         <td><span class="col-duration">{{ $duration }}</span></td>
-                                        <td>{!! $statusPill !!}</td>
+                                        <td>
+                                            <div class="status-edit-wrapper" style="cursor: pointer;" onclick="editStatus('{{ $booking->id }}', '{{ $booking->status }}')" title="Klik untuk ubah status">
+                                                {!! $statusPill !!}
+                                                <svg style="margin-left: 5px; color: #666;" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                            </div>
+                                        </td>
                                         <td class="col-action">
                                             <div class="adm-action-buttons">
-                                                <button type="button" class="btn-action view" style="background: transparent; color: #ffb300;" onclick='showOrderDetails("{{ htmlspecialchars($booking->customer_name, ENT_QUOTES) }}", "{{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}", "{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}", "{{ $booking->table->name ?? 'Meja' }}", "{{ $duration }}", "{{ $booking->payment_method ?? 'QRIS' }}", {{ json_encode($fnbItems->map(function($o) { return ["name" => $o->menu_name, "quantity" => $o->quantity, "price" => $o->price ?? 0]; })) }}, "Rp {{ number_format($booking->total_price, 0, ',', '.') }}")' title="View Details">
+                                                <button type="button" class="btn-action view" style="background: transparent; color: #ffb300;" 
+                                                    onclick='showOrderDetails(
+                                                        "{{ htmlspecialchars($booking->customer_name, ENT_QUOTES) }}", 
+                                                        "{{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}", 
+                                                        "{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}", 
+                                                        "{{ $booking->table->name ?? 'Meja' }}", 
+                                                        "{{ $duration }}", 
+                                                        "{{ $booking->payment_method ?? 'Midtrans' }}", 
+                                                        {!! json_encode($allDetails) !!}, 
+                                                        "Rp {{ number_format($booking->total_price, 0, ',', '.') }}"
+                                                    )' title="View Details">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                                 </button>
                                                 @if(strtolower($booking->status) !== 'completed')
                                                 <form action="{{ route('admin.booking.complete', $booking->id) }}" method="POST" style="display:inline;">
                                                     @csrf
-                                                    <button type="submit" class="btn-action edit" style="background: transparent; color: #00e5ff;" onclick="return confirm('Selesaikan pesanan {{ htmlspecialchars($booking->customer_name, ENT_QUOTES) }}?')" title="Selesaikan Pesanan">
+                                                    <button type="submit" class="btn-action edit" style="background: transparent; color: #00e5ff;" onclick="return confirmComplete(this.form, '{{ htmlspecialchars($booking->customer_name, ENT_QUOTES) }}')" title="Selesaikan Pesanan">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                                                     </button>
                                                 </form>
                                                 @endif
-                                                <form action="{{ route('admin.booking.delete', $booking->id) }}" method="POST" style="display:inline;">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn-action delete" style="background: transparent; color: #ff5252;" onclick="return confirm('Hapus riwayat pesanan {{ htmlspecialchars($booking->customer_name, ENT_QUOTES) }}?')" title="Delete">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                                                    </button>
-                                                </form>
                                             </div>
                                         </td>
                                     </tr>
@@ -233,59 +269,133 @@
                     </div>
                 </div>
 
-                {{-- ═══════════════════════════════ DELETE CONFIRMATION MODAL ═══════════════════════════════ --}}
-                <div class="adm-delete-modal-overlay" id="deleteOrderModal">
-                    <div class="adm-delete-modal-content">
-                        <div class="modal-delete-header">
-                            <div class="modal-delete-icon-wrap">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-                            </div>
-                            <h3 class="modal-delete-title">Hapus Riwayat</h3>
-                        </div>
-                        <div class="modal-delete-msg">
-                            Apakah Anda yakin ingin menghapus data riwayat pemesanan <strong id="delCustNameText">Nama Pelanggan</strong>? 
-                            jika anda menghapusnya nanti data riwayat ini tidak ada lagi
-                        </div>
-                        <div class="modal-delete-footer">
-                            <button type="button" class="btn-delete-cancel" onclick="closeDeleteHistoryModal()">BATAL</button>
-                            <form id="deleteOrderForm" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" id="confirmDeleteBtn" class="btn-delete-confirm">HAPUS</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- ═══════════════════════════════ COMPLETE CONFIRMATION MODAL ═══════════════════════════════ --}}
-                <div class="adm-delete-modal-overlay" id="completeOrderModal">
-                    <div class="adm-delete-modal-content">
-                        <div class="modal-delete-header">
-                            <div class="modal-delete-icon-wrap" style="background: rgba(0, 229, 255, 0.1); color: #00e5ff;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                            </div>
-                            <h3 class="modal-delete-title">Selesaikan Pesanan</h3>
-                        </div>
-                        <div class="modal-delete-msg">
-                            Apakah Anda yakin ingin menyelesaikan pesanan <strong id="completeCustNameText">Nama Pelanggan</strong>? 
-                            Status meja akan kembali normal dan riwayat akan ditandai Selesai.
-                        </div>
-                        <div class="modal-delete-footer">
-                            <button type="button" class="btn-delete-cancel" onclick="closeCompleteHistoryModal()">BATAL</button>
-                            <form id="completeOrderForm" method="POST">
-                                @csrf
-                                <button type="submit" id="confirmCompleteBtn" class="btn-delete-confirm" style="background: #00e5ff; color: #000;">SELESAI</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </main>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        function confirmComplete(form, customerName) {
+            Swal.fire({
+                title: 'Selesaikan Pesanan',
+                html: `Apakah Anda yakin ingin menyelesaikan pesanan <b>${customerName}</b>? <br><span style="font-size: 0.85rem; color: #8a8a98; margin-top: 10px; display: block;">Status meja akan kembali normal dan riwayat akan ditandai Selesai.</span>`,
+                icon: 'info',
+                iconColor: '#00e5ff',
+                showCancelButton: true,
+                confirmButtonText: 'SELESAI',
+                cancelButtonText: 'BATAL',
+                background: '#111418',
+                color: '#fff',
+                confirmButtonColor: '#00e5ff',
+                cancelButtonColor: 'transparent',
+                didOpen: () => {
+                    const title = document.querySelector('.swal2-title');
+                    const content = document.querySelector('.swal2-html-container');
+                    if(title) title.style.textAlign = 'left';
+                    if(content) content.style.textAlign = 'left';
+                    
+                    const cancelBtn = document.querySelector('.swal2-cancel');
+                    if(cancelBtn) {
+                        cancelBtn.style.fontWeight = '800';
+                        cancelBtn.style.color = '#8a8a98';
+                    }
+                    
+                    const confirmBtn = document.querySelector('.swal2-confirm');
+                    if(confirmBtn) {
+                        confirmBtn.style.fontWeight = '800';
+                        confirmBtn.style.color = '#000';
+                        confirmBtn.style.borderRadius = '10px';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+            return false;
+        }
+
+        function confirmDelete(form, customerName) {
+            Swal.fire({
+                title: 'Hapus Riwayat',
+                html: `Apakah Anda yakin ingin menghapus data riwayat pemesanan <b>${customerName}</b>? <br><span style="font-size: 0.85rem; color: #8a8a98; margin-top: 10px; display: block;">jika anda menghapusnya nanti data riwayat ini tidak ada lagi secara permanen</span>`,
+                icon: 'warning',
+                iconColor: '#ff5252',
+                showCancelButton: true,
+                confirmButtonText: 'HAPUS',
+                cancelButtonText: 'BATAL',
+                background: '#111418',
+                color: '#fff',
+                confirmButtonColor: '#ff5252',
+                cancelButtonColor: 'transparent',
+                didOpen: () => {
+                    const title = document.querySelector('.swal2-title');
+                    const content = document.querySelector('.swal2-html-container');
+                    if(title) title.style.textAlign = 'left';
+                    if(content) content.style.textAlign = 'left';
+                    
+                    const cancelBtn = document.querySelector('.swal2-cancel');
+                    if(cancelBtn) {
+                        cancelBtn.style.fontWeight = '800';
+                        cancelBtn.style.color = '#8a8a98';
+                    }
+                    
+                    const confirmBtn = document.querySelector('.swal2-confirm');
+                    if(confirmBtn) {
+                        confirmBtn.style.fontWeight = '800';
+                        confirmBtn.style.borderRadius = '10px';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+            return false;
+        }
+
+        function editStatus(bookingId, currentStatus) {
+            Swal.fire({
+                title: 'Ubah Status Pemesanan',
+                input: 'select',
+                inputOptions: {
+                    'pending': 'Pending',
+                    'confirmed': 'Lunas / Confirmed',
+                    'completed': 'Selesai / Completed',
+                    'cancelled': 'Dibatalkan / Cancelled'
+                },
+                inputValue: currentStatus,
+                showCancelButton: true,
+                confirmButtonText: 'Simpan',
+                cancelButtonText: 'Batal',
+                background: '#111418',
+                color: '#fff',
+                confirmButtonColor: '#00e5ff',
+                cancelButtonColor: 'transparent',
+                didOpen: () => {
+                    const cancelBtn = document.querySelector('.swal2-cancel');
+                    if(cancelBtn) cancelBtn.style.color = '#8a8a98';
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/admin/booking/${bookingId}/status`;
+                    
+                    const csrf = document.createElement('input');
+                    csrf.type = 'hidden';
+                    csrf.name = '_token';
+                    csrf.value = '{{ csrf_token() }}';
+                    
+                    const statusInput = document.createElement('input');
+                    statusInput.type = 'hidden';
+                    statusInput.name = 'status';
+                    statusInput.value = result.value;
+                    
+                    form.appendChild(csrf);
+                    form.appendChild(statusInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
         function showOrderDetails(name, date, time, meja, duration, paymentMethod = 'QRIS', fnbItems = [], total = 'Rp 0') {
             document.getElementById('detCustName').innerText = name;
             document.getElementById('detDate').innerText = date;
@@ -317,9 +427,5 @@
             if (e.target.classList.contains('adm-detail-modal-overlay')) closeOrderDetailModal();
         });
     </script>
-
-    {{-- Logout Modal --}}
-    @include('component.c_dashboard.modal.logout_modal')
-    <script src="{{ asset('js/js_component/logout.js') }}"></script>
 </body>
 </html>

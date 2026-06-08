@@ -3,7 +3,7 @@
 @section('title', 'Pesan Makanan & Minuman')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/css_page/user_fnb.css') }}?v={{ filemtime(public_path('css/css_page/user_fnb.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/css_page/user_fnb.css') }}">
 @endpush
 
 @section('content')
@@ -14,35 +14,28 @@
             {{-- Category Filter --}}
             <div class="category-filter">
                 <button class="category-btn active" data-category="all">All Items</button>
-                @foreach($categories as $category)
-                    <button class="category-btn" data-category="{{ $category }}">{{ $category }}</button>
-                @endforeach
+                <button class="category-btn" data-category="Camilan">Camilan</button>
+                <button class="category-btn" data-category="Minuman">Minuman</button>
             </div>
 
             {{-- Menu Grid --}}
             <div class="menu-grid">
                 @forelse($menus as $menu)
-                    @php
-                        $menuImage = $menu->image
-                            ? (\Illuminate\Support\Str::startsWith($menu->image, 'images/')
-                                ? asset($menu->image)
-                                : asset('storage/' . $menu->image))
-                            : asset('images/hero-bg.png');
-                    @endphp
                     <div class="menu-card" data-category="{{ $menu->category }}">
                         <div class="item-img-container">
-                            <img src="{{ $menuImage }}" alt="{{ $menu->name }}" class="item-img"
+                            <img src="{{ asset('storage/' . $menu->image) }}" alt="{{ $menu->name }}" class="item-img"
                                 onerror="this.src='{{ asset('images/hero-bg.png') }}'">
                             <div class="item-price-tag">Rp {{ number_format($menu->price, 0, ',', '.') }}</div>
                         </div>
                         <div class="item-details">
                             <h3 class="item-name">{{ $menu->name }}</h3>
-                            <div class="item-category">{{ $menu->category }}</div>
+                            <div class="item-category">{{ $menu->category }} <span style="margin-left: 10px; color: {{ $menu->stock > 0 ? '#00e5ff' : '#ff5252' }}; font-weight: 700;">• {{ $menu->stock > 0 ? 'TERSEDIA' : 'HABIS' }}</span></div>
                             <p class="item-desc">{{ $menu->description }}</p>
                             <button class="add-btn" data-id="{{ $menu->id }}" data-name="{{ $menu->name }}"
-                                data-price="{{ $menu->price }}" data-image="{{ $menuImage }}"
-                                data-category="{{ $menu->category }}">
-                                TAMBAH
+                                data-price="{{ $menu->price }}" data-image="{{ asset('storage/' . $menu->image) }}"
+                                data-category="{{ $menu->category }}" data-stock="{{ $menu->stock }}"
+                                {{ $menu->stock <= 0 ? 'disabled' : '' }}>
+                                {{ $menu->stock <= 0 ? 'HABIS' : 'TAMBAH' }}
                             </button>
                         </div>
                     </div>
@@ -130,10 +123,9 @@
                     categoryBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
 
-                    const category = (btn.dataset.category || '').trim().toLowerCase();
+                    const category = btn.dataset.category;
                     menuCards.forEach(card => {
-                        const cardCategory = (card.dataset.category || '').trim().toLowerCase();
-                        if (category === 'all' || cardCategory === category) {
+                        if (category === 'all' || card.dataset.category === category) {
                             card.style.display = 'flex';
                         } else {
                             card.style.display = 'none';
@@ -147,16 +139,27 @@
                 btn.addEventListener('click', () => {
                     const id = btn.dataset.id;
                     const name = btn.dataset.name;
-                    const price = Math.max(0, parseInt(btn.dataset.price) || 0);
+                    const price = parseInt(btn.dataset.price);
                     const image = btn.dataset.image;
                     const category = btn.dataset.category;
+                    const maxStock = parseInt(btn.dataset.stock);
 
                     const existingItem = cart.find(item => item.id === id);
 
                     if (existingItem) {
+                        if (existingItem.quantity >= maxStock) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Stok Terbatas',
+                                text: `Maaf, stok ${name} hanya tersedia ${maxStock} item.`,
+                                background: '#141418',
+                                color: '#fff'
+                            });
+                            return;
+                        }
                         existingItem.quantity += 1;
                     } else {
-                        cart.push({ id, name, price, image, category, quantity: 1 });
+                        cart.push({ id, name, price, image, category, quantity: 1, maxStock });
                     }
 
                     renderCart();
@@ -186,8 +189,6 @@
                 let subtotal = 0;
 
                 cart.forEach((item, index) => {
-                    item.price = Math.max(0, parseInt(item.price) || 0);
-                    item.quantity = Math.max(1, parseInt(item.quantity) || 1);
                     subtotal += item.price * item.quantity;
                     const itemHtml = `
                                 <div class="cart-item">
@@ -213,17 +214,26 @@
             }
 
             window.updateQty = function (index, delta) {
-                if (!cart[index]) return;
-                cart[index].quantity += delta;
-                cart[index].quantity = Math.min(99, cart[index].quantity);
-                if (cart[index].quantity <= 0) {
+                const item = cart[index];
+                if (delta > 0 && item.quantity >= item.maxStock) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Stok Terbatas',
+                        text: `Maaf, stok hanya tersedia ${item.maxStock} item.`,
+                        background: '#141418',
+                        color: '#fff'
+                    });
+                    return;
+                }
+                
+                item.quantity += delta;
+                if (item.quantity <= 0) {
                     cart.splice(index, 1);
                 }
                 renderCart();
             }
 
             function updateTotals(subtotal) {
-                subtotal = Math.max(0, Number(subtotal) || 0);
                 const tax = subtotal * 0.1;
                 const total = subtotal + tax;
 
@@ -257,7 +267,7 @@
                 }
 
                 let finalSubtotal = 0;
-                cart.forEach(item => finalSubtotal += Math.max(0, Number(item.price) || 0) * Math.max(1, Number(item.quantity) || 1));
+                cart.forEach(item => finalSubtotal += item.price * item.quantity);
                 const finalTax = finalSubtotal * 0.1;
 
                 const orderSummary = {
@@ -268,7 +278,6 @@
                     tax: finalTax,
                     total: finalSubtotal + finalTax
                 };
-                localStorage.removeItem('fnb_pending_order_id');
                 localStorage.setItem('fnb_order', JSON.stringify(orderSummary));
 
                 window.location.href = "{{ route('user.fnb.konfirmasi') }}";

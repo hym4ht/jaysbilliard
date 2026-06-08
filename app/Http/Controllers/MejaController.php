@@ -9,7 +9,13 @@ class MejaController extends Controller
 {
     public function index()
     {
-        $tables = Table::all();
+        $today = \Carbon\Carbon::now('Asia/Jakarta')->toDateString();
+        $tables = Table::with(['bookings' => function($query) use ($today) {
+            $query->whereIn('status', ['confirmed', 'booked', 'pending', 'dipesan'])
+                  ->where('booking_date', '>=', $today)
+                  ->orderBy('booking_date', 'asc')
+                  ->orderBy('start_time', 'asc');
+        }])->get();
         return view('dashboard_admin.meja', compact('tables'));
     }
 
@@ -23,7 +29,8 @@ class MejaController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:regular,vip',
-            'capacity' => 'required|integer|min:1',
+            'price_per_hour' => 'required|numeric',
+            'capacity' => 'required|integer',
             'description' => 'nullable|string',
             'status' => 'required|in:active,maintenance',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
@@ -52,7 +59,8 @@ class MejaController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:regular,vip',
-            'capacity' => 'required|integer|min:1',
+            'price_per_hour' => 'required|numeric',
+            'capacity' => 'required|integer',
             'description' => 'nullable|string',
             'status' => 'required|in:active,maintenance',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
@@ -72,7 +80,28 @@ class MejaController extends Controller
 
     public function destroy(Table $table)
     {
-        $table->delete();
-        return redirect()->route('admin.meja.index')->with('success', 'Meja berhasil dihapus.');
+        \Illuminate\Support\Facades\DB::transaction(function() use ($table) {
+            // Delete related bookings and their children
+            foreach ($table->bookings as $booking) {
+                foreach ($booking->orders as $order) {
+                    // Delete order details
+                    $order->details()->delete();
+                    // Delete the order
+                    $order->delete();
+                }
+                // Delete the booking
+                $booking->delete();
+            }
+
+            // Delete image from storage if exists
+            if ($table->image) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($table->image);
+            }
+
+            // Finally delete the table
+            $table->delete();
+        });
+
+        return redirect()->route('admin.meja.index')->with('success', 'Meja dan seluruh data terkait berhasil dihapus.');
     }
 }
