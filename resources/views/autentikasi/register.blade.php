@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <div class="relative flex items-center justify-center min-h-screen p-8 md:p-6 sm:p-4">
+    <div class="relative flex items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
         {{-- Background --}}
         <div class="fixed inset-0 z-0">
             <img src="{{ asset('images/login-bg.png') }}" alt="Background" class="w-full h-full object-cover" />
@@ -20,7 +20,7 @@
 
         {{-- Sign Up Card --}}
         <div
-            class="relative z-10 w-full max-w-md bg-[#0f141e]/85 backdrop-blur-custom border border-primary/15 rounded-2xl p-10 md:p-8 sm:p-7 shadow-2xl">
+            class="relative z-10 w-full max-w-md bg-[#0f141e]/85 backdrop-blur-custom border border-primary/15 rounded-2xl p-6 sm:p-8 md:p-10 shadow-2xl">
             <a href="{{ url('/') }}"
                 class="flex items-center justify-center w-10 h-10 bg-white/5 border border-primary/20 rounded-lg text-white/40 mb-6 transition-all hover:bg-primary/10 hover:text-primary hover:border-primary/40 hover:-translate-x-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -29,7 +29,7 @@
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
             </a>
-            <h1 class="text-3xl md:text-2xl font-extrabold text-white mb-2">Sign Up</h1>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white mb-2">Sign Up</h1>
             <p class="text-white/50 text-sm leading-relaxed mb-8">Dengan membuat akun pemesanan di jay's billiard tegal,
                 anda dapat mulai bisa memesan</p>
 

@@ -315,6 +315,12 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.method-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
 .method-option {
     background: rgba(255, 255, 255, 0.02);
     border: 1.5px solid var(--card-border);
@@ -362,9 +368,10 @@
     line-height: 1.4;
 }
 
-.payment-badge {
-    width: 40px;
-    height: 40px;
+.payment-badge,
+.method-icon-box {
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
     display: inline-flex;
     align-items: center;
@@ -689,6 +696,10 @@
     }
 
     .method-grid--wallet {
+        grid-template-columns: 1fr;
+    }
+
+    .method-list {
         grid-template-columns: 1fr;
     }
 

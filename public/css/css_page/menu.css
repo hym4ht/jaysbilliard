@@ -563,3 +563,75 @@
     box-shadow: 0 12px 35px rgba(255, 82, 82, 0.5);
 }
 
+/* ═══════════════════════════════ RESPONSIVE STYLES ═══════════════════════════════ */
+@media (max-width: 1400px) {
+    .adm-menu-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 1100px) {
+    .adm-menu-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .adm-menu-content {
+        padding: 1rem 1rem 2rem;
+        gap: 1.5rem;
+    }
+
+    .adm-menu-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .adm-mstat-card {
+        padding: 1.25rem;
+        flex-direction: row;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .adm-mstat-info {
+        gap: 0.25rem;
+    }
+
+    .adm-mstat-value {
+        font-size: 1.5rem;
+    }
+
+    .adm-menu-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .adm-search-wrap {
+        max-width: 100%;
+    }
+
+    .adm-menu-legend {
+        margin-left: 0;
+        justify-content: space-between;
+    }
+
+    .adm-menu-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .adm-menu-add-card {
+        min-height: 250px;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .adm-menu-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+

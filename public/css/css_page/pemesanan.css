@@ -828,3 +828,102 @@
     box-shadow: 0 12px 35px rgba(255, 82, 82, 0.5);
 }
 
+/* ═══════════════════════════════ RESPONSIVE STYLES ═══════════════════════════════ */
+@media (max-width: 1024px) {
+    .adm-history-content {
+        padding: 1.5rem 1.5rem 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .adm-history-content {
+        padding: 1rem 1rem 2rem;
+        gap: 1.5rem;
+    }
+
+    .adm-history-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .adm-hstat-card {
+        padding: 1.25rem;
+        flex-direction: row;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .adm-hstat-info {
+        gap: 0.25rem;
+    }
+
+    .adm-hstat-value {
+        font-size: 1.5rem;
+    }
+
+    .adm-history-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .adm-search-wrap {
+        max-width: 100%;
+    }
+
+    .adm-filter-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .btn-filter, .btn-export {
+        flex: 1;
+        justify-content: center;
+    }
+
+    /* Modal responsiveness */
+    .adm-detail-modal {
+        max-width: 90%;
+        border-radius: 20px;
+    }
+
+    .modal-details-header {
+        padding: 1.75rem 1.5rem 1.25rem;
+    }
+
+    .modal-details-body {
+        padding: 0 1.5rem 1.75rem;
+    }
+
+    .detail-cust-name {
+        font-size: 1.35rem;
+        padding-right: 2rem;
+    }
+
+    .panel-meja-info {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .fnb-list {
+        margin-bottom: 1.5rem;
+    }
+
+    .gt-val {
+        font-size: 1.5rem;
+    }
+
+    /* Stock Form Overrides */
+    .stock-form-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .btn-submit-stock {
+        width: 100% !important;
+        text-align: center;
+        padding: 12px !important;
+    }
+}
+
+

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\FnbOrder;
+use App\Models\StockTransaction;
 use App\Services\MidtransDirectDebitService;
 use Illuminate\Support\Facades\Log;
 use SnapBi\SnapBi;
@@ -215,18 +216,36 @@ class WebhookController extends Controller
         
         foreach ($items as $item) {
             $menuId = $item['menu_id'] ?? null;
-            $quantity = $item['quantity'] ?? 0;
+            $quantity = (int) ($item['quantity'] ?? 0);
             
             if ($menuId && $quantity > 0) {
                 $menu = \App\Models\Menu::find($menuId);
                 if ($menu) {
-                    $menu->reduceStock($quantity);
-                    Log::info('Stock reduced for menu', [
-                        'menu_id' => $menuId,
-                        'menu_name' => $menu->name,
-                        'quantity' => $quantity,
-                        'remaining_stock' => $menu->fresh()->stock,
-                    ]);
+                    $reduced = $menu->reduceStock($quantity);
+
+                    if ($reduced) {
+                        // Catat ke stock_transactions untuk laporan stok admin
+                        StockTransaction::create([
+                            'menu_id'  => $menu->id,
+                            'type'     => 'out',
+                            'quantity' => $quantity,
+                            'note'     => 'Penjualan otomatis (FnB Order: ' . $order->midtrans_order_id . ')',
+                        ]);
+
+                        Log::info('Stock reduced for menu', [
+                            'menu_id'         => $menuId,
+                            'menu_name'       => $menu->name,
+                            'quantity'        => $quantity,
+                            'remaining_stock' => $menu->fresh()->stock,
+                        ]);
+                    } else {
+                        Log::warning('Stock tidak mencukupi saat proses webhook', [
+                            'menu_id'       => $menuId,
+                            'menu_name'     => $menu->name,
+                            'requested_qty' => $quantity,
+                            'current_stock' => $menu->stock,
+                        ]);
+                    }
                 }
             }
         }

@@ -36,17 +36,16 @@ class StockController extends Controller
 
         $menu = Menu::findOrFail($validated['menu_id']);
         
-        if ($validated['type'] === 'out' && $menu->stock < $validated['quantity']) {
-            return back()->with('error', 'Stok tidak mencukupi untuk pengeluaran ini.');
+        if ($validated['type'] === 'out') {
+            if ($menu->stock < $validated['quantity']) {
+                return back()->with('error', 'Stok tidak mencukupi untuk pengeluaran ini.');
+            }
+            $menu->reduceStock($validated['quantity']);
+        } else {
+            $menu->addStock($validated['quantity']);
         }
 
         StockTransaction::create($validated);
-
-        if ($validated['type'] === 'in') {
-            $menu->increment('stock', $validated['quantity']);
-        } else {
-            $menu->decrement('stock', $validated['quantity']);
-        }
 
         return back()->with('success', 'Transaksi stok berhasil dicatat.');
     }

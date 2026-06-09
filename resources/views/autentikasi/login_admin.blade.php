@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="relative flex items-center justify-center min-h-screen p-8 md:p-6 sm:p-4">
+    <div class="relative flex items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
         {{-- Background --}}
         <div class="fixed inset-0 z-0">
             <img src="{{ asset('images/login-bg.png') }}" alt="Background" class="w-full h-full object-cover" />
@@ -16,11 +16,11 @@
         </div>
 
         {{-- Login Card --}}
-        <div class="relative z-10 w-full max-w-md bg-[#0f141e]/85 backdrop-blur-custom border border-primary/15 rounded-2xl p-10 md:p-8 sm:p-7 shadow-2xl">
+        <div class="relative z-10 w-full max-w-md bg-[#0f141e]/85 backdrop-blur-custom border border-primary/15 rounded-2xl p-6 sm:p-8 md:p-10 shadow-2xl">
             <div class="flex items-center justify-center w-14 h-14 bg-primary/10 border border-primary/20 rounded-2xl mb-6 mx-auto">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
-            <h1 class="text-3xl md:text-2xl font-extrabold text-white mb-2 text-center">Admin Login</h1>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white mb-2 text-center">Admin Login</h1>
             <p class="text-white/50 text-sm leading-relaxed mb-8 text-center">Masuk untuk memonitoring keperluan pelayanan Jay's Billiard</p>
 
             @if(session('success'))

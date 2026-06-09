@@ -198,6 +198,31 @@
             width: 18px;
             height: 18px;
         }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .adm-akun-content { padding: 0 1rem 1.5rem; }
+            .adm-akun-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                margin-bottom: 1.5rem;
+            }
+            .adm-search-wrap {
+                width: 100%;
+            }
+            .adm-btn-add {
+                justify-content: center;
+                width: 100%;
+            }
+            .adm-table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .adm-table {
+                min-width: 800px;
+            }
+        }
     </style>
 </head>
 <body>

@@ -9,7 +9,15 @@
     <div class="ps-page-wrapper">
         {{-- Page Header --}}
         <div class="ps-header-section">
-            <h1 class="ps-page-title">Profile Settings</h1>
+            <div class="ps-header-top">
+                <a href="{{ route('admin.dashboard') }}" class="ps-back-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
+                <h1 class="ps-page-title">Profile Settings</h1>
+            </div>
             <p class="ps-page-subtitle">Kelola profil administratif, kredensial keamanan, dan preferensi notifikasi sistem
                 Anda dari satu pusat kendali.</p>
         </div>
@@ -44,10 +52,16 @@
             </div>
         </div>
 
+        {{-- Mobile Tab Switcher --}}
+        <div class="ps-tab-control">
+            <button type="button" class="ps-tab-btn active" data-tab="personal">Profil</button>
+            <button type="button" class="ps-tab-btn" data-tab="security">Keamanan</button>
+        </div>
+
         {{-- Forms Row --}}
         <div class="ps-forms-grid">
             {{-- Informasi Pribadi --}}
-            <div class="ps-form-card">
+            <div class="ps-form-card ps-tab-content" id="tab-personal">
                 <h3 class="ps-card-title">Informasi Pribadi</h3>
                 <form id="personalInfoForm" class="ps-form">
                     <div class="ps-form-group">
@@ -75,7 +89,7 @@
             </div>
 
             {{-- Keamanan & Kata Sandi --}}
-            <div class="ps-form-card">
+            <div class="ps-form-card ps-tab-content" id="tab-security">
                 <h3 class="ps-card-title">Kemanan & Kata Sandi</h3>
                 <form id="securityForm" class="ps-form">
                     <div class="ps-form-group">
@@ -111,6 +125,50 @@
          */
         window.addEventListener('DOMContentLoaded', () => {
             loadStoredAvatar();
+
+            // Tab Switcher Logic
+            const tabBtns = document.querySelectorAll('.ps-tab-btn');
+            const tabContents = document.querySelectorAll('.ps-tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const target = btn.dataset.tab;
+
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    tabContents.forEach(content => {
+                        if (content.id === `tab-${target}`) {
+                            content.classList.add('active');
+                            content.style.display = 'block';
+                        } else {
+                            content.classList.remove('active');
+                            content.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            function checkMobileTabs() {
+                if (window.innerWidth <= 768) {
+                    const activeBtn = document.querySelector('.ps-tab-btn.active');
+                    const activeTab = activeBtn ? activeBtn.dataset.tab : 'personal';
+                    tabContents.forEach(content => {
+                        if (content.id === `tab-${activeTab}`) {
+                            content.style.display = 'block';
+                        } else {
+                            content.style.display = 'none';
+                        }
+                    });
+                } else {
+                    tabContents.forEach(content => {
+                        content.style.display = '';
+                    });
+                }
+            }
+
+            window.addEventListener('resize', checkMobileTabs);
+            checkMobileTabs();
         });
 
         /**
@@ -128,18 +186,18 @@
         }
 
         /**
-         * Logic untuk handel upload foto
+         * Logic untuk handel upload foto dengan kompresi otomatis
          */
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Validasi ukuran file (max 10MB)
-            if (file.size > 10 * 1024 * 1024) {
+            // Validasi format file
+            if (!file.type.startsWith('image/')) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'File Terlalu Besar',
-                    text: 'Ukuran foto maksimal adalah 10MB.',
+                    title: 'Format Salah',
+                    text: 'Harap pilih file gambar (JPG/PNG).',
                     background: '#16191d',
                     color: '#fff'
                 });
@@ -148,13 +206,48 @@
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const dataUrl = e.target.result;
-                
-                // Simpan ke localStorage agar tidak hilang saat reload
-                localStorage.setItem('admin_avatar', dataUrl);
-                
-                // Update semua avatar di halaman (termasuk topbar/dropdown jika ada)
-                loadStoredAvatar();
+                const img = new Image();
+                img.onload = function() {
+                    // Membuat canvas untuk kompresi dan cropping
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Resolusi 200x200 piksel sangat pas untuk avatar lingkaran kecil
+                    const targetSize = 200; 
+                    const width = img.width;
+                    const height = img.height;
+                    
+                    // Cropping kotak di tengah (center square crop)
+                    let sx = 0, sy = 0, sDim = Math.min(width, height);
+                    if (width > height) {
+                        sx = (width - height) / 2;
+                    } else {
+                        sy = (height - width) / 2;
+                    }
+                    
+                    canvas.width = targetSize;
+                    canvas.height = targetSize;
+                    
+                    ctx.drawImage(img, sx, sy, sDim, sDim, 0, 0, targetSize, targetSize);
+                    
+                    // Konversi ke JPEG terkompresi (~10-20KB saja) agar tidak melebihi kuota localStorage
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
+                    
+                    try {
+                        localStorage.setItem('admin_avatar', compressedDataUrl);
+                        loadStoredAvatar();
+                    } catch (err) {
+                        console.error('Storage error:', err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Penyimpanan Penuh',
+                            text: 'Gagal menyimpan foto, silakan coba foto lain.',
+                            background: '#16191d',
+                            color: '#fff'
+                        });
+                    }
+                };
+                img.src = e.target.result;
             }
             reader.readAsDataURL(file);
         }
@@ -419,15 +512,75 @@
             max-width: 1200px;
         }
 
+        /* Tab Switcher styling */
+        .ps-tab-control {
+            display: none; /* Hidden on desktop */
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 1.5rem;
+            gap: 4px;
+        }
+        .ps-tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            padding: 0.85rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .ps-tab-btn.active {
+            background: #00e5ff;
+            color: #0c0e14;
+            box-shadow: 0 4px 12px rgba(0, 229, 255, 0.2);
+        }
+
         /* Header */
         .ps-header-section {
             margin-bottom: 2rem;
         }
 
+        .ps-header-top {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .ps-back-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #fff;
+            transition: all 0.2s ease;
+        }
+
+        .ps-back-btn:hover {
+            background: rgba(0, 229, 255, 0.1);
+            border-color: #00e5ff;
+            color: #00e5ff;
+            transform: translateX(-2px);
+        }
+
+        .ps-back-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
         .ps-page-title {
             font-size: 1.5rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin: 0;
         }
 
         .ps-page-subtitle {
@@ -676,7 +829,139 @@
             }
         }
 
-        /* Swall Custom Overrides */
+        @media (max-width: 768px) {
+            .ps-tab-control {
+                display: flex;
+            }
+            .ps-page-wrapper {
+                padding: 1rem 1rem 1.5rem;
+                display: flex;
+                flex-direction: column;
+            }
+            .ps-header-section {
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+            .ps-page-title {
+                font-size: 1.3rem;
+            }
+            .ps-page-subtitle {
+                display: none; /* Hide subtitle to save screen estate */
+            }
+            .ps-avatar-card {
+                position: relative;
+                padding: 1.75rem 1rem 1.5rem;
+                border-radius: 16px;
+                margin-bottom: 1rem;
+            }
+            .ps-avatar-card-inner {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 1rem;
+            }
+            .ps-avatar-left {
+                gap: 0.5rem;
+            }
+            .ps-avatar-circle {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+            .ps-avatar-upload-info {
+                display: none; /* Hide upload hint on mobile */
+            }
+            .ps-avatar-center {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+            .ps-user-name {
+                font-size: 1.15rem;
+                margin-bottom: 0.2rem;
+            }
+            .ps-user-meta {
+                font-size: 0.78rem;
+                margin-bottom: 1rem;
+            }
+            .ps-avatar-actions {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                gap: 0.5rem;
+                width: 100%;
+            }
+            .ps-avatar-actions button,
+            .ps-avatar-actions .btn-ps-upload,
+            .ps-avatar-actions .btn-ps-remove,
+            .ps-avatar-actions .btn-ps-cyan {
+                flex: 1;
+                max-width: 140px;
+                width: auto !important;
+                padding: 0.55rem 0.75rem !important;
+                font-size: 0.75rem !important;
+                font-weight: 700 !important;
+                border-radius: 8px !important;
+                white-space: nowrap;
+                text-align: center;
+            }
+            .ps-avatar-right {
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+            }
+            .ps-forms-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .ps-form-card {
+                padding: 1.25rem;
+                border-radius: 16px;
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+                border-top: none;
+            }
+            .ps-tab-control {
+                margin-bottom: 0;
+                border-bottom-left-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+            .ps-card-title {
+                display: none; /* Hide form section title */
+            }
+            .ps-form-group {
+                margin-bottom: 1rem;
+            }
+            .ps-form-group label {
+                margin-bottom: 0.5rem;
+                font-size: 0.75rem;
+            }
+            .ps-form-group input {
+                padding: 0.75rem 0.95rem;
+                font-size: 0.85rem;
+                border-radius: 8px;
+            }
+            .ps-form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .ps-form-actions {
+                margin-top: 1rem;
+                justify-content: stretch;
+            }
+            .ps-form-actions .btn-ps-cyan {
+                width: 100% !important;
+                padding: 0.85rem !important;
+                border-radius: 10px !important;
+                font-size: 0.85rem !important;
+            }
+            .ps-bottom-actions {
+                display: none !important;
+            }
+        }
+
+        /* Swal Custom Overrides */
         .swal2-popup {
             border-radius: 1.5rem !important;
             border: 1px solid rgba(255, 255, 255, 0.08) !important;

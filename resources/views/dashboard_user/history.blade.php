@@ -130,8 +130,9 @@
             padding: 24px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
-            flex-direction: column;
-            gap: 14px;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
             transition: background 0.3s;
         }
 
@@ -142,11 +143,20 @@
         .history-item:last-child {
             border-bottom: none;
         }
+
+        .item-left {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
         
         .item-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
         }
         
         .type-badge {
@@ -198,7 +208,6 @@
             padding: 6px 12px;
             border-radius: 6px;
             width: fit-content;
-            margin-bottom: 4px;
         }
         
         .item-id svg {
@@ -219,7 +228,6 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            margin-top: 2px;
         }
         
         .detail-row {
@@ -239,11 +247,11 @@
         
         .item-price {
             color: #00e5ff;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             font-weight: 800;
-            text-align: right;
-            margin-top: -30px;
             letter-spacing: 0.5px;
+            white-space: nowrap;
+            text-align: right;
         }
 
         .hidden {
@@ -254,6 +262,72 @@
             padding: 60px 20px;
             text-align: center;
             color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 992px) {
+            .stats-grid {
+                gap: 16px;
+            }
+            .stat-value {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .history-container {
+                padding: 16px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+
+            .stat-card {
+                padding: 16px 20px;
+                gap: 4px;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 16px;
+                padding: 16px;
+            }
+
+            .search-wrapper {
+                width: 100%;
+            }
+
+            .filter-tabs {
+                width: 100%;
+            }
+
+            .filter-btn {
+                flex: 1;
+                text-align: center;
+                padding: 10px;
+            }
+
+            .history-item {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 16px;
+                padding: 16px;
+            }
+
+            .item-price {
+                text-align: left;
+                font-size: 1.25rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.05);
+                padding-top: 12px;
+            }
         }
     </style>
 @endpush
@@ -329,32 +403,34 @@
                 @if($item->type === 'meja')
                     @php $booking = $item->data; @endphp
                     <div class="history-item" data-type="meja" data-search="{{ strtolower('booking meja ' . ($booking->table->name ?? '')) }} bkg-{{ $booking->id }}">
-                        <div class="item-header">
-                            <span class="type-badge">BOOKING MEJA</span>
-                            <span class="status-badge {{ $booking->status === 'confirmed' || $booking->status === 'completed' || $booking->status === 'paid' ? '' : 'status-pending' }}">
-                                {{ in_array($booking->status, ['confirmed', 'paid']) ? 'BERHASIL' : ($booking->status === 'completed' ? 'SELESAI' : strtoupper($booking->status)) }}
-                            </span>
-                        </div>
-                        
-                        <div class="item-id">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                            ID: BKG-{{ $booking->id }}
-                        </div>
-                        
-                        <h3 class="item-title">Booking {{ ucwords($booking->table->name ?? 'Meja') }}</h3>
-                        
-                        <div class="item-details">
-                            <div class="detail-row">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                {{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}, {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }} WIB
+                        <div class="item-left">
+                            <div class="item-header">
+                                <span class="type-badge">BOOKING MEJA</span>
+                                <span class="status-badge {{ $booking->status === 'confirmed' || $booking->status === 'completed' || $booking->status === 'paid' ? '' : 'status-pending' }}">
+                                    {{ in_array($booking->status, ['confirmed', 'paid']) ? 'BERHASIL' : ($booking->status === 'completed' ? 'SELESAI' : strtoupper($booking->status)) }}
+                                </span>
                             </div>
-                            <div class="detail-row">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                Durasi {{ \Carbon\Carbon::parse($booking->start_time)->diffInHours(\Carbon\Carbon::parse($booking->end_time)) }} Jam
+                            
+                            <div class="item-id">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                ID: BKG-{{ $booking->id }}
                             </div>
-                            <div class="detail-row">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                                {{ strtoupper(str_replace('_', ' ', $booking->payment_method ?? '-')) }}
+                            
+                            <h3 class="item-title">Booking {{ ucwords($booking->table->name ?? 'Meja') }}</h3>
+                            
+                            <div class="item-details">
+                                <div class="detail-row">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                    {{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}, {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }} WIB
+                                </div>
+                                <div class="detail-row">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    Durasi {{ \Carbon\Carbon::parse($booking->start_time)->diffInHours(\Carbon\Carbon::parse($booking->end_time)) }} Jam
+                                </div>
+                                <div class="detail-row">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                                    {{ strtoupper(str_replace('_', ' ', $booking->payment_method ?? '-')) }}
+                                </div>
                             </div>
                         </div>
                         
@@ -365,32 +441,34 @@
                 @else
                     @php $order = $item->data; @endphp
                     <div class="history-item" data-type="fnb" data-search="{{ strtolower('pesanan f&b ' . $order->order_id) }} {{ strtolower($order->order_id) }}">
-                        <div class="item-header">
-                            <span class="type-badge type-badge-fnb">PESANAN F&B</span>
-                            <span class="status-badge {{ $order->status === 'paid' ? '' : 'status-pending' }}">
-                                {{ $order->status === 'paid' ? 'BERHASIL' : 'PENDING' }}
-                            </span>
-                        </div>
-                        
-                        <div class="item-id">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                            ID: {{ $order->order_id }}
-                        </div>
-                        
-                        <h3 class="item-title">Pesanan Makanan & Minuman</h3>
-                        
-                        <div class="item-details">
-                            <div class="detail-row">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                {{ \Carbon\Carbon::parse($order->created_at)->timezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB
+                        <div class="item-left">
+                            <div class="item-header">
+                                <span class="type-badge type-badge-fnb">PESANAN F&B</span>
+                                <span class="status-badge {{ $order->status === 'paid' ? '' : 'status-pending' }}">
+                                    {{ $order->status === 'paid' ? 'BERHASIL' : 'PENDING' }}
+                                </span>
                             </div>
-                            <div class="detail-row">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                                {{ $order->details->sum('quantity') }} Item
+                            
+                            <div class="item-id">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                ID: {{ $order->order_id }}
                             </div>
-                            <div class="detail-row">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                                {{ strtoupper(str_replace('_', ' ', $order->payment_method ?? '-')) }} (Antar ke: {{ strtoupper($order->booking->table->name ?? 'Meja') }})
+                            
+                            <h3 class="item-title">Pesanan Makanan & Minuman</h3>
+                            
+                            <div class="item-details">
+                                <div class="detail-row">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                    {{ \Carbon\Carbon::parse($order->created_at)->timezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB
+                                </div>
+                                <div class="detail-row">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                                    {{ $order->details->sum('quantity') }} Item
+                                </div>
+                                <div class="detail-row">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                                    {{ strtoupper(str_replace('_', ' ', $order->payment_method ?? '-')) }} (Antar ke: {{ strtoupper($order->booking->table->name ?? 'Meja') }})
+                                </div>
                             </div>
                         </div>
                         

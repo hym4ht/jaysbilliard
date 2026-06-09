@@ -58,20 +58,7 @@
                 </div>
             </div>
 
-            <div class="payment-details-section" style="margin-top: 30px;">
-                <div class="detail-section-title" id="dynamic-payment-title" style="font-size: 0.85rem; font-weight: 800; color: #fff; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;">QRIS VIA MIDTRANS</div>
-                <div class="detail-section-content" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; text-align: left; display: flex; flex-direction: column; gap: 15px; min-height: auto;">
-                    <div style="display: flex; gap: 15px; align-items: flex-start;">
-                        <div id="dynamic-payment-icon-box" style="width: 44px; height: 44px; background: #00aaff; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <span id="dynamic-payment-icon-text" style="color: #fff; font-weight: 900; font-size: 0.9rem;">QR</span>
-                        </div>
-                        <div>
-                            <div id="dynamic-payment-name" style="color: #fff; font-weight: 800; font-size: 0.95rem; margin-bottom: 5px;">QRIS Dinamis</div>
-                            <div id="dynamic-payment-desc" style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.5;">Snap Midtrans akan membuka kode QRIS yang bisa dibayar lewat aplikasi bank atau e-wallet.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
         </div>
 
         {{-- RIGHT COLUMN: FINAL CONFIRMATION --}}
@@ -110,9 +97,9 @@
                     <div style="width: 60px; height: 60px; background: rgba(0, 242, 255, 0.08); border-radius: 18px; display: flex; align-items: center; justify-content: center; color: var(--primary-cyan); margin-bottom: 20px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
                     </div>
-                    <h3 style="font-size: 1.4rem; font-weight: 900; color: #fff; margin-bottom: 12px;">Pembayaran Midtrans</h3>
+                    <h3 style="font-size: 1.4rem; font-weight: 900; color: #fff; margin-bottom: 12px;">Metode Pembayaran</h3>
                     <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
-                        Semua metode pembayaran diproses langsung oleh Midtrans. Pilih QRIS, DANA, atau GoPay untuk membuka alur pembayaran yang sesuai.
+                        Selesaikan pesanan Anda secara instan dan aman. Silakan pilih salah satu metode pembayaran di bawah ini.
                     </p>
                 </div>
 
@@ -121,7 +108,7 @@
                     <span style="font-size: 1rem;">Pilih Metode Pembayaran</span>
                 </div>
 
-                <div class="method-list" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                <div class="method-list">
                     <!-- QRIS -->
                     <div class="method-option selected" id="method-qris">
                         <div class="option-left">
@@ -130,7 +117,7 @@
                             </div>
                             <div class="method-text">
                                 <div class="option-name">QRIS</div>
-                                <div class="option-sub">Scan dari bank atau e-wallet</div>
+                                <div class="option-sub">Scan QR via E-Wallet / Mobile Banking</div>
                             </div>
                         </div>
                         <div class="radio-circle"></div>
@@ -144,7 +131,7 @@
                             </div>
                             <div class="method-text">
                                 <div class="option-name">DANA</div>
-                                <div class="option-sub">Redirect ke pembayaran DANA</div>
+                                <div class="option-sub">Bayar praktis dengan saldo DANA</div>
                             </div>
                         </div>
                         <div class="radio-circle"></div>
@@ -158,7 +145,7 @@
                             </div>
                             <div class="method-text">
                                 <div class="option-name">GoPay</div>
-                                <div class="option-sub">Deeplink atau scan QR</div>
+                                <div class="option-sub">Bayar praktis dengan saldo GoPay</div>
                             </div>
                         </div>
                         <div class="radio-circle"></div>
@@ -166,13 +153,13 @@
                 </div>
 
                 <div class="method-info-text" style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-top: 24px; margin-bottom: 30px; text-align: left;">
-                    DANA redirect memakai Snap-BI Direct Debit jika credential tersedia.
+                    Pastikan saldo e-wallet Anda mencukupi dan koneksi internet stabil sebelum melanjutkan pembayaran.
                 </div>
 
                 <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); border-radius: 16px; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
                     <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">GATEWAY</span>
-                        <span style="font-size: 1rem; font-weight: 800; color: #fff;">Midtrans Snap</span>
+                        <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">KEAMANAN SISTEM</span>
+                        <span style="font-size: 1rem; font-weight: 800; color: #fff;">Terenkripsi & Secured by Midtrans</span>
                     </div>
                 </div>
 
@@ -234,36 +221,13 @@
                     this.classList.add('selected');
                     
                     const methodName = this.querySelector('.option-name').innerText;
-                    const dynTitle = document.getElementById('dynamic-payment-title');
-                    const dynIconBox = document.getElementById('dynamic-payment-icon-box');
-                    const dynIconText = document.getElementById('dynamic-payment-icon-text');
-                    const dynName = document.getElementById('dynamic-payment-name');
-                    const dynDesc = document.getElementById('dynamic-payment-desc');
 
                     if (methodName === 'QRIS') {
                         mainPayBtn.innerText = 'Bayar QRIS via Midtrans';
-                        dynTitle.innerText = 'QRIS VIA MIDTRANS';
-                        dynIconBox.style.background = '#00aaff';
-                        dynIconText.innerText = 'QR';
-                        dynIconText.style.fontSize = '0.9rem';
-                        dynName.innerText = 'QRIS Dinamis';
-                        dynDesc.innerText = 'Snap Midtrans akan membuka kode QRIS yang bisa dibayar lewat aplikasi bank atau e-wallet.';
                     } else if (methodName === 'DANA') {
                         mainPayBtn.innerText = 'Bayar DANA via Midtrans';
-                        dynTitle.innerText = 'DANA VIA MIDTRANS';
-                        dynIconBox.style.background = '#118ee0';
-                        dynIconText.innerText = 'DANA';
-                        dynIconText.style.fontSize = '0.65rem';
-                        dynName.innerText = 'DANA';
-                        dynDesc.innerText = 'Pembayaran akan diarahkan ke aplikasi DANA. Pastikan saldo Anda mencukupi.';
                     } else if (methodName === 'GoPay') {
                         mainPayBtn.innerText = 'Bayar GoPay via Midtrans';
-                        dynTitle.innerText = 'GOPAY VIA MIDTRANS';
-                        dynIconBox.style.background = '#00c853';
-                        dynIconText.innerText = 'GP';
-                        dynIconText.style.fontSize = '0.85rem';
-                        dynName.innerText = 'GoPay';
-                        dynDesc.innerText = 'Buka aplikasi Gojek untuk memindai kode QR, atau selesaikan pembayaran lewat deeplink.';
                     } else {
                         mainPayBtn.innerText = 'Bayar via Midtrans';
                     }
