@@ -44,7 +44,7 @@
 
         <div class="border-t border-white/5 pt-6 flex flex-col md:flex-row justify-between
                     text-xs text-gray-500 gap-2">
-            <p>© 2025 Jay's Billiard Tegal. Semua hak dilindungi.</p>
+            <p>© 2025 Jay's Billiard Tegal X Universitas Harkat Negeri Tegal. Semua hak dilindungi.</p>
         </div>
     </div>
 </footer>
