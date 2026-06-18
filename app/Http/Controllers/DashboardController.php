@@ -17,6 +17,9 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Auto-confirm bookings whose time has arrived
+        Booking::autoConfirmBookings();
+
         $user = Auth::user();
         $today = \Carbon\Carbon::now()->toDateString();
 
@@ -91,6 +94,9 @@ class DashboardController extends Controller
 
     public function meja()
     {
+        // Auto-confirm bookings whose time has arrived
+        Booking::autoConfirmBookings();
+
         $user = Auth::user();
         $today = \Carbon\Carbon::now('Asia/Jakarta')->toDateString();
         // Load all tables with all active bookings to support dynamic date selection on frontend

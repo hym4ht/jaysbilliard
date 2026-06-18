@@ -12,6 +12,9 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
+        // Auto-confirm bookings whose time has arrived
+        \App\Models\Booking::autoConfirmBookings();
+
         $today = \Carbon\Carbon::now('Asia/Jakarta')->toDateString();
         
         // Load tables with relevant bookings from today onwards to determine current table status

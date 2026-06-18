@@ -115,12 +115,12 @@ class WebhookController extends Controller
         $paymentStatus = $this->paymentStatusFromMidtrans($transactionStatus, $fraudStatus);
 
         if ($paymentStatus === 'paid') {
-            Booking::whereIn('id', $bookingIds)->update(['status' => 'confirmed']);
+            Booking::whereIn('id', $bookingIds)->update(['status' => 'booked']); // 'booked' = paid, waiting admin confirmation
         } elseif (in_array($paymentStatus, ['cancelled', 'failed', 'expired'], true)) {
             Booking::whereIn('id', $bookingIds)->update(['status' => 'cancelled']);
         } elseif ($paymentStatus === 'pending') {
             Booking::whereIn('id', $bookingIds)
-                ->where('status', '!=', 'confirmed')
+                ->whereNotIn('status', ['booked', 'confirmed']) // don't revert already-paid bookings
                 ->update(['status' => 'pending']);
         }
     }
@@ -169,12 +169,12 @@ class WebhookController extends Controller
         }
 
         if ($paymentStatus === 'paid') {
-            Booking::whereIn('id', $bookingIds)->update(['status' => 'confirmed']);
+            Booking::whereIn('id', $bookingIds)->update(['status' => 'booked']); // 'booked' = paid, waiting admin confirmation
         } elseif (in_array($paymentStatus, ['cancelled', 'failed', 'expired'], true)) {
             Booking::whereIn('id', $bookingIds)->update(['status' => 'cancelled']);
         } elseif ($paymentStatus === 'pending') {
             Booking::whereIn('id', $bookingIds)
-                ->where('status', '!=', 'confirmed')
+                ->whereNotIn('status', ['booked', 'confirmed']) // don't revert already-paid bookings
                 ->update(['status' => 'pending']);
         }
     }

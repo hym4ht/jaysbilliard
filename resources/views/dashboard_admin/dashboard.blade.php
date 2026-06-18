@@ -130,7 +130,31 @@
                         @foreach($tables as $table)
                             @php
                                 // Logic to determine status based on active booking
-                                $activeBooking = $table->bookings->first();
+                                // Only treat a booking as "active" if it starts within 30 minutes OR is currently ongoing (confirmed)
+                                $now = \Carbon\Carbon::now('Asia/Jakarta');
+                                $activeBooking = null;
+
+                                foreach ($table->bookings as $b) {
+                                    if ($b->status === 'confirmed') {
+                                        // Always show confirmed (active session) bookings
+                                        $activeBooking = $b;
+                                        break;
+                                    }
+                                    // For pending/booked/dipesan: only show if booking starts within 30 minutes from now
+                                    if (in_array($b->status, ['pending', 'booked', 'dipesan'])) {
+                                        $bookingStart = \Carbon\Carbon::parse($b->booking_date . ' ' . $b->start_time, 'Asia/Jakarta');
+                                        if ($bookingStart->diffInMinutes($now, false) <= 0 && $bookingStart->diffInMinutes($now, false) >= -30) {
+                                            // booking starts within the next 30 minutes
+                                            $activeBooking = $b;
+                                            break;
+                                        } elseif ($now->gt($bookingStart)) {
+                                            // booking time already passed (overdue), still show it
+                                            $activeBooking = $b;
+                                            break;
+                                        }
+                                    }
+                                }
+
                                 $statusClass = 'tersedia';
                                 $statusLabel = 'TERSEDIA';
 
@@ -138,7 +162,7 @@
                                     if ($activeBooking->status === 'confirmed') {
                                         $statusClass = 'terisi';
                                         $statusLabel = 'TERISI';
-                                    } elseif ($activeBooking->status === 'pending' || $activeBooking->status === 'booked' || $activeBooking->status === 'dipesan') {
+                                    } elseif (in_array($activeBooking->status, ['pending', 'booked', 'dipesan'])) {
                                         $statusClass = 'dipesan';
                                         $statusLabel = 'DIPESAN';
                                     }

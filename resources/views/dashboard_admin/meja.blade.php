@@ -107,7 +107,28 @@
                                 <div class="card-header-row">
                                     <h3 class="card-title">{{ strtoupper($table->name) }}</h3>
                                     @php
-                                        $activeBooking = $table->bookings ? $table->bookings->first() : null;
+                                        // Only treat a booking as "active" if it is confirmed,
+                                        // OR starts within 30 minutes from now, OR is overdue
+                                        $now = \Carbon\Carbon::now('Asia/Jakarta');
+                                        $activeBooking = null;
+
+                                        foreach ($table->bookings as $b) {
+                                            if ($b->status === 'confirmed') {
+                                                $activeBooking = $b;
+                                                break;
+                                            }
+                                            if (in_array($b->status, ['pending', 'booked', 'dipesan'])) {
+                                                $bookingStart = \Carbon\Carbon::parse($b->booking_date . ' ' . $b->start_time, 'Asia/Jakarta');
+                                                if ($bookingStart->diffInMinutes($now, false) <= 0 && $bookingStart->diffInMinutes($now, false) >= -30) {
+                                                    $activeBooking = $b;
+                                                    break;
+                                                } elseif ($now->gt($bookingStart)) {
+                                                    $activeBooking = $b;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
                                         $statusClass = 'tersedia';
                                         $statusText = 'TERSEDIA';
 

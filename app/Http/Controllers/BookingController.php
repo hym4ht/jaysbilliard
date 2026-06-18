@@ -209,7 +209,7 @@ class BookingController extends Controller
 
             if (in_array($transactionStatus, ['settlement', 'capture'])) {
                 $bookingIds = explode(',', $status->custom_field1);
-                $updateData = ['status' => 'confirmed'];
+                $updateData = ['status' => 'booked']; // 'booked' = paid, waiting admin confirmation
                 if ($paymentType) {
                     $updateData['payment_method'] = $paymentType;
                 }
@@ -243,7 +243,7 @@ class BookingController extends Controller
                 $paymentStatus = $directDebit->paymentStatusFromStatusResponse($statusResponse);
 
                 if ($paymentStatus === 'paid') {
-                    Booking::whereIn('id', $bookingIds)->update(['status' => 'confirmed']);
+                    Booking::whereIn('id', $bookingIds)->update(['status' => 'booked']); // 'booked' = paid, waiting admin confirmation
                     $bookings = Booking::whereIn('id', $bookingIds)->get();
                 } elseif (in_array($paymentStatus, ['cancelled', 'failed', 'expired'], true)) {
                     Booking::whereIn('id', $bookingIds)->update(['status' => 'cancelled']);
@@ -255,7 +255,8 @@ class BookingController extends Controller
         }
 
         $status = 'pending';
-        if ($bookings->every(fn ($booking) => $booking->status === 'confirmed')) {
+        // 'booked' = sudah bayar, menunggu konfirmasi admin. Tampilkan sebagai 'paid' ke user.
+        if ($bookings->every(fn ($booking) => in_array($booking->status, ['booked', 'confirmed']))) {
             $status = 'paid';
         } elseif ($bookings->contains(fn ($booking) => $booking->status === 'cancelled')) {
             $status = 'cancelled';
