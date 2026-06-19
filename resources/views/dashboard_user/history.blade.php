@@ -439,19 +439,28 @@
                         </div>
                     </div>
                 @else
-                    @php $order = $item->data; @endphp
-                    <div class="history-item" data-type="fnb" data-search="{{ strtolower('pesanan f&b ' . $order->order_id) }} {{ strtolower($order->order_id) }}">
+                    @php 
+                        $order = $item->data; 
+                        $orderId = $order instanceof \App\Models\Order ? $order->order_id : $order->midtrans_order_id;
+                        $statusText = in_array($order->status, ['paid', 'success', 'confirmed']) ? 'BERHASIL' : ($order->status === 'pending' ? 'PENDING' : strtoupper($order->status));
+                        $statusClass = in_array($order->status, ['paid', 'success', 'confirmed']) ? '' : 'status-pending';
+                        
+                        $quantityCount = $order instanceof \App\Models\Order ? $order->details->sum('quantity') : collect($order->items)->sum('quantity');
+                        $tableName = $order instanceof \App\Models\Order ? ($order->booking->table->name ?? 'Meja') : ($order->table->name ?? 'Meja');
+                        $priceValue = $order instanceof \App\Models\Order ? $order->total_price_fnb : $order->total;
+                    @endphp
+                    <div class="history-item" data-type="fnb" data-search="{{ strtolower('pesanan f&b ' . $orderId) }} {{ strtolower($orderId) }}">
                         <div class="item-left">
                             <div class="item-header">
                                 <span class="type-badge type-badge-fnb">PESANAN F&B</span>
-                                <span class="status-badge {{ $order->status === 'paid' ? '' : 'status-pending' }}">
-                                    {{ $order->status === 'paid' ? 'BERHASIL' : 'PENDING' }}
+                                <span class="status-badge {{ $statusClass }}">
+                                    {{ $statusText }}
                                 </span>
                             </div>
                             
                             <div class="item-id">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                ID: {{ $order->order_id }}
+                                ID: {{ $orderId }}
                             </div>
                             
                             <h3 class="item-title">Pesanan Makanan & Minuman</h3>
@@ -463,17 +472,17 @@
                                 </div>
                                 <div class="detail-row">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                                    {{ $order->details->sum('quantity') }} Item
+                                    {{ $quantityCount }} Item
                                 </div>
                                 <div class="detail-row">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                                    {{ strtoupper(str_replace('_', ' ', $order->payment_method ?? '-')) }} (Antar ke: {{ strtoupper($order->booking->table->name ?? 'Meja') }})
+                                    {{ strtoupper(str_replace('_', ' ', $order->payment_method ?? '-')) }} (Antar ke: {{ strtoupper($tableName) }})
                                 </div>
                             </div>
                         </div>
                         
                         <div class="item-price">
-                            Rp {{ number_format($order->total_price_fnb, 0, ',', '.') }}
+                            Rp {{ number_format($priceValue, 0, ',', '.') }}
                         </div>
                     </div>
                 @endif

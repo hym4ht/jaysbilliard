@@ -41,21 +41,27 @@ class AdminDashboardController extends Controller
     public function history()
     {
         // Get all bookings with nested F&B relations
-        $bookings = \App\Models\Booking::with(['table', 'user', 'orders.details.menu'])->latest()->get();
-        
+        $bookingsList = \App\Models\Booking::with(['table', 'user', 'orders.details.menu'])->latest()->get();
+        $standaloneOrders = \App\Models\FnbOrder::with(['table', 'user'])->latest()->get();
+
         // Basic stats calculations
-        $totalBookings = $bookings->count();
-        // Since F&B items details are not fully relational yet, we'll just mock it or count orders.
-        $totalOrders = $bookings->sum(function ($booking) {
+        $totalBookings = $bookingsList->count();
+        $totalOrders = $bookingsList->sum(function ($booking) {
             return $booking->orders->count(); 
-        });
+        }) + $standaloneOrders->count();
+
+        // Merge them and sort by created_at descending
+        $bookings = $bookingsList->concat($standaloneOrders)->sortByDesc('created_at');
 
         return view('dashboard_admin.pemesanan', compact('bookings', 'totalBookings', 'totalOrders'));
     }
 
     public function exportPdf()
     {
-        $bookings = \App\Models\Booking::with(['table', 'user', 'orders.details.menu'])->latest()->get();
+        $bookingsList = \App\Models\Booking::with(['table', 'user', 'orders.details.menu'])->latest()->get();
+        $standaloneOrders = \App\Models\FnbOrder::with(['table', 'user'])->latest()->get();
+        
+        $bookings = $bookingsList->concat($standaloneOrders)->sortByDesc('created_at');
         
         $pdf = Pdf::loadView('dashboard_admin.history_pdf', compact('bookings'))
                   ->setPaper('a4', 'landscape');
@@ -67,38 +73,63 @@ class AdminDashboardController extends Controller
     {
         // Get 5 latest pending bookings
         $latestBookings = \App\Models\Booking::with('table')
-                                          ->where('status', 'pending')
-                                          ->latest()
-                                          ->take(5)
-                                          ->get()
-                                          ->map(function($b) {
-                                              $b->type = 'booking';
-                                              return $b;
-                                          });
+                                           ->where('status', 'pending')
+                                           ->latest()
+                                           ->take(5)
+                                           ->get()
+                                           ->map(function($b) {
+                                               $b->type = 'booking';
+                                               return $b;
+                                           });
 
         // Get 5 latest pending F&B orders with details
-        $latestOrders = \App\Models\Order::with(['booking.table', 'details.menu'])
+        $bookingOrders = \App\Models\Order::with(['booking.table', 'details.menu'])
                                       ->where('status', 'pending')
                                       ->latest()
                                       ->take(5)
                                       ->get()
                                       ->map(function($o) {
                                           $o->type = 'order';
-                                          // Format items string
+                                          $o->customer_name = $o->booking->customer_name ?? 'Pelanggan';
                                           $o->items_summary = $o->details->map(function($d) {
                                               return ($d->menu->name ?? 'Menu') . ' (x' . $d->quantity . ')';
                                           })->implode(', ');
                                           return $o;
                                       });
 
+        $standaloneOrders = \App\Models\FnbOrder::with(['table', 'user'])
+                                      ->where('status', 'pending')
+                                      ->latest()
+                                      ->take(5)
+                                      ->get()
+                                      ->map(function($o) {
+                                          $o->type = 'standalone_order';
+                                          $o->customer_name = $o->user->name ?? 'Pelanggan';
+                                          $o->items_summary = collect($o->items)->map(function($i) {
+                                              return ($i['name'] ?? 'Menu') . ' (x' . ($i['quantity'] ?? 1) . ')';
+                                          })->implode(', ');
+                                          $o->total_price_fnb = $o->total;
+                                          $o->booking = (object)[
+                                              'table' => (object)[
+                                                  'name' => $o->table->name ?? 'Meja'
+                                              ]
+                                          ];
+                                          return $o;
+                                      });
+
+        $latestOrders = $bookingOrders->concat($standaloneOrders)->sortByDesc('created_at')->take(5)->values();
+
         // Combine and Sort by created_at desc
         $combined = $latestBookings->concat($latestOrders)->sortByDesc('created_at')->values();
 
         $newBookingsCount = \App\Models\Booking::where('created_at', '>=', now()->subSeconds(60))
-                                          ->where('status', 'pending')
-                                          ->count();
+                                           ->where('status', 'pending')
+                                           ->count();
 
         $newOrdersCount = \App\Models\Order::where('created_at', '>=', now()->subSeconds(60))
+                                      ->where('status', 'pending')
+                                      ->count()
+                        + \App\Models\FnbOrder::where('created_at', '>=', now()->subSeconds(60))
                                       ->where('status', 'pending')
                                       ->count();
 

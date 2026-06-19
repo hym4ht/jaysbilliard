@@ -88,7 +88,9 @@
                             <tbody>
                                 @forelse($bookings as $index => $booking)
                                     @php
-                                        $initial = strtoupper(substr($booking->customer_name, 0, 1));
+                                        $isBooking = $booking instanceof \App\Models\Booking;
+                                        $customerName = $isBooking ? $booking->customer_name : ($booking->user->name ?? 'Pelanggan');
+                                        $initial = strtoupper(substr($customerName, 0, 1));
                                         $colors = ['#ff5252', '#00acc1', '#26c6da', '#ffb300', '#ab47bc'];
                                         $color = $colors[$index % count($colors)];
                                         
@@ -96,7 +98,7 @@
                                         $statusPill = '';
                                         $rawStatus = strtolower($booking->status);
                                         
-                                        if (in_array($rawStatus, ['completed', 'selesai'])) {
+                                        if (in_array($rawStatus, ['completed', 'selesai', 'success'])) {
                                             $statusPill = '<span class="status-pill completed" style="background: rgba(255,82,82,0.1); color: #ff5252; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Selesai</span>';
                                         } elseif (in_array($rawStatus, ['confirmed', 'paid', 'lunas'])) {
                                             $statusPill = '<span class="status-pill paid" style="background: rgba(0,229,255,0.1); color: #00e5ff; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Lunas</span>';
@@ -109,31 +111,46 @@
                                         }
                                         
                                         // Duration Logic
-                                        try {
-                                            $start = \Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->start_time);
-                                            $end = \Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->end_time);
-                                            if ($end->lt($start)) {
-                                                $end->addDay();
+                                        if ($isBooking) {
+                                            try {
+                                                $start = \Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->start_time);
+                                                $end = \Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->end_time);
+                                                if ($end->lt($start)) {
+                                                    $end->addDay();
+                                                }
+                                                $duration = $start->diffInHours($end) . ' Jam';
+                                            } catch (\Exception $e) {
+                                                $duration = '2 Jam';
                                             }
-                                            $duration = $start->diffInHours($end) . ' Jam';
-                                        } catch (\Exception $e) {
-                                            $duration = '2 Jam';
+                                        } else {
+                                            $duration = '-';
                                         }
 
                                         // F&B Summary Logic
-                                        $fnbItems = $booking->orders;
                                         $menuSummary = [];
                                         $allDetails = collect();
-                                        foreach($fnbItems as $order) {
-                                            foreach($order->details as $detail) {
-                                                if($detail->menu) {
-                                                    $menuSummary[] = $detail->menu->name . ' (x' . $detail->quantity . ')';
-                                                    $allDetails->push([
-                                                        'name' => $detail->menu->name,
-                                                        'quantity' => $detail->quantity,
-                                                        'price' => $detail->price
-                                                    ]);
+                                        if ($isBooking) {
+                                            $fnbItems = $booking->orders;
+                                            foreach($fnbItems as $order) {
+                                                foreach($order->details as $detail) {
+                                                    if($detail->menu) {
+                                                        $menuSummary[] = $detail->menu->name . ' (x' . $detail->quantity . ')';
+                                                        $allDetails->push([
+                                                            'name' => $detail->menu->name,
+                                                            'quantity' => $detail->quantity,
+                                                            'price' => $detail->price
+                                                        ]);
+                                                    }
                                                 }
+                                            }
+                                        } else {
+                                            foreach($booking->items ?? [] as $item) {
+                                                $menuSummary[] = ($item['name'] ?? 'Menu') . ' (x' . ($item['quantity'] ?? 1) . ')';
+                                                $allDetails->push([
+                                                    'name' => $item['name'] ?? 'Menu',
+                                                    'quantity' => $item['quantity'] ?? 1,
+                                                    'price' => $item['price'] ?? 0
+                                                ]);
                                             }
                                         }
                                         $fnbString = implode(', ', $menuSummary);
@@ -143,7 +160,7 @@
                                         <td>
                                             <div class="col-customer">
                                                 <div class="cust-avatar" style="background: {{ $color }};">{{ $initial }}</div>
-                                                <span class="cust-name">{{ $booking->customer_name }}</span>
+                                                <span class="cust-name">{{ $customerName }}</span>
                                             </div>
                                         </td>
                                         <td><span class="meja-badge">{{ $booking->table->name ?? 'Meja' }}</span></td>
@@ -157,32 +174,36 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <span class="date-primary">{{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}</span>
-                                            <span class="time-secondary">{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}</span>
+                                            <span class="date-primary">{{ \Carbon\Carbon::parse($isBooking ? $booking->booking_date : $booking->created_at)->format('d M Y') }}</span>
+                                            <span class="time-secondary">{{ \Carbon\Carbon::parse($isBooking ? $booking->start_time : $booking->created_at)->format('H:i') }}</span>
                                         </td>
                                         <td><span class="col-duration">{{ $duration }}</span></td>
                                         <td>
-                                            <div class="status-edit-wrapper" style="cursor: pointer;" onclick="editStatus('{{ $booking->id }}', '{{ $booking->status }}')" title="Klik untuk ubah status">
+                                            @if($isBooking)
+                                                <div class="status-edit-wrapper" style="cursor: pointer;" onclick="editStatus('{{ $booking->id }}', '{{ $booking->status }}')" title="Klik untuk ubah status">
+                                                    {!! $statusPill !!}
+                                                    <svg style="margin-left: 5px; color: #666;" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                                </div>
+                                            @else
                                                 {!! $statusPill !!}
-                                                <svg style="margin-left: 5px; color: #666;" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                            </div>
+                                            @endif
                                         </td>
                                         <td class="col-action">
                                             <div class="adm-action-buttons">
                                                 <button type="button" class="btn-action view" style="background: transparent; color: #ffb300;" 
                                                     onclick='showOrderDetails(
-                                                        "{{ htmlspecialchars($booking->customer_name, ENT_QUOTES) }}", 
-                                                        "{{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}", 
-                                                        "{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}", 
-                                                        "{{ $booking->table->name ?? 'Meja' }}", 
+                                                        "{{ htmlspecialchars($customerName, ENT_QUOTES) }}", 
+                                                        "{{ \Carbon\Carbon::parse($isBooking ? $booking->booking_date : $booking->created_at)->format("d M Y") }}", 
+                                                        "{{ \Carbon\Carbon::parse($isBooking ? $booking->start_time : $booking->created_at)->format("H:i") }}", 
+                                                        "{{ $booking->table->name ?? "Meja" }}", 
                                                         "{{ $duration }}", 
-                                                        "{{ $booking->payment_method ?? 'Midtrans' }}", 
+                                                        "{{ $booking->payment_method ?? "Midtrans" }}", 
                                                         {!! json_encode($allDetails) !!}, 
-                                                        "Rp {{ number_format($booking->total_price, 0, ',', '.') }}"
+                                                        "Rp {{ number_format($isBooking ? $booking->total_price : $booking->total, 0, ",", ".") }}"
                                                     )' title="View Details">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                                 </button>
-                                                @if(strtolower($booking->status) !== 'completed')
+                                                @if($isBooking && strtolower($booking->status) !== 'completed')
                                                 <form action="{{ route('admin.booking.complete', $booking->id) }}" method="POST" style="display:inline;">
                                                     @csrf
                                                     <button type="submit" class="btn-action edit" style="background: transparent; color: #00e5ff;" onclick="return confirmComplete(this.form, '{{ htmlspecialchars($booking->customer_name, ENT_QUOTES) }}')" title="Selesaikan Pesanan">

@@ -78,13 +78,20 @@ class DashboardController extends Controller
             ->orderBy('start_time', 'desc')
             ->get();
                             
-        $fnbOrders = \App\Models\Order::whereHas('booking', function ($query) use ($user) {
+        $bookingFnbOrders = \App\Models\Order::whereHas('booking', function ($query) use ($user) {
             $query->where('user_id', $user->id)
                   ->orWhere('customer_name', $user->name);
         })
         ->with(['details.menu', 'booking.table'])
         ->orderBy('created_at', 'desc')
         ->get();
+
+        $standaloneFnbOrders = \App\Models\FnbOrder::where('user_id', $user->id)
+            ->with('table')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $fnbOrders = $bookingFnbOrders->concat($standaloneFnbOrders)->sortByDesc('created_at');
 
         $topbar_title = "Riwayat Pesanan";
         $topbar_sub = "Lihat daftar pesanan dan riwayat bermain Anda";
