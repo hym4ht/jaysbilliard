@@ -119,4 +119,5 @@ Route::middleware('user')->group(function () {
     Route::post('/booking/success', [BookingController::class , 'bookingSuccess'])->name('booking.success');
     Route::get('/dashboard/meja/availability', [DashboardController::class, 'mejaAvailability'])->name('user.meja.availability');
     Route::get('/dashboard/fnb/payment-status/{orderId}', [DashboardController::class, 'fnbPaymentStatus'])->name('user.fnb.payment-status');
+    Route::get('/dashboard/booking/payment-status/{orderId}', [BookingController::class, 'paymentStatus'])->name('user.booking.payment-status');
 });

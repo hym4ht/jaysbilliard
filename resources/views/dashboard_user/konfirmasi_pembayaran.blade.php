@@ -236,8 +236,9 @@
 
             // Dynamic Data Binding from localStorage
             const orderDataRaw = localStorage.getItem('meja_order');
+            let orderData = null;
             if(orderDataRaw) {
-                const orderData = JSON.parse(orderDataRaw);
+                orderData = JSON.parse(orderDataRaw);
 
                 // Multi Table Info Render
                 const tablesContainer = document.getElementById('konfirmasi-tables-container');
@@ -317,6 +318,11 @@
                 .then(data => {
                     console.log('Server response:', data);
                     if (data.snap_token) {
+                        if (orderData) {
+                            orderData.order_id = data.order_id;
+                            localStorage.setItem('meja_order', JSON.stringify(orderData));
+                        }
+
                         window.snap.pay(data.snap_token, {
                             onSuccess: function(result) {
                                 console.log('Payment success:', result);
@@ -357,8 +363,76 @@
                 });
             });
 
+            // Verification on Page Load
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlOrderId = urlParams.get('order_id');
+            let orderIdToCheck = urlOrderId || (orderData ? orderData.order_id : null);
+
+            if (orderIdToCheck) {
+                verifyTableBookingStatus(orderIdToCheck, 0);
+            }
+
+            function verifyTableBookingStatus(orderId, attempt = 0) {
+                if (attempt === 0) {
+                    mainPayBtn.disabled = true;
+                    mainPayBtn.innerText = 'Memverifikasi Pembayaran...';
+                }
+
+                fetch(`/dashboard/booking/payment-status/${orderId}`)
+                    .then(res => {
+                        if (!res.ok) throw new Error('Status check failed');
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            if (data.status === 'paid') {
+                                document.getElementById('final-method-name').innerText = (data.payment_method || 'Midtrans').toUpperCase();
+                                if (orderData) {
+                                    saveLocalHistory(orderId, orderData, data.payment_method || 'Midtrans');
+                                }
+                                showSuccessUI();
+                            } else if (data.status === 'pending') {
+                                if (urlOrderId && attempt < 5) {
+                                    setTimeout(() => {
+                                        verifyTableBookingStatus(orderId, attempt + 1);
+                                    }, 2000);
+                                } else {
+                                    mainPayBtn.disabled = false;
+                                    mainPayBtn.innerText = 'Bayar QRIS via Midtrans';
+                                }
+                            } else if (['cancelled', 'failed', 'expired'].includes(data.status)) {
+                                Swal.fire({ icon: 'error', title: 'Pembayaran Gagal', text: `Pembayaran booking dengan order ID ${orderId} gagal atau kedaluwarsa.`, background: '#141418', color: '#fff' });
+                                if (orderData) {
+                                    delete orderData.order_id;
+                                    localStorage.setItem('meja_order', JSON.stringify(orderData));
+                                }
+                                mainPayBtn.disabled = false;
+                                mainPayBtn.innerText = 'Bayar QRIS via Midtrans';
+                            } else {
+                                mainPayBtn.disabled = false;
+                                mainPayBtn.innerText = 'Bayar QRIS via Midtrans';
+                            }
+                        } else {
+                            mainPayBtn.disabled = false;
+                            mainPayBtn.innerText = 'Bayar QRIS via Midtrans';
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Verification error:', err);
+                        mainPayBtn.disabled = false;
+                        mainPayBtn.innerText = 'Bayar QRIS via Midtrans';
+                    });
+            }
+
             function saveLocalHistory(orderId, orderData, method) {
                 const historyData = JSON.parse(localStorage.getItem('billiard_history') || '[]');
+                
+                // Prevent duplicate entries
+                const exists = historyData.some(entry => entry.id === orderId);
+                if (exists) {
+                    return;
+                }
+
                 const newEntry = {
                     id: orderId,
                     customer_name: '{{ Auth::user()->name }}',
@@ -376,6 +450,7 @@
             }
 
             function showSuccessUI() {
+                localStorage.removeItem('meja_order');
                 document.getElementById('success-overlay').classList.add('active');
             }
 ;

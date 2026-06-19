@@ -424,28 +424,18 @@ class DashboardController extends Controller
             $paymentType = $status->payment_type ?? null;
 
             if (in_array($transactionStatus, ['settlement', 'capture'])) {
-                $order = Order::with('details.menu')->where('order_id', $orderId)->first();
+                $order = FnbOrder::where('midtrans_order_id', $orderId)->first();
                 
                 if ($order && $order->status !== 'paid') {
-                    $updateData = ['status' => 'paid'];
+                    $updates = ['status' => 'paid'];
                     if ($paymentType) {
-                        $updateData['payment_method'] = $paymentType;
+                        $updates['payment_method'] = $paymentType;
                     }
-                    $order->update($updateData);
-                    
-                    foreach ($order->details as $detail) {
-                        $menu = $detail->menu;
-                        if ($menu) {
-                            $menu->decrement('stock', $detail->quantity);
-                            
-                            StockTransaction::create([
-                                'menu_id' => $menu->id,
-                                'type' => 'out',
-                                'quantity' => $detail->quantity,
-                                'note' => 'Penjualan (Order: ' . $orderId . ')',
-                            ]);
-                        }
+                    if (!$order->paid_at) {
+                        $updates['paid_at'] = now();
+                        $this->reduceStockForFnbOrder($order);
                     }
+                    $order->update($updates);
                     return response()->json(['success' => true, 'message' => 'Stok berhasil dikurangi']);
                 }
             }
@@ -474,6 +464,7 @@ class DashboardController extends Controller
 
                 if ($paymentStatus === 'paid' && !$order->paid_at) {
                     $updates['paid_at'] = now();
+                    $this->reduceStockForFnbOrder($order);
                 }
 
                 $order->update($updates);
@@ -491,6 +482,29 @@ class DashboardController extends Controller
             'total' => $order->total,
             'paid_at' => $order->paid_at?->toIso8601String(),
         ]);
+    }
+
+    private function reduceStockForFnbOrder(FnbOrder $order): void
+    {
+        $items = $order->items ?? [];
+        foreach ($items as $item) {
+            $menuId = $item['menu_id'] ?? null;
+            $quantity = (int) ($item['quantity'] ?? 0);
+            if ($menuId && $quantity > 0) {
+                $menu = Menu::find($menuId);
+                if ($menu) {
+                    $reduced = $menu->reduceStock($quantity);
+                    if ($reduced) {
+                        StockTransaction::create([
+                            'menu_id'  => $menu->id,
+                            'type'     => 'out',
+                            'quantity' => $quantity,
+                            'note'     => 'Penjualan otomatis (FnB Order: ' . $order->midtrans_order_id . ')',
+                        ]);
+                    }
+                }
+            }
+        }
     }
 
     public function updateProfile(Request $request)

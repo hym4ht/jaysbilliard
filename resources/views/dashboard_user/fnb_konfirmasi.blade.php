@@ -436,10 +436,16 @@
                     document.getElementById('modal-total-value').innerText = formatRupiah(data.total);
                 }
 
+                // Save order_id to local storage so we can track status on reload/redirect back
+                if (data.order_id) {
+                    orderData.order_id = data.order_id;
+                    localStorage.setItem('fnb_order', JSON.stringify(orderData));
+                }
+
                 window.snap.pay(data.snap_token, {
                     onSuccess: function(result) {
                         const paymentMethod = result.payment_type || 'Midtrans';
-                        document.getElementById('final-method-name').innerText = paymentMethod;
+                        document.getElementById('final-method-name').innerText = paymentMethod.toUpperCase();
                         
                         // Notify backend to reduce stock (since webhooks don't work on localhost)
                         fetch('{{ route("user.fnb.success") }}', {
@@ -456,13 +462,13 @@
                         })
                         .catch(err => console.error('Stock update error:', err));
 
-                        saveFnbHistory(orderData, paymentMethod, 'paid');
+                        saveFnbHistory(orderData, paymentMethod, 'paid', data.order_id);
                         showFnbSuccessModal();
                     },
                     onPending: function(result) {
                         const paymentMethod = result.payment_type || 'Midtrans';
-                        document.getElementById('final-method-name').innerText = paymentMethod;
-                        saveFnbHistory(orderData, paymentMethod, 'pending');
+                        document.getElementById('final-method-name').innerText = paymentMethod.toUpperCase();
+                        saveFnbHistory(orderData, paymentMethod, 'pending', data.order_id);
                         showAlert('info', 'Menunggu Pembayaran', 'Ikuti instruksi pembayaran dari Midtrans.');
                     },
                     onError: function() {
@@ -484,10 +490,84 @@
             });
         });
 
-        function saveFnbHistory(orderData, paymentMethod, status) {
+        // Verification on Page Load
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlOrderId = urlParams.get('order_id');
+        let orderIdToCheck = urlOrderId || (orderData ? orderData.order_id : null);
+
+        if (orderIdToCheck) {
+            verifyPaymentStatus(orderIdToCheck, 0);
+        }
+
+        function verifyPaymentStatus(orderId, attempt = 0) {
+            if (attempt === 0) {
+                mainPayBtn.disabled = true;
+                mainPayBtn.innerText = 'Memverifikasi Pembayaran...';
+            }
+
+            fetch(`/dashboard/fnb/payment-status/${orderId}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Status check failed');
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        if (data.status === 'paid') {
+                            const paymentMethod = data.payment_method || 'Midtrans';
+                            document.getElementById('final-method-name').innerText = paymentMethod.toUpperCase();
+                            if (data.total) {
+                                document.getElementById('modal-total-value').innerText = formatRupiah(data.total);
+                            }
+                            if (orderData) {
+                                saveFnbHistory(orderData, paymentMethod, 'paid', orderId);
+                            }
+                            showFnbSuccessModal();
+                        } else if (data.status === 'pending') {
+                            // If they returned from Midtrans via redirect (urlOrderId is present), poll for webhook completion
+                            if (urlOrderId && attempt < 5) {
+                                setTimeout(() => {
+                                    verifyPaymentStatus(orderId, attempt + 1);
+                                }, 2000);
+                            } else {
+                                mainPayBtn.disabled = false;
+                                mainPayBtn.innerText = 'Bayar QRIS via Midtrans';
+                            }
+                        } else if (['cancelled', 'failed', 'expired'].includes(data.status)) {
+                            showAlert('error', 'Pembayaran Gagal', `Pembayaran untuk pesanan ${orderId} telah gagal atau kedaluwarsa.`);
+                            if (orderData) {
+                                delete orderData.order_id;
+                                localStorage.setItem('fnb_order', JSON.stringify(orderData));
+                            }
+                            mainPayBtn.disabled = false;
+                            mainPayBtn.innerText = 'Bayar QRIS via Midtrans';
+                        } else {
+                            mainPayBtn.disabled = false;
+                            mainPayBtn.innerText = 'Bayar QRIS via Midtrans';
+                        }
+                    } else {
+                        mainPayBtn.disabled = false;
+                        mainPayBtn.innerText = 'Bayar QRIS via Midtrans';
+                    }
+                })
+                .catch(err => {
+                    console.error('Verification error:', err);
+                    mainPayBtn.disabled = false;
+                    mainPayBtn.innerText = 'Bayar QRIS via Midtrans';
+                });
+        }
+
+        function saveFnbHistory(orderData, paymentMethod, status, orderId = null) {
             const historyData = JSON.parse(localStorage.getItem('billiard_history') || '[]');
+            const entryId = orderId || 'FNB-' + Math.floor(Math.random() * 1000);
+            
+            // Prevent duplicates
+            const exists = historyData.some(entry => entry.id === entryId);
+            if (exists) {
+                return;
+            }
+
             const newEntry = {
-                id: 'FNB-' + Math.floor(Math.random() * 1000),
+                id: entryId,
                 customer_name: '{{ Auth::user()->name }}',
                 tables: orderData.tableName || 'Takeaway',
                 date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
