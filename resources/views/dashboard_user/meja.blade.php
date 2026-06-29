@@ -111,17 +111,7 @@
                                         @else
                                             <button class="tm-btn-add">TAMBAH</button>
                                         @endif
-                                        <button class="tm-btn-chat" style="position: relative;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                                                stroke-linejoin="round">
-                                                <path
-                                                    d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-11.7 8.38 8.38 0 0 1 3.8.9L21 3z">
-                                                </path>
-                                            </svg>
-                                            <span class="notif-badge"
-                                                style="display: none; position: absolute; top: -5px; right: -5px; background: #ff3b3b; color: #fff; font-size: 0.6rem; font-weight: bold; width: 14px; height: 14px; border-radius: 50%; align-items: center; justify-content: center; pointer-events: none;">!</span>
-                                        </button>
+
                                     </div>
                                 </div>
 
@@ -864,21 +854,7 @@
                 });
             });
 
-            // Handle CHAT button click inside tooltip
-            const chatButtons = document.querySelectorAll('.tm-btn-chat');
-            chatButtons.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Avoid triggering parent click (table selection)
 
-                    const parentTable = btn.closest('.billiard-table');
-                    if (parentTable) {
-                        const id = parentTable.dataset.id;
-                        if (typeof window.openChatWindow === 'function') {
-                            window.openChatWindow(id);
-                        }
-                    }
-                });
-            });
 
             timeSlots.forEach(slot => {
                 slot.addEventListener('click', () => {

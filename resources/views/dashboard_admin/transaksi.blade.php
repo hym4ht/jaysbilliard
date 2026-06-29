@@ -50,7 +50,7 @@
                         </div>
                         <div class="adm-hstat-info">
                             <span class="adm-hstat-label">TOTAL PENDAPATAN</span>
-                            <span class="adm-hstat-value" id="statTotalIncome">Rp {{ number_format(collect($transactions)->whereIn('status', ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai'])->sum('total_price'), 0, ',', '.') }}</span>
+                            <span class="adm-hstat-value" id="statTotalIncome">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</span>
                         </div>
                     </div>
 
@@ -62,7 +62,7 @@
                         </div>
                         <div class="adm-hstat-info">
                             <span class="adm-hstat-label">TRANSAKSI BERHASIL</span>
-                            <span class="adm-hstat-value" id="statTodayCount">{{ collect($transactions)->whereIn('status', ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai'])->count() }}</span>
+                            <span class="adm-hstat-value" id="statTodayCount">{{ $transaksiBerhasil }}</span>
                         </div>
                     </div>
 
@@ -74,7 +74,7 @@
                         </div>
                         <div class="adm-hstat-info">
                             <span class="adm-hstat-label">TRANSAKSI GAGAL</span>
-                            <span class="adm-hstat-value" id="statFailedCount">{{ collect($transactions)->whereNotIn('status', ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai', 'pending'])->count() }}</span>
+                            <span class="adm-hstat-value" id="statFailedCount">{{ $transaksiGagal }}</span>
                         </div>
                     </div>
                 </div>
@@ -115,24 +115,59 @@
                             <tbody id="transactionBody">
                                 @forelse($transactions as $index => $item)
                                     @php
-                                        $initial = strtoupper(substr($item->customer_name, 0, 1));
+                                        $isBooking = $item instanceof \App\Models\Booking;
+                                        $customerName = $isBooking ? $item->customer_name : ($item->user->name ?? 'Pelanggan');
+                                        $initial = strtoupper(substr($customerName, 0, 1));
                                         $status = strtolower($item->status);
-                                        $isSuccess = in_array($status, ['paid', 'completed', 'confirmed', 'booked', 'payment']);
+                                        $isSuccess = in_array($status, ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai', 'success']);
                                         $statusHtml = $isSuccess ? '<span class="status-pill paid">Berhasil</span>' : '<span class="status-pill failed">Gagal</span>';
                                         $amountClass = $isSuccess ? 'income-positive' : 'income-negative';
                                         
-                                        $fnbItems = $item->orders;
-                                        $hasFnb = $fnbItems && $fnbItems->count() > 0;
-                                        
-                                        try {
-                                            $start = \Carbon\Carbon::parse($item->booking_date . ' ' . $item->start_time);
-                                            $end = \Carbon\Carbon::parse($item->booking_date . ' ' . $item->end_time);
-                                            if ($end->lt($start)) {
-                                                $end->addDay();
+                                        $allDetails = collect();
+                                        if ($isBooking) {
+                                            $fnbItems = $item->orders;
+                                            $hasFnb = $fnbItems && $fnbItems->count() > 0;
+                                            $category = $hasFnb ? 'Booking + F&B' : 'Booking Meja';
+                                            $amount = $item->total_price;
+                                            $date = $item->booking_date;
+                                            $time = $item->start_time;
+                                            
+                                            foreach($fnbItems as $order) {
+                                                foreach($order->details as $detail) {
+                                                    if($detail->menu) {
+                                                        $allDetails->push([
+                                                            'name' => $detail->menu->name,
+                                                            'quantity' => $detail->quantity,
+                                                            'price' => $detail->price
+                                                        ]);
+                                                    }
+                                                }
                                             }
-                                            $duration = $start->diffInHours($end) . ' Jam';
-                                        } catch (\Exception $e) {
-                                            $duration = '2 Jam';
+                                            
+                                            try {
+                                                $start = \Carbon\Carbon::parse($item->booking_date . ' ' . $item->start_time);
+                                                $end = \Carbon\Carbon::parse($item->booking_date . ' ' . $item->end_time);
+                                                if ($end->lt($start)) {
+                                                    $end->addDay();
+                                                }
+                                                $duration = $start->diffInHours($end) . ' Jam';
+                                            } catch (\Exception $e) {
+                                                $duration = '2 Jam';
+                                            }
+                                        } else {
+                                            $category = 'Hanya F&B';
+                                            $amount = $item->total;
+                                            $date = $item->created_at;
+                                            $time = $item->created_at;
+                                            $duration = '-';
+                                            
+                                            foreach($item->items ?? [] as $fnbItem) {
+                                                $allDetails->push([
+                                                    'name' => $fnbItem['name'] ?? 'Menu',
+                                                    'quantity' => $fnbItem['quantity'] ?? 1,
+                                                    'price' => $fnbItem['price'] ?? 0
+                                                ]);
+                                            }
                                         }
                                     @endphp
                                     <tr>
@@ -140,24 +175,24 @@
                                         <td>
                                             <div class="col-customer">
                                                 <div class="cust-avatar" style="background: #00bcd4;">{{ $initial }}</div>
-                                                <span class="cust-name">{{ $item->customer_name }}</span>
+                                                <span class="cust-name">{{ $customerName }}</span>
                                             </div>
                                         </td>
                                         <td>
                                             <span class="method-badge" style="background: rgba(0, 229, 255, 0.05); color: #00e5ff; border-color: rgba(0, 229, 255, 0.2);">
-                                                {{ $hasFnb ? 'Booking + F&B' : 'Booking Meja' }}
+                                                {{ $category }}
                                             </span>
                                         </td>
                                         <td><span class="method-badge">{{ $item->payment_method ?? 'QRIS' }}</span></td>
                                         <td>
-                                            <span class="date-primary">{{ \Carbon\Carbon::parse($item->booking_date)->format('d M Y') }}</span>
-                                            <span class="time-secondary">{{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }}</span>
+                                            <span class="date-primary">{{ \Carbon\Carbon::parse($date)->format('d M Y') }}</span>
+                                            <span class="time-secondary">{{ \Carbon\Carbon::parse($time)->format('H:i') }}</span>
                                         </td>
-                                        <td><span class="{{ $amountClass }}">Rp {{ number_format($item->total_price, 0, ',', '.') }}</span></td>
+                                        <td><span class="{{ $amountClass }}">Rp {{ number_format($amount, 0, ',', '.') }}</span></td>
                                         <td>{!! $statusHtml !!}</td>
                                         <td class="col-action">
                                             <div class="adm-action-buttons">
-                                                <button type="button" class="btn-action view" onclick='showOrderDetails("{{ htmlspecialchars($item->customer_name, ENT_QUOTES) }}", "{{ \Carbon\Carbon::parse($item->booking_date)->format('d M Y') }}", "{{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }}", "{{ $item->table->name ?? 'N/A' }}", "{{ $item->payment_method ?? 'QRIS' }}", "{{ $duration }}", {{ json_encode($fnbItems->map(function($o) { return ["name" => $o->menu_name, "quantity" => $o->quantity, "price" => $o->price ?? 0]; })) }}, "Rp {{ number_format($item->total_price, 0, ',', '.') }}")' title="View Transaction">
+                                                <button type="button" class="btn-action view" onclick='showOrderDetails("{{ htmlspecialchars($customerName, ENT_QUOTES) }}", "{{ \Carbon\Carbon::parse($date)->format("d M Y") }}", "{{ \Carbon\Carbon::parse($time)->format("H:i") }}", "{{ $item->table->name ?? "N/A" }}", "{{ $item->payment_method ?? "QRIS" }}", "{{ $duration }}", {!! json_encode($allDetails) !!}, "Rp {{ number_format($amount, 0, ",", ".") }}")' title="View Transaction">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                                 </button>
                                             </div>

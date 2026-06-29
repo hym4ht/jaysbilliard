@@ -12,7 +12,6 @@ use App\Http\Controllers\MejaController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\WebhookController;
-use App\Http\Controllers\ChatController;
 use App\Http\Controllers\AccountController;
 
 // Webhook Midtrans (No CSRF needed, see bootstrap/app.php)
@@ -41,11 +40,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class , 'logout'])->name('logout');
     Route::post('/admin/logout', [AuthController::class , 'adminLogout'])->name('admin.logout');
-    
-    // Chat Synchronization
-    Route::post('/chat/sync', [ChatController::class, 'sync'])->name('chat.sync');
-    Route::post('/chat/send', [ChatController::class, 'send'])->name('chat.send');
-    Route::post('/chat/{tableId}/read', [ChatController::class, 'markAsRead'])->name('chat.read');
+
 });
 
 // Admin Dashboard & Management (Requires 'admin' Middleware)

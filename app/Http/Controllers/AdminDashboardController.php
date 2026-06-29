@@ -27,12 +27,18 @@ class AdminDashboardController extends Controller
 
         $menus = Menu::latest()->get();
 
-        // Calculate dynamic stats for today
+        // Calculate dynamic stats for today (including bookings and standalone F&B orders)
+        $fnbPendapatanHariIni = \App\Models\FnbOrder::whereDate('created_at', $today)
+                                    ->whereIn('status', ['success', 'paid', 'completed', 'lunas', 'selesai'])
+                                    ->sum('total');
+
+        $fnbTotalPemesanan = \App\Models\FnbOrder::whereDate('created_at', $today)->count();
+
         $pendapatanHariIni = \App\Models\Booking::where('booking_date', $today)
-                                ->whereIn('status', ['booked', 'confirmed', 'completed'])
-                                ->sum('total_price');
+                                ->whereIn('status', ['booked', 'confirmed', 'completed', 'paid', 'lunas', 'selesai'])
+                                ->sum('total_price') + $fnbPendapatanHariIni;
                                 
-        $totalPemesanan = \App\Models\Booking::where('booking_date', $today)->count();
+        $totalPemesanan = \App\Models\Booking::where('booking_date', $today)->count() + $fnbTotalPemesanan;
 
         return view('dashboard_admin.dashboard', compact('tables', 'menus', 'pendapatanHariIni', 'totalPemesanan'));
 
@@ -143,42 +149,98 @@ class AdminDashboardController extends Controller
 
     public function transaksi()
     {
-        $transactions = \App\Models\Booking::with(['table', 'user', 'orders'])->latest()->get();
-        return view('dashboard_admin.transaksi', compact('transactions'));
+        $bookings = \App\Models\Booking::with(['table', 'user', 'orders.details.menu'])->latest()->get();
+        $standaloneOrders = \App\Models\FnbOrder::with(['table', 'user'])->latest()->get();
+
+        // Merge them and sort by created_at descending
+        $transactions = $bookings->concat($standaloneOrders)->sortByDesc('created_at');
+
+        $totalPendapatan = $transactions->filter(function ($item) {
+            return in_array(strtolower($item->status), ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai', 'success']);
+        })->sum(function ($item) {
+            return $item instanceof \App\Models\Booking ? $item->total_price : $item->total;
+        });
+
+        $transaksiBerhasil = $transactions->filter(function ($item) {
+            return in_array(strtolower($item->status), ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai', 'success']);
+        })->count();
+
+        $transaksiGagal = $transactions->filter(function ($item) {
+            return !in_array(strtolower($item->status), ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai', 'success', 'pending']);
+        })->count();
+
+        return view('dashboard_admin.transaksi', compact('transactions', 'totalPendapatan', 'transaksiBerhasil', 'transaksiGagal'));
     }
 
     public function laporan(Request $request)
     {
-        $query = \App\Models\Booking::with(['table', 'user', 'orders.details.menu'])->latest();
-        
         $m = request('month', date('m'));
         $y = request('year', date('Y'));
-        
-        $query->whereMonth('booking_date', $m)->whereYear('booking_date', $y);
-        
-        $transactions = $query->get();
-        return view('dashboard_admin.laporan', compact('transactions'));
+
+        $bookingsQuery = \App\Models\Booking::with(['table', 'user', 'orders.details.menu'])
+            ->whereMonth('booking_date', $m)
+            ->whereYear('booking_date', $y)
+            ->latest();
+
+        $standaloneQuery = \App\Models\FnbOrder::with(['table', 'user'])
+            ->whereMonth('created_at', $m)
+            ->whereYear('created_at', $y)
+            ->latest();
+
+        $bookings = $bookingsQuery->get();
+        $standaloneOrders = $standaloneQuery->get();
+
+        $transactions = $bookings->concat($standaloneOrders)->sortByDesc('created_at');
+
+        $totalPendapatan = $transactions->filter(function ($item) {
+            return in_array(strtolower($item->status), ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai', 'success']);
+        })->sum(function ($item) {
+            return $item instanceof \App\Models\Booking ? $item->total_price : $item->total;
+        });
+
+        $transaksiBerhasil = $transactions->filter(function ($item) {
+            return in_array(strtolower($item->status), ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai', 'success']);
+        })->count();
+
+        $transaksiGagal = $transactions->filter(function ($item) {
+            return !in_array(strtolower($item->status), ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai', 'success', 'pending']);
+        })->count();
+
+        return view('dashboard_admin.laporan', compact('transactions', 'totalPendapatan', 'transaksiBerhasil', 'transaksiGagal'));
     }
 
     public function exportLaporanPdf(Request $request)
     {
-        $query = \App\Models\Booking::with(['table', 'user', 'orders.details.menu'])->latest();
-        
         $m = request('month', date('m'));
         $y = request('year', date('Y'));
-        
-        $query->whereMonth('booking_date', $m)->whereYear('booking_date', $y);
-        
-        $bookings = $query->get();
-        
-        $totalPendapatan = $bookings->whereIn('status', ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai'])->sum('total_price');
-        
+
+        $bookingsQuery = \App\Models\Booking::with(['table', 'user', 'orders.details.menu'])
+            ->whereMonth('booking_date', $m)
+            ->whereYear('booking_date', $y)
+            ->latest();
+
+        $standaloneQuery = \App\Models\FnbOrder::with(['table', 'user'])
+            ->whereMonth('created_at', $m)
+            ->whereYear('created_at', $y)
+            ->latest();
+
+        $bookingsList = $bookingsQuery->get();
+        $standaloneOrders = $standaloneQuery->get();
+
+        $bookings = $bookingsList->concat($standaloneOrders)->sortByDesc('created_at');
+
+        $totalPendapatan = $bookings->filter(function ($item) {
+            return in_array(strtolower($item->status), ['paid', 'completed', 'confirmed', 'booked', 'payment', 'lunas', 'selesai', 'success']);
+        })->sum(function ($item) {
+            return $item instanceof \App\Models\Booking ? $item->total_price : $item->total;
+        });
+
         $months = ['01'=>'Januari', '02'=>'Februari', '03'=>'Maret', '04'=>'April', '05'=>'Mei', '06'=>'Juni', '07'=>'Juli', '08'=>'Agustus', '09'=>'September', '10'=>'Oktober', '11'=>'November', '12'=>'Desember'];
         $monthName = $months[$m] ?? $m;
-        
-        $pdf = Pdf::loadView('dashboard_admin.laporan_pdf', compact('bookings', 'totalPendapatan', 'monthName', 'y'))
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dashboard_admin.laporan_pdf', compact('bookings', 'totalPendapatan', 'monthName', 'y'))
                   ->setPaper('a4', 'landscape');
-                  
+
         return $pdf->download('laporan_penghasilan_' . $m . '_' . $y . '.pdf');
     }
 

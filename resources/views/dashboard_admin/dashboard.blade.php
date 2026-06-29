@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="{{ asset('css/css_page/css_interaksi component/option_dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/css_page/css_interaksi component/akhiri.css') }}">
     <link rel="stylesheet" href="{{ asset('css/css_page/dashboard.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/css_page/css_interaksi component/chat.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
@@ -280,12 +279,6 @@
                                     @else
                                         <div style="flex:1"></div>
                                     @endif
-                                    <div class="btn-chat-icon adm-btn-chat" data-meja="{{ $table->id }}">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                        @if($activeBooking && in_array($activeBooking->status, ['pending', 'booked']))
-                                            <span class="notif-badge">!</span>
-                                        @endif
-                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -298,11 +291,9 @@
 
     {{-- Modals & Popups --}}
     @include('component.c_dashboard.modal.akhiri_sesi')
-    @include('component.c_dashboard.modal.chat_blade')
     @include('component.c_dashboard.modal.logout_modal')
 
     <script src="{{ asset('js/js_component/logout.js') }}"></script>
-<script src="{{ asset('js/js_component/chat.js') }}"></script>
     <script src="{{ asset('js/js_component/akhiri.js') }}"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
