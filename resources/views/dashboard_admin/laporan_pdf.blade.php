@@ -57,37 +57,53 @@
         <tbody>
             @foreach($bookings as $index => $booking)
                 @php
+                    $isBooking = $booking instanceof \App\Models\Booking;
+                    $customerName = $isBooking ? $booking->customer_name : ($booking->user->name ?? 'Pelanggan');
+                    
                     $fnbSummary = [];
-                    foreach($booking->orders as $order) {
-                        foreach($order->details as $detail) {
-                            if($detail->menu) {
-                                $fnbSummary[] = $detail->menu->name . ' (x' . $detail->quantity . ')';
+                    if ($isBooking) {
+                        foreach($booking->orders as $order) {
+                            foreach($order->details as $detail) {
+                                if($detail->menu) {
+                                    $fnbSummary[] = $detail->menu->name . ' (x' . $detail->quantity . ')';
+                                }
                             }
                         }
-                    }
-                    
-                    try {
-                        $start = \Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->start_time);
-                        $end = \Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->end_time);
-                        if ($end->lt($start)) {
-                            $end->addDay();
+                        
+                        try {
+                            $start = \Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->start_time);
+                            $end = \Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->end_time);
+                            if ($end->lt($start)) {
+                                $end->addDay();
+                            }
+                            $duration = $start->diffInHours($end) . ' Jam';
+                        } catch (\Exception $e) {
+                            $duration = '2 Jam';
                         }
-                        $duration = $start->diffInHours($end) . ' Jam';
-                    } catch (\Exception $e) {
-                        $duration = '2 Jam';
+                        $totalPrice = $booking->total_price;
+                        $dateFormatted = \Carbon\Carbon::parse($booking->booking_date)->format('d M Y');
+                        $timeFormatted = \Carbon\Carbon::parse($booking->start_time)->format('H:i') . ' WIB';
+                    } else {
+                        foreach($booking->items ?? [] as $item) {
+                            $fnbSummary[] = ($item['name'] ?? 'Menu') . ' (x' . ($item['quantity'] ?? 1) . ')';
+                        }
+                        $duration = '-';
+                        $totalPrice = $booking->total;
+                        $dateFormatted = \Carbon\Carbon::parse($booking->created_at)->format('d M Y');
+                        $timeFormatted = \Carbon\Carbon::parse($booking->created_at)->format('H:i') . ' WIB';
                     }
                 @endphp
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td>{{ $booking->customer_name }}</td>
+                    <td>{{ $customerName }}</td>
                     <td><span class="meja-badge">{{ $booking->table->name ?? '-' }}</span></td>
                     <td>{{ count($fnbSummary) > 0 ? implode(', ', $fnbSummary) : '-' }}</td>
                     <td>
-                        {{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}<br>
-                        <small>{{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }} WIB</small>
+                        {{ $dateFormatted }}<br>
+                        <small>{{ $timeFormatted }}</small>
                     </td>
                     <td>{{ $duration }}</td>
-                    <td>Rp {{ number_format($booking->total_price, 0, ',', '.') }}</td>
+                    <td>Rp {{ number_format($totalPrice, 0, ',', '.') }}</td>
                     <td>
                         @php
                             $rawStatus = strtolower($booking->status);
